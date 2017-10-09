@@ -347,7 +347,7 @@ int nInteractions=0; int nInteractions_afterAllCuts=0; int nTracks_oneInt=0;
 int wInitialEvents=0; int wInteractions_afterAllCuts=0; int wInteractions=0; int wTracks_oneInt=0;
 int nTotalTrueSignal=0;
 int nOneTrackTrueSignal=0;
-int nOneTrackBackground=0; nOneTrackSignal=0;
+int nOneTrackBackground=0; int nOneTrackSignal=0;
 int nOneTrackSignalArray     [] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 int nOneTrackBackgroundArray [] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 int nTwoTrackTrueSignal=0;
@@ -362,11 +362,11 @@ int nOtherTwoTrackSignal=0;
 int nOtherTwoTrackBackground=0;
 
 // ### xs counters ###
-int nChannel0=0; nChannel0True=0; int nChannel0Signal=0; int nChannel0Background=0;
-int nChannel1=0; nChannel1True=0; int nChannel1Signal=0; int nChannel1Background=0;
-int nChannel2=0; nChannel2True=0; int nChannel2Signal=0; int nChannel2Background=0;
-int nChannel3=0; nChannel3True=0; int nChannel3Signal=0; int nChannel3Background=0;
-int nChannel4=0; nChannel4True=0; int nChannel4Signal=0; int nChannel4Background=0;
+int nChannel0=0; int nChannel0True=0; int nChannel0Signal=0; int nChannel0Background=0;
+int nChannel1=0; int nChannel1True=0; int nChannel1Signal=0; int nChannel1Background=0;
+int nChannel2=0; int nChannel2True=0; int nChannel2Signal=0; int nChannel2Background=0;
+int nChannel3=0; int nChannel3True=0; int nChannel3Signal=0; int nChannel3Background=0;
+int nChannel4=0; int nChannel4True=0; int nChannel4Signal=0; int nChannel4Background=0;
 int nChannel2TopTrue=0;
 int nChannel0InelastTrue=0; int nChannel0InelastSignal=0; int nChannel0InelastBackground=0;
 int nChannel1InelastTrue=0; int nChannel1InelastSignal=0; int nChannel1InelastBackground=0;
