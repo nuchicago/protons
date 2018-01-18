@@ -25,7 +25,7 @@ $(LIBDIR)/$(LIB): $(LIBOBJS)
 	$(AR) $(ARFLAGS) $(@) $(^) 
 
 $(LIBDIR)/%.o : %.cpp 
-	$(CXX) -g -Wall $(CPPFLAGS) -c $(CXXFLAGS) -o $(@) $(<)
+	$(CXX) -g -Wall -std=c++11 $(CPPFLAGS) -c $(CXXFLAGS) -o $(@) $(<)
 
 echo_%:
 	@echo "$(subst echo_,,$@)=\"$($(subst echo_,,$@))\""
