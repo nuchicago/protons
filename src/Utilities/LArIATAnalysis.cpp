@@ -96,8 +96,102 @@ void openNtupleFiles( char* file, TChain* &tuple ){
 //===================================================================
 void LArIATAnalysis::bookNtuple( TChain* tuple ){
 
+  if( !tuple ){
+    std::cout << "You did not supply an ntuple file!!" << std::endl;
+    return;
+  }
+
+  tuple->SetBranchAddress("run", &run);
+  tuple->SetBranchAddress("subrun", &subrun);
+  tuple->SetBranchAddress("event", &event);
+  tuple->SetBranchAddress("evttime", &evttime);
+  tuple->SetBranchAddress("efield", efield);
+  tuple->SetBranchAddress("t0", &t0);
+  tuple->SetBranchAddress("ntracks_reco", &ntracks_reco);
+  tuple->SetBranchAddress("track_start_x", &track_start_x);
+  tuple->SetBranchAddress("track_start_y", &track_start_y);
+  tuple->SetBranchAddress("track_start_z", &track_start_z);
+  tuple->SetBranchAddress("track_end_x", &track_end_x);
+  tuple->SetBranchAddress("track_end_y", &track_end_y);
+  tuple->SetBranchAddress("track_end_z", &track_end_z);
+  tuple->SetBranchAddress("track_length", &track_length);
+  tuple->SetBranchAddress("ntrack_hits", &ntrack_hits);
+  tuple->SetBranchAddress("track_xpos", &track_xpos);
+  tuple->SetBranchAddress("track_ypos", &track_ypos);
+  tuple->SetBranchAddress("track_zpos", &track_zpos);
+  tuple->SetBranchAddress("ind_track_hits", &ind_track_hits);
+  tuple->SetBranchAddress("ind_track_ke", &ind_track_ke);
+  tuple->SetBranchAddress("ind_track_wire", &ind_track_wire);
+  tuple->SetBranchAddress("ind_track_dedx", &ind_track_dedx);
+  tuple->SetBranchAddress("ind_track_dqdx", &ind_track_dqdx);
+  tuple->SetBranchAddress("ind_track_rr", &ind_track_rr);
+  tuple->SetBranchAddress("ind_track_pitch_hit", &ind_track_pitch_hit);
+  tuple->SetBranchAddress("col_track_hits", &col_track_hits);
+  tuple->SetBranchAddress("col_track_ke", &col_track_ke);
+  tuple->SetBranchAddress("col_track_wire", &col_track_wire);
+  tuple->SetBranchAddress("col_track_dedx", &col_track_dedx);
+  tuple->SetBranchAddress("col_track_dqdx", &col_track_dqdx);
+  tuple->SetBranchAddress("col_track_rr", &col_track_rr);
+  tuple->SetBranchAddress("col_track_pitch_hit", &col_track_pitch_hit);
+  tuple->SetBranchAddress("trkpitch", trkpitch);
+  tuple->SetBranchAddress("num_hit", &num_hit);
+  tuple->SetBranchAddress("hit_channel", &hit_channel);
+  tuple->SetBranchAddress("hit_integral", &hit_integral);
+  tuple->SetBranchAddress("no_primaries", &no_primaries);
+  tuple->SetBranchAddress("geant_list_size", &geant_list_size);
+  tuple->SetBranchAddress("primary_p", &primary_p);
+  tuple->SetBranchAddress("PDG", &PDG);
+  tuple->SetBranchAddress("StartEnergy", &StartEnergy);
+  tuple->SetBranchAddress("StartPx", &StartPx);
+  tuple->SetBranchAddress("StartPy", &StartPy);
+  tuple->SetBranchAddress("StartPz", &StartPz);
+  tuple->SetBranchAddress("EndEnergy", &EndEnergy);
+  tuple->SetBranchAddress("EndPx", &EndPx);
+  tuple->SetBranchAddress("EndPy", &EndPy);
+  tuple->SetBranchAddress("EndPz", &EndPz);
+  tuple->SetBranchAddress("StartPointx", &StartPointx);
+  tuple->SetBranchAddress("StartPointy", &StartPointy);
+  tuple->SetBranchAddress("StartPointz", &StartPointz);
+  tuple->SetBranchAddress("EndPointx", &EndPointx);
+  tuple->SetBranchAddress("EndPointy", &EndPointy);
+  tuple->SetBranchAddress("EndPointz", &EndPointz);
+  tuple->SetBranchAddress("Process", &Process);
+  tuple->SetBranchAddress("NumberDaughters", &NumberDaughters);
+  tuple->SetBranchAddress("primary_simChannel_num_voxel", &primary_simChannel_num_voxel);
+  tuple->SetBranchAddress("primary_simChannel_voxel_dr", &primary_simChannel_voxel_dr);
+  tuple->SetBranchAddress("primary_simChannel_voxel_E", &primary_simChannel_voxel_E);
+  tuple->SetBranchAddress("primary_simChannel_voxel_e", &primary_simChannel_voxel_e);
+  tuple->SetBranchAddress("primary_simChannel_voxel_x", &primary_simChannel_voxel_x);
+  tuple->SetBranchAddress("primary_simChannel_voxel_y", &primary_simChannel_voxel_y);
+  tuple->SetBranchAddress("primary_simChannel_voxel_z", &primary_simChannel_voxel_z);
+  tuple->SetBranchAddress("primary_num_simChannel", &primary_num_simChannel);
+  tuple->SetBranchAddress("primary_simChannel", &primary_simChannel);
+  tuple->SetBranchAddress("primary_simChannel_dr", &primary_simChannel_dr);
+  tuple->SetBranchAddress("primary_simChannel_E", &primary_simChannel_E);
+  tuple->SetBranchAddress("primary_simChannel_e", &primary_simChannel_e);
+  tuple->SetBranchAddress("Mother", &Mother);
+  tuple->SetBranchAddress("TrackId", &TrackId);
+  tuple->SetBranchAddress("process_primary", &process_primary);
+  tuple->SetBranchAddress("G4Process", &G4Process);
+  tuple->SetBranchAddress("G4FinalProcess", &G4FinalProcess);
+  tuple->SetBranchAddress("NTrTrajPts", &NTrTrajPts);
+  tuple->SetBranchAddress("NProtonDaughters", &NProtonDaughters);
+  tuple->SetBranchAddress("NNeutronDaughters", &NNeutronDaughters);
+  tuple->SetBranchAddress("NDTrTrajPts", &NDTrTrajPts);
+  tuple->SetBranchAddress("DPdgCode", &DPdgCode);
+  tuple->SetBranchAddress("DStartEnergy", &DStartEnergy);
+  tuple->SetBranchAddress("MidPosX", &MidPosX);
+  tuple->SetBranchAddress("MidPosY", &MidPosY);
+  tuple->SetBranchAddress("MidPosZ", &MidPosZ);
+  tuple->SetBranchAddress("MidPx", &MidPx);
+  tuple->SetBranchAddress("MidPy", &MidPy);
+  tuple->SetBranchAddress("MidPz", &MidPz);
+  tuple->SetBranchAddress("DPMidPosX", &DPMidPosX);
+  tuple->SetBranchAddress("DPMidPosY", &DPMidPosY);
+  tuple->SetBranchAddress("DPMidPosZ", &DPMidPosZ);
+  tuple->SetBranchAddress("InteractionPoint", &InteractionPoint);
+  tuple->SetBranchAddress("InteractionPointType", &InteractionPointType);
   
- 
 }
 
 

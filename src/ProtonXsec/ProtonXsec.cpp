@@ -68,7 +68,11 @@ int main( ){
 // Constructors
 //=============================================================================
 
-ProtonXsec::ProtonXsec( ) : LArIATAnalysis( ) { }
+ProtonXsec::ProtonXsec( ) : LArIATAnalysis( ) { 
+
+  tuple = NULL;
+
+}
 
 
 
