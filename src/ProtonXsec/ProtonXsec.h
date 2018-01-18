@@ -3,16 +3,26 @@
 #define PROTONXSEC_H
 
 
-class ProtonXsec {
+#include "../Utilities/LArIATAnalysis.h"
+
+
+class ProtonXsec : public LArIATAnalysis {
 
  public:
 
   ProtonXsec( );
  
-  int testFunction ();
+
+  //------------------------------------
+  // function signatures
+  //------------------------------------
+
+  void AnalyzeFromNtuples( );
+
 
  private:
 
+  TChain *tuple;
 
 };
 

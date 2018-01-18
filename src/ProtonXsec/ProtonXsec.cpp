@@ -9,32 +9,84 @@
 //#############################################################################
 
 #include "ProtonXsec.h"
+
 #include "../Selection/EventSelector.h"
 #include "../Selection/BeamSelector.h"
 
-#include <iostream>
+
+//=============================================================================
+// MAIN
+//=============================================================================
+
+int main( ){
 
 
-ProtonXsec::ProtonXsec(){}
+  //--------------------------------------------------------------------------
+  // Run ROOT in batch mode
+  //--------------------------------------------------------------------------
+
+  TROOT theRoot("theRoot","root for HARP Analysis");
+  gROOT->SetBatch(true);
 
 
-int ProtonXsec::testFunction(){
+  //--------------------------------------------------------------------------
+  // ROOT Style Settings
+  //--------------------------------------------------------------------------
+  
+  gStyle->SetOptStat(0000);
+  gStyle->SetOptFit(0000);
+  gStyle->SetOptTitle(0);
+  gStyle->SetFillColor(0);
+  gStyle->SetPadColor(0);
+  gStyle->SetCanvasColor(0);
+  gStyle->SetStatColor(0);
+  gStyle->SetTitleColor(0);
+  gStyle->SetPadBorderMode(0);
+  gStyle->SetFrameBorderMode(0);
+  gStyle->SetCanvasBorderMode(0);
+  gStyle->SetPalette(18,0);
+  gStyle->SetPaperSize(20,26);
+
+  //gRandom->SetSeed(0);
+
+
+  //--------------------------------------------------------------------------
+  // Create a ProtonXsec object and call main analysis function
+  //--------------------------------------------------------------------------
+
+  ProtonXsec *protonXsec = new ProtonXsec( );
+
+  protonXsec->AnalyzeFromNtuples();
+  
+  return 0;
+
+  
+} // end main() 
+
+
+//=============================================================================
+// Constructors
+//=============================================================================
+
+ProtonXsec::ProtonXsec( ) : LArIATAnalysis( ) { }
+
+
+
+//=============================================================================
+// AnalyzeFromNtuples
+//=============================================================================
+
+void ProtonXsec::AnalyzeFromNtuples(){
 
   std::cout << "I calculate the p-Ar cross section! \n";
   
   EventSelector *ES = new EventSelector();
   std::cout << ES->classifyEvent( 4 ) << std::endl;
   std::cout << ES->classifyEvent( 7 ) << std::endl;
-  return 0;
+
+  bookNtuple( tuple );
 
 }
 
 
-int main(){
 
-  ProtonXsec protonXsec;
-  protonXsec.testFunction();
-  
-  return 0;
-  
-}
