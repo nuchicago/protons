@@ -14,8 +14,8 @@ vpath %.cpp src/Selection src/Utilities
 
 CXX := g++
 CPPFLAGS := $(foreach path,$(shell root-config --incdir),-I$(path))
-CXXFLAGS := $(filter-out -I%,$(shell root-config --cflags)) -I$(BHEP)/include -I$(ROOTSYS)/include \
-            -I$(GSL_INC) -Isrc/Selection -Isrc/Utilities 
+CXXFLAGS := $(filter-out -I%,$(shell root-config --cflags)) -I$(ROOTSYS)/include \
+            -Isrc/Selection -Isrc/Utilities 
 
 all: bin
 
