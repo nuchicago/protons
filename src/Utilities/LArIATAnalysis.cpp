@@ -79,7 +79,7 @@ void openNtupleFiles( char* file, TChain* &tuple ){
     for( int i = 0; i < numFiles; i++ )
     {
       files->getline( buffer, 500 );
-      sprintf( words, "%s/analysis", buffer ); 
+      sprintf( words, "%s/anatree", buffer ); 
       tuple->Add( words, 0 );
       std::cout << "        ntuple " << i+1 << " : " << words << std::endl; 
     }

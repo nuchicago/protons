@@ -88,6 +88,10 @@ void ProtonXsec::AnalyzeFromNtuples(){
   std::cout << ES->classifyEvent( 4 ) << std::endl;
   std::cout << ES->classifyEvent( 7 ) << std::endl;
 
+  char filebuffer[100] = "";
+  char* file = filebuffer;
+
+  openNtupleFiles(file, tuple);
   bookNtuple( tuple );
 
 }
