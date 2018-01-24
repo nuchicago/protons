@@ -1,3 +1,7 @@
 full_anaTree.root
 mcblah_histos.root
 small_anaTree.root
+*.o
+.DS_Store
+bin
+lib
