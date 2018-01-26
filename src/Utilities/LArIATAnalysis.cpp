@@ -59,7 +59,7 @@ LArIATAnalysis::LArIATAnalysis( char* jobOptionsFile ){
 // openNtupleFiles() -- opens input root files and returns TChain object
 //                      (just DATA or just MC)
 //=============================================================================
-void openNtupleFiles( char* file, TChain* &tuple ){ 
+void LArIATAnalysis::openNtupleFiles( char* file, TChain* &tuple ){ 
 
   std::cout << std::endl;
   std::cout << "#### Open Files." << std::endl;
