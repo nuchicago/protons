@@ -14,7 +14,7 @@ make
 
 # From points.C ----> modules
 
-*MC Analzyer should take the following blocks of code from the root macro:
+* MC Analzyer should take the following blocks of code from the root macro:
 	* Block A: the geant 4 loop where we fill truth curves
 	* Block D: deciding whether or not entries into the num are signal or background
 	* Block F: deciding whether or not entries into the denom are signal or background
