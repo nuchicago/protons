@@ -84,16 +84,23 @@ void ProtonXsec::AnalyzeFromNtuples(){
 
   std::cout << "I calculate the p-Ar cross section! \n";
   
-  EventSelector *ES = new EventSelector();
-  std::cout << ES->classifyEvent( 4 ) << std::endl;
-  std::cout << ES->classifyEvent( 7 ) << std::endl;
+  //EventSelector *ES = new EventSelector();
+  //std::cout << ES->classifyEvent( 4 ) << std::endl;
+  //std::cout << ES->classifyEvent( 7 ) << std::endl;
 
-  char filebuffer[100] = "";
+  char filebuffer[100] = "Ntuples.txt";
   char* file = filebuffer;
 
   openNtupleFiles(file, tuple);
   bookNtuple( tuple );
+  if (tuple == 0) return;
+   //Long64_t nentries = tuple->GetEntriesFast();
+   
+   // ## event loop ##
+   for (Long64_t jentry=0; jentry<25;jentry++) {
 
+      printEvent(tuple,jentry);
+  }
 }
 
 
