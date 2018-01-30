@@ -5,16 +5,23 @@
 #include <TStyle.h>
 #include <TCanvas.h>
 
-// ### don't go more than 100 char on the width ---------------------------------------------------|
+// ### don't go more than 110 char on the width -------------------------------------------------------------|
 TH1D *hNumPts = new TH1D("hNumPts", "Number of spts inside the TPC", 50, 0, 2000);
 TH1D *hDistanceBetweenPoints = new TH1D("hDistanceBetweenPoints", "dist between pts", 25, 0, .1);
+TH2D *hdistvske = new TH2D("hdistvske", "dist btwn pts vs ke", 1000, 0, .1, 20, 0, 1000);
 TH1D *hfirstx = new TH1D("hfirstx", "dense first x", 100, 0, 50);
 TH1D *hfirsty = new TH1D("hfirsty", "dense first x", 80,  0, 40);
 TH1D *hfirstz = new TH1D("hfirstz", "dense first z", 50, 0, 10);
 TH1D *hdedx = new TH1D("hdedx", "dedx", 500, 0, 50);
 TH1D *hintke = new TH1D("hintke", "int ke", 20, 0, 1000);
 TH1D *hincke = new TH1D("hincke", "inc ke", 20, 0, 1000);
+TH1D *h2incke = new TH1D("h2incke", "inc ke", 20, 0, 1000);
 TH1D *hxs    = new TH1D("hxs",    "xs",     20, 0, 1000);
+
+TH1D *mintke = new TH1D("mintke", "int ke", 20, 0, 1000);
+TH1D *mincke = new TH1D("mincke", "inc ke", 20, 0, 1000);
+TH1D *mxs = new TH1D("mxs", "xs", 20, 0, 1000);
+
 
 TH1D *sDistanceBetweenSlabs = new TH1D("sDistanceBetweenSlabs", "distance between slabs", 100, 0,5);
 TH1D *sdedx = new TH1D("sdedx", "slab dedx", 100, 0,   50);
@@ -30,6 +37,7 @@ TH1D *sincke = new TH1D("sincke", "slab inc ke", 20, 0, 1000);
 TH1D *sintke = new TH1D("sintke", "slab int ke", 20, 0, 1000);
 TH1D *sxs    = new TH1D("sxs",    "slab xs",     20, 0, 1000);
 
+TH2D *slab_vs_dense_intke = new TH2D("slab_vs_dense_intke", "slab vs dense int ke", 20, 0, 1000, 20, 0, 1000);
 TH1D *ratio_int = new TH1D("ratio_int", "interaction ratio", 20, 0, 1000);
 TH1D *ratio_inc = new TH1D("ratio_inc", "intcident ratio",   20, 0, 1000);
 TH1D *ratio_xs  = new TH1D("ratio_xs",  "xs ratio",          20, 0, 1000);
@@ -38,17 +46,35 @@ TH2D *ahh = new TH2D("ahh", ":/", 100, 0, 2, 100, 0, 100);
 
 TH1D *RDSptAngle = new TH1D("RDSptAngle", "Angle Between Spts", 1000, 0, 10);
 
+TH1D *hreco_incke = new TH1D("hreco_incke", "incident ke", 20, 0, 1000);
+TH1D *hreco_incke_signal = new TH1D("hreco_incke_signal", "incident ke (signal)", 20, 0, 1000);
+TH1D *hreco_folded_incke_signal = new TH1D("hreco_folded_incke_signal", "incident ke (signal)", 20, 0, 1000);
+TH1D *hreco_unfolded_incke_signal = new TH1D("hreco_unfolded_incke_signal", "incident ke (signal)", 20, 0, 1000);
+TH1D *hreco_incke_background = new TH1D("hreco_incke_background", "incident ke (background)", 20, 0, 1000);
+TH1D *hreco_intke = new TH1D("hreco_intke", "interacting ke", 20, 0, 1000);
+TH1D *hreco_intke_signal = new TH1D("hreco_intke_signal", "interacting ke (signal)", 20, 0, 1000);
+TH1D *hreco_folded_intke_signal = new TH1D("hreco_folded_intke_signal", "interacting ke (signal)", 20, 0, 1000);
+TH1D *hreco_unfolded_intke_signal = new TH1D("hreco_unfolded_intke_signal", "interacting ke (signal)", 20, 0, 1000);
+TH1D *hreco_intke_background = new TH1D("hreco_intke_background", "interacting ke (background)", 20, 0, 1000);
 
+TH1D *hreco_intke_eff = new TH1D("hreco_int_eff", "interacting selection efficiency", 20, 0, 1000);
+TH1D *hreco_incke_eff = new TH1D("hreco_inc_eff", "incident selection efficiency", 20, 0, 1000);
 
+TH2D *hreco_unfolding_matrix=new TH2D("hreco_unfolding_matrix","energy unfolding matrix",20,0,1000,20,0,1000);
+TH2D *hreco_unfolding_matrix_normalized=new TH2D("hreco_unfolding_matrix_normalized","energy unfolding matrix",20,0,1000,20,0,1000);
+
+TH1D *hreco_xs = new TH1D("hreco_xs", "p-ar inelastic xs", 20, 0, 1000);
 
 double mass = 938.57;
 double z = 0.03;
 double z2 = .5;
+double z3 = .1;
 double rho = 1.3954;                   // ## g/cm3
 double molar_mass = 39.95;                    // ## g/mol
 double N_A = 6.022 * pow(10, 23);      // ## num/mol
 
 double recip_num_density = molar_mass / (rho * z * N_A); // ## cm2/num
+double dense_recip_num_density = molar_mass / (rho * z3 * N_A); // ## cm2/num
 double sparse_recip_num_density = molar_mass / (rho * z2 * N_A); // ## cm2/num
 double barn = pow(10, -24);
 
@@ -64,7 +90,7 @@ int nTopology2 = 0;
 int nTopology3 = 0;
 int nTopology4 = 0;
 
-bool print = true;
+bool print = false;
 bool event_slection_print  = false;
 bool geant4_print = false;
 bool num_matching_print = false;
@@ -87,6 +113,12 @@ void points::Loop()
       double intx = 0;
       double inty = 0;
       double intz = 0;
+      double int_ke = -1;
+
+      bool g4_int = false;
+      double g4_intx = -99;
+      double g4_inty = -99;
+      double g4_intz = -99;
 
       double initial_ke = 0;
       int num_pts_inTPC = 0;
@@ -99,13 +131,36 @@ void points::Loop()
       std::vector<double> true_slab_xpos;
       std::vector<double> true_slab_ypos;
       std::vector<double> true_slab_zpos;
+      std::vector<double> true_slab_ke;
 
       for(int g4part = 0; g4part < geant_list_size; g4part++){
         if((*process_primary)[g4part] != 1){continue;}
         if(geant4_print){
           std::cout << "dense spt loop " << (*NTrTrajPts)[g4part] << std::endl;
         }
+
+        for(int nint = 0; nint < (*InteractionPoint).size(); nint++){
+          if((*InteractionPointType)[nint] == 13){
+            g4_intx = (*MidPosX)[g4part][(*InteractionPoint)[nint]];
+            g4_inty = (*MidPosY)[g4part][(*InteractionPoint)[nint]];
+            g4_intz = (*MidPosZ)[g4part][(*InteractionPoint)[nint]];
+            g4_int = true;
+            //std::cout<<"found inelastic outside loop\n";
+            //std::cout<<"\t("<<g4_intx<<", "<<g4_inty<<", "<<g4_intz<<")\n";
+          }//<--End if the interaction is inelastic
+        }//<--End loop over all interactions (could be 0!)
+
+
+
         // ## dense ##
+        double g4_proj_dist = 0;
+        double prev_g4_proj_dist = 0;
+        int ndense_slab = 1;
+        double last_dense_slabx = -99;
+        double last_dense_slaby = -99;
+        double last_dense_slabz = -99;
+        double last_dense_slabke = -99;
+
         for(int pt = 1; pt < (*NTrTrajPts)[g4part]; pt++){
           double xpos = (*MidPosX)[g4part][pt];
           double ypos = (*MidPosY)[g4part][pt];
@@ -143,6 +198,8 @@ void points::Loop()
             hDistanceBetweenPoints->Fill(dist_between_points);
             hdedx->Fill(de_dx);
             hincke->Fill(ke);
+            h2incke->Fill(ke, dist_between_points/z);
+            hdistvske->Fill(dist_between_points, ke);
             num_entries_dense++; TotDenseEntries++;
             for(int nint = 0; nint < (*InteractionPoint).size(); nint++){
               if(pt == (*InteractionPoint)[nint]){
@@ -151,16 +208,70 @@ void points::Loop()
                   nG4Interactions++;
                   g4_interaction = true;
                   intx = xpos;inty = ypos;intz = zpos;
-                  std::cout << "\t\t\tinelastic! " << pt << std::endl;
-                  std::cout<<"\t\t\t\tx,y,z: "<<prev_xpos<<", "<<prev_ypos<<", "<<prev_zpos<<std::endl;
-                  std::cout<<"\t\t\t\tx,y,z: "<<xpos<<", "<<ypos<<", "<<zpos<<std::endl;
+                  int_ke = prev_ke;
+                  //std::cout << "\t\t\tinelastic! " << pt << std::endl;
+                  //std::cout<<"\t\t\t\tx,y,z: "<<prev_xpos<<", "<<prev_ypos<<", "<<prev_zpos<<std::endl;
+                  //std::cout<<"\t\t\t\tx,y,z: "<<xpos<<", "<<ypos<<", "<<zpos<<std::endl;
                   dense_int = true;
                   hintke->Fill(prev_ke);
-                }
-              }
-            }
+                }//<--End if the interaction is inelastic
+              }//<--End if the point we're looking at is the interaction point
+            }//<--End loop over all interactions (could be 0!)
+
+            // ## using .1cm slabs ##
+            prev_g4_proj_dist = g4_proj_dist;
+            g4_proj_dist += dist_between_points; 
+            //std::cout<<"prev spt total distance: "<<prev_g4_proj_dist<<std::endl;
+            //std::cout<<"dense spt total distance: "<<g4_proj_dist<<std::endl; 
+            //std::cout<<"next slab: "<<ndense_slab*z3<<std::endl;
+            if(prev_g4_proj_dist < ndense_slab*z3 && g4_proj_dist > ndense_slab*z3){
+              double g4_vx = xpos - prev_xpos;
+              double g4_vy = ypos - prev_ypos;
+              double g4_vz = zpos - prev_zpos;
+              double g4_r = ndense_slab*z3;
+              double g4_A = pow(g4_vx,2) + pow(g4_vy,2) + pow(g4_vz,2);  
+              double g4_B = 2*(prev_xpos*g4_vx + prev_ypos*g4_vy + prev_zpos*g4_vz);
+              double g4_C = pow(prev_g4_proj_dist,2) - pow(g4_r,2);
+              double g4_t = (-1*g4_B + pow( pow(g4_B,2) - 4*g4_A*g4_C, .5))/(2*g4_A);
+              double dense_slab_x = prev_xpos + g4_t*g4_vx;
+              double dense_slab_y = prev_ypos + g4_t*g4_vy;
+              double dense_slab_z = prev_zpos + g4_t*g4_vz;
+              double dense_ke_slope = (ke - prev_ke) / (g4_proj_dist - prev_g4_proj_dist);
+              double dense_slab_ke = dense_ke_slope*(g4_r - prev_g4_proj_dist) + prev_ke;
+              last_dense_slabx = dense_slab_x;
+              last_dense_slaby = dense_slab_y;
+              last_dense_slabz = dense_slab_z;
+              last_dense_slabke = dense_slab_ke;
+              mincke->Fill(dense_slab_ke);
+              //if(g4_int){
+              //  double dist_to_int = sqrt(pow(dense_slab_x - g4_intx, 2) + 
+              //                            pow(dense_slab_y - g4_inty, 2) + 
+              //                            pow(dense_slab_z - g4_intz, 2)); 
+              //  //std::cout<<"distance to interaction: "<<dist_to_int<<std::endl;
+              //  //std::cout<<"\tp0: ("<<prev_xpos<<", "<<prev_ypos<<", "<<prev_zpos<<")\n";
+              //  //std::cout<<"\tke: "<<prev_ke<<std::endl;
+              //  //std::cout<<"\tp1: ("<<xpos<<", "<<ypos<<", "<<zpos<<")\n";
+              //  //std::cout<<"\tke: "<<ke<<std::endl;
+              //  //std::cout<<"\tslab pt: ("<<dense_slab_x<<", "<<dense_slab_y<<", "<<dense_slab_z<<")\n";
+              //  //std::cout<<"\tslab ke: "<<dense_slab_ke<<std::endl;
+              //  //std::cout<<std::endl;
+              //  if(dist_to_int < .115){
+              //    std::cout<<"\t\t\t\tfilling interacting histo\n";
+              //    mintke->Fill(dense_slab_ke);
+              //  }
+              //}//<--End if there was an inelastic interaction in this event
+              ndense_slab++;
+            }//<--End if these two g4 spts surround a .1cm slab
           }//<---End if tpc
         }//<---End spt loop
+        if(g4_int){
+          double dist_to_int = sqrt(pow(last_dense_slabx - g4_intx, 2) + 
+                                    pow(last_dense_slaby - g4_inty, 2) + 
+                                    pow(last_dense_slabz - g4_intz, 2)); 
+          if(g4_intz > 1 && g4_intz < 90){
+            mintke->Fill(last_dense_slabke);
+          }
+        }//<--End if there was an inelastic interaction in this event
         // ### using slabs ###
         //int inslabs = 0;
         double total_slab_distance = 0;
@@ -174,6 +285,7 @@ void points::Loop()
                                 pow(1000*(*SlapY)[slab], 2) +
                                 pow(1000*(*SlapZ)[slab], 2) );
           double slab_ke = sqrt( pow(slab_p, 2) + pow(mass, 2) ) - mass;
+          double zero_protection = 0;
           if(slab_x > 0   && slab_x < 47.5 && 
              slab_y > -20 && slab_y < 20   && 
              slab_z > 0   && slab_z < 90){
@@ -183,6 +295,7 @@ void points::Loop()
                                              pow(1000*(*SlapY)[slab-1], 2) +
                                              pow(1000*(*SlapZ)[slab-1], 2) ); 
               double slab_previous_ke = sqrt(pow(slab_previous_p,2)+pow(mass,2)) - mass;
+              zero_protection = slab_previous_ke;
               double slab_de = abs(slab_ke - slab_previous_ke);
               double slab_dx = sqrt( pow(slab_x - (*SlabX)[slab-1], 2) +
                                      pow(slab_y - (*SlabY)[slab-1], 2) +
@@ -200,7 +313,14 @@ void points::Loop()
             sypos->Fill(slab_y);
             szpos->Fill(slab_z);
             // ## getting ke vars ##
-            sincke->Fill(slab_ke);
+            if(slab_ke){
+              sincke->Fill(slab_ke);
+              true_slab_ke.push_back(slab_ke);
+            }
+            if(!slab_ke){
+              sincke->Fill(zero_protection);
+              true_slab_ke.push_back(zero_protection);
+            }
             TotSlabEntries++;
           }//<---End if in tpc
         }//<---End slab loop
@@ -226,17 +346,34 @@ void points::Loop()
           //std::cout << "last slab position: " << (*SlabX)[inslabs-1] << "\t\t" 
           //                                    << (*SlabY)[inslabs-1] << "\t\t"
           //                                    << (*SlabZ)[inslabs-1] << "\t\t" << std::endl;
-          double dist_penult = sqrt( pow(intx - (*SlabX)[inslabs-1], 2) +
-                                     pow(inty - (*SlabY)[inslabs-1], 2) +
-                                     pow(intz - (*SlabZ)[inslabs-1], 2) );
-          if(inslabs && dist_penult < 1){
-            double slab_int_p = sqrt( pow(1000*(*SlapX)[inslabs-1], 2) +
-                                      pow(1000*(*SlapY)[inslabs-1], 2) +
-                                      pow(1000*(*SlapZ)[inslabs-1], 2) );
-            double slab_int_ke = sqrt( pow(slab_int_p, 2) + pow(mass, 2)) - mass;
-            sintke->Fill(slab_int_ke);   
-          }//<---End if inelastic interaction 
-        }
+
+          //double dist_penult = sqrt( pow(intx - (*SlabX)[inslabs-1], 2) +
+          //                           pow(inty - (*SlabY)[inslabs-1], 2) +
+          //                           pow(intz - (*SlabZ)[inslabs-1], 2) );
+          //if(inslabs && dist_penult < 1){
+          //  double slab_int_p = sqrt( pow(1000*(*SlapX)[inslabs-1], 2) +
+          //                            pow(1000*(*SlapY)[inslabs-1], 2) +
+          //                            pow(1000*(*SlapZ)[inslabs-1], 2) );
+          //  double slab_int_ke = sqrt( pow(slab_int_p, 2) + pow(mass, 2)) - mass;
+          //  sintke->Fill(slab_int_ke);   
+          //}//<---End if inelastic interaction 
+          if(true_slab_ke[inslabs-1]){
+            sintke->Fill(true_slab_ke[inslabs-1]);
+          }
+          else{
+            sintke->Fill(true_slab_ke[inslabs-2]);
+          }
+          slab_vs_dense_intke->Fill(true_slab_ke[inslabs-1], int_ke);
+          //if(!true_slab_ke[inslabs-1]){
+          //  std::cout<<"dense ke: "<<int_ke<<std::endl;
+          //  std::cout<<"slab ke: "<<true_slab_ke[inslabs-1]<<std::endl;
+          //  std::cout<<"prev slab ke: "<<true_slab_ke[inslabs-2]<<std::endl;
+          //  std::cout<<std::endl;
+          //}
+
+        }//<--End if this event had an inelastic interaction
+
+
       }//<---End geant particle loop
       hNumPts->Fill(num_pts_inTPC);
 
@@ -285,7 +422,6 @@ void points::Loop()
       // # track loop #
       for(int rtrack = 0; rtrack < ntracks_reco; rtrack++){
         if(rtrack == reco_primary){
-          std::cout<<"t1 debug\n";
           // ## primary spacepoint loop ##
           for(int rspt = 1; rspt < (*ntrack_hits)[rtrack]-1; rspt++){
             double prim_x = (*track_xpos)[rtrack][rspt];
@@ -332,7 +468,6 @@ void points::Loop()
           double end_track_dist = 0;
           double end_track_dedx_sum = 0;
           double end_track_counter = 0;
-          std::cout<<"calo obj loop"<<std::endl;
           for(int calo_pt = (*col_track_hits)[rtrack]; calo_pt > 0; calo_pt--){
             if(end_track_dist > 2.5){continue;}
             end_track_dist += (*col_track_pitch_hit)[rtrack][calo_pt];
@@ -343,6 +478,8 @@ void points::Loop()
           if(end_track_dedx_mean < 13){ // need to make this number a variable at some point
             missing_bragg++;
           }
+
+
 
 
         }//<---End if primary  
@@ -386,6 +523,9 @@ void points::Loop()
       // ### (still a part of inelastic event selection, just putting the pieces together) ###
       bool interacting_candidate;
       int candidate_spt = 999;
+      double candidate_xpos = 999;
+      double candidate_ypos = 999;
+      double candidate_zpos = 999;
       std::vector<int> potential_interaction_pts;
       // # topology 3, 4
       if(branches.size()){
@@ -412,6 +552,9 @@ void points::Loop()
         interacting_candidate = true;
         if(potential_interaction_pts[i] < candidate_spt){
           candidate_spt = potential_interaction_pts[i];
+          candidate_xpos = (*track_xpos)[reco_primary][potential_interaction_pts[i]];
+          candidate_ypos = (*track_ypos)[reco_primary][potential_interaction_pts[i]];
+          candidate_zpos = (*track_zpos)[reco_primary][potential_interaction_pts[i]];
         }
       }
       // # topology 2
@@ -420,6 +563,9 @@ void points::Loop()
           nTopology2++;
           interacting_candidate = true;
           candidate_spt = (*ntrack_hits)[reco_primary] - 1;
+          candidate_xpos = (*col_track_x)[reco_primary][(*col_track_hits)[reco_primary]-1];
+          candidate_ypos = (*col_track_y)[reco_primary][(*col_track_hits)[reco_primary]-1];
+          candidate_zpos = (*col_track_z)[reco_primary][(*col_track_hits)[reco_primary]-1];
         }
         else{
           interacting_candidate = false;
@@ -430,18 +576,22 @@ void points::Loop()
       // ### Comparing interaction candidate position to truth info ###
       // ### if the int candidate is within a certain distance of a true inelastic interaction ###
       // ### then, pass a label to the histo filling (singal or background) ###
+      bool signal = false;
       if(interacting_candidate){ 
         nRecoCandidates++;
-        bool signal;
-        double reco_x = (*track_xpos)[reco_primary][candidate_spt];
-        double reco_y = (*track_ypos)[reco_primary][candidate_spt];
-        double reco_z = (*track_zpos)[reco_primary][candidate_spt];
-        std::cout<<"I found a potential interaction here\n";
-        std::cout<<"\t\t("<<reco_x<<", "<<reco_y<<", "<<reco_z<<")\n";
+        //bool signal = false;
+        //double reco_x = (*track_xpos)[reco_primary][candidate_spt];
+        //double reco_y = (*track_ypos)[reco_primary][candidate_spt];
+        //double reco_z = (*track_zpos)[reco_primary][candidate_spt];
+        double reco_x = candidate_xpos;
+        double reco_y = candidate_ypos;
+        double reco_z = candidate_zpos;
+        //std::cout<<"I found a potential interaction here\n";
+        //std::cout<<"\t\t("<<reco_x<<", "<<reco_y<<", "<<reco_z<<")\n";
         // mark as signal or background ...
         if(g4_interaction){
-          std::cout<<"\nthere was an inelastic yeah?"<<std::endl;
-          std::cout<<"\t\t("<<intx<<", "<<inty<<", "<<intz<<")\n";
+          //std::cout<<"\nthere was an inelastic yeah?"<<std::endl;
+          //std::cout<<"\t\t("<<intx<<", "<<inty<<", "<<intz<<")\n";
           double reco_x = (*track_xpos)[reco_primary][candidate_spt];
           double reco_y = (*track_ypos)[reco_primary][candidate_spt];
           double reco_z = (*track_zpos)[reco_primary][candidate_spt];
@@ -449,20 +599,20 @@ void points::Loop()
                                     + pow(reco_y-inty,2)
                                     + pow(reco_z-intz,2) );
           if(dist_reco_g4 < 2){
-            std::cout<<"signal event!\n";
+            //std::cout<<"signal event!\n";
             signal = true;
             nRecoSignalEvts++;
             // pass a label to histo filling
           }
           else{
-            std::cout<<"background event!\n";
+            //std::cout<<"background event!\n";
             signal = false;
             nRecoBckgrdEvts++;
             // pass a label to histo filling
           }
         }//<--End if flag an interaction
         else{
-          std::cout<<"background event!\n";
+          //std::cout<<"background event!\n";
           signal = false;
           nRecoBckgrdEvts++;
           // pass a label to histo filling
@@ -525,14 +675,14 @@ void points::Loop()
           calo_slab_ypos.push_back(calo_slab_y);
           calo_slab_zpos.push_back(calo_slab_z);
           calo_slab_KE.push_back(calo_slab_ke);
-        }
+        }//<--End if this calo obj and the next step surround a slab
         calo_ke -= calo_de;
-      }
+      }//<---End loop over reco calo objects to get slab information
       
       // ### MC ONLY ###
       // ### taking the slabs that will build incident distribution and comparing to mc ###
       // ### then pass labels for signal/background distributions ###
-      std::cout<<"\n``````````````````\n";
+      //std::cout<<"\n``````````````````\n";
       //std::cout<<"number of true slabs: "<<inslabs<<std::endl;
       //std::cout<<"number of calo slabs: "<<calo_slab_KE.size()<<std::endl;
       std::vector<int> calo_slab_signal(calo_slab_KE.size(), 0);
@@ -596,17 +746,92 @@ void points::Loop()
           }
           if(calo_slab_signal[calo_slab-1] == 1){
             //std::cout<<"\t\t\tthis slab is not surrounded but the previous one was\n";
-            if(min_upstream_slab < 1){calo_slab_signal[calo_slab] = 1; calo_slab_counter++;}
+            if(min_upstream_slab < .5){calo_slab_signal[calo_slab] = 1; calo_slab_counter++;}
           }
         }//<--End if not surrounded
-      }
-      std::cout<<"number of true slabs: "<<inslabs<<std::endl;
-      std::cout<<"number of calo slabs: "<<calo_slab_KE.size()<<std::endl;
-      std::cout<<"number of signal calo slabs: "<<calo_slab_counter<<std::endl;
+      }//<---End loop on calo level slabs
 
       // ### MORE HISTOGRAM FILLING ###
       // ### Take calo slabs and take interaction point candidates ###
       // ### use to fill histograms appropriately ###
+
+      // ## getting which slab will be used for interactions ##
+      int calo_int_slab = 999;
+      if(interacting_candidate){
+        //double int_candidate_x = (*track_xpos)[reco_primary][candidate_spt];
+        //double int_candidate_y = (*track_ypos)[reco_primary][candidate_spt];
+        //double int_candidate_z = (*track_zpos)[reco_primary][candidate_spt];
+        double int_candidate_x = candidate_xpos;
+        double int_candidate_y = candidate_ypos;
+        double int_candidate_z = candidate_zpos;
+        // loop over slabs to find slab closest to interaction candidate
+        double min_dist_int = 99;
+        for(int calo_slab = 0; calo_slab < calo_slab_KE.size(); calo_slab++){
+          double calo_slab_x = calo_slab_xpos[calo_slab];  
+          double calo_slab_y = calo_slab_ypos[calo_slab];  
+          double calo_slab_z = calo_slab_zpos[calo_slab];  
+          double dist_int_slab = sqrt( pow(int_candidate_x - calo_slab_x, 2) 
+                                     + pow(int_candidate_y - calo_slab_y, 2) 
+                                     + pow(int_candidate_z - calo_slab_z, 2) );
+          if(calo_slab_z < int_candidate_z){
+            if(dist_int_slab < min_dist_int){
+              min_dist_int = dist_int_slab;
+              calo_int_slab = calo_slab;
+            }
+          }//<--End if this slab is upstream of int
+        }//<--End calo slab loop
+        //std::cout<<"\n]]]]]]]]]]]]]]]\n";
+        //std::cout<<"found possible interaction\n";
+        //std::cout<<"\tint slab: "<<calo_int_slab<<std::endl;
+        //std::cout<<"\tdist btwn int candidate and closest slab: "<<min_dist_int<<std::endl;
+      }//<---End if interaction candidate
+
+      // ## incident slabs ## 
+      int ninc_entries = 0;
+      for(int calo_slab = 1; calo_slab < calo_slab_KE.size(); calo_slab++){
+        if(calo_slab > calo_int_slab){continue;}//<--stop after interaction slab 
+        //std::cout<<"\tincident entry: "<<std::endl;
+        //std::cout<<"\t\tke: "<<calo_slab_KE[calo_slab]<<std::endl;
+        //std::cout<<"\t\tsignal? "<<calo_slab_signal[calo_slab]<<std::endl;
+        hreco_incke->Fill(calo_slab_KE[calo_slab]);
+        if(calo_slab_signal[calo_slab]){
+          hreco_incke_signal->Fill(calo_slab_KE[calo_slab]); 
+          hreco_unfolding_matrix->Fill(calo_slab_KE[calo_slab], true_slab_ke[calo_slab-1]);
+          ninc_entries++;
+        }
+        if(!calo_slab_signal[calo_slab]){
+          hreco_incke_background->Fill(calo_slab_KE[calo_slab]);
+        }
+        if(calo_slab == calo_int_slab){
+          //std::cout<<"\tinteraction energy: "<<calo_slab_KE[calo_slab]<<std::endl;
+          // ###### need to decide what to do with interaction pts far away from slab
+          // ###### likely a feature of differences between reco spts and calo objs :/
+          // ## also need to check on non-physical entries (negative ?)
+          // ### should probably also just grab any non terminating protons as interactions...
+          hreco_intke->Fill(calo_slab_KE[calo_slab]);
+          if(signal){
+            hreco_intke_signal->Fill(calo_slab_KE[calo_slab]); 
+          }
+          if(!signal){
+            hreco_intke_background->Fill(calo_slab_KE[calo_slab]);
+          }
+        }//<-- End if this is the interacting slab
+      }//<--End calo slab loop
+
+      //std::cout<<"unfolding debugging\n";
+      //std::cout<<"\tnumber of true slabs: "<<inslabs<<std::endl;
+      //std::cout<<"\tnumber of inc entries: "<<ninc_entries<<std::endl;
+      //for(int calo_slab = 0; calo_slab < calo_slab_KE.size(); calo_slab++){
+      //  if(calo_slab > calo_int_slab){continue;}
+      //  if(!calo_slab_signal[calo_slab]){continue;}
+      //  hreco_unfolding
+      //}
+      //for(int true_slab = 0; true_slab < inslabs; true_slab++){
+      //  //std::cout<<"\t\ttrue pt: ("<<true_slab_xpos[true_slab]<<", " 
+      //  //                           <<true_slab_ypos[true_slab]<<", "
+      //  //                           <<true_slab_zpos[true_slab]<<")\n";
+      //}
+      //std::cout<<std::endl;
 
 
    }//<---End tree event loop
@@ -625,8 +850,8 @@ void points::Loop()
 
    // ## xs calculation ##
    for(int iBin = 0; iBin < hintke->GetNbinsX(); iBin++){
-    if(hincke->GetBinContent(iBin) == 0){continue;}
-    double ratio   = 1.*hintke->GetBinContent(iBin) / hincke->GetBinContent(iBin);  
+    if(h2incke->GetBinContent(iBin) == 0){continue;}
+    double ratio   = 1.*hintke->GetBinContent(iBin) / h2incke->GetBinContent(iBin);  
     double temp_xs = ratio * recip_num_density; 
     double xs      = temp_xs / barn;
 
@@ -634,8 +859,8 @@ void points::Loop()
     double num = hintke->GetBinContent(iBin);
     if(num == 0){num = 1;}
     double term1 = num_err/num;
-    double dem_err = pow(hincke->GetBinContent(iBin), .5);
-    double dem = hincke->GetBinContent(iBin);
+    double dem_err = pow(h2incke->GetBinContent(iBin), .5);
+    double dem = h2incke->GetBinContent(iBin);
     if(dem == 0){dem =1;}
     double term2 = dem_err/dem;
     double totalError = temp_xs*pow(pow(term1,2) + pow(term2,2), 0.5)/barn;//*recip_num_density*barn;
@@ -644,6 +869,28 @@ void points::Loop()
     hxs->SetBinContent(iBin, xs); 
     hxs->SetBinError(iBin,totalError);
    }
+
+   for(int iBin = 0; iBin < mintke->GetNbinsX(); iBin++){
+    if(mincke->GetBinContent(iBin) == 0){continue;}
+    double ratio   = 1.*mintke->GetBinContent(iBin) / mincke->GetBinContent(iBin);  
+    double temp_xs = ratio * dense_recip_num_density; 
+    double xs      = temp_xs / barn;
+
+    double num_err = pow(mintke->GetBinContent(iBin), .5);
+    double num = mintke->GetBinContent(iBin);
+    if(num == 0){num = 1;}
+    double term1 = num_err/num;
+    double dem_err = pow(mincke->GetBinContent(iBin), .5);
+    double dem = mincke->GetBinContent(iBin);
+    if(dem == 0){dem =1;}
+    double term2 = dem_err/dem;
+    double totalError = temp_xs*pow(pow(term1,2) + pow(term2,2), 0.5)/barn;//*recip_num_density*barn;
+
+    //std::cout <<"xs: " << xs << " +- " << totalError << std::endl;
+    mxs->SetBinContent(iBin, xs); 
+    mxs->SetBinError(iBin,totalError);
+   }
+
    for(int iBin = 0; iBin < sintke->GetNbinsX(); iBin++){
     if(sincke->GetBinContent(iBin) == 0){continue;}
     double ratio   = 1.*sintke->GetBinContent(iBin) / sincke->GetBinContent(iBin);  
@@ -682,17 +929,104 @@ void points::Loop()
    //std::cout << "Total Slabs Entries: " << TotSlabEntries  << std::endl;
    //std::cout << "ratio: " << normalization_ratio << std::endl;
 
+
+
+    std::cout<<"xs calculation using observables and corrections...\n";
+    // ## folded signal distributions ##
+    for(int iBin = 0; iBin < hreco_intke->GetNbinsX(); iBin++){
+      double total = hreco_intke->GetBinContent(iBin);
+      double background = hreco_intke_background->GetBinContent(iBin);
+      hreco_folded_intke_signal->SetBinContent(iBin, total-background); 
+    }
+    for(int iBin = 0; iBin < hreco_incke->GetNbinsX(); iBin++){
+      double total = hreco_incke->GetBinContent(iBin);
+      double background = hreco_incke_background->GetBinContent(iBin);
+      hreco_folded_incke_signal->SetBinContent(iBin, total-background); 
+    }
+
+    // ## unfolding matrix normalization ##
+    for(int iBin = 0; iBin <hreco_incke->GetNbinsX(); iBin++){
+      int column_total = 0;
+      for(int jBin = 0; jBin < hreco_unfolding_matrix->GetNbinsX(); jBin++){
+        column_total += hreco_unfolding_matrix->GetBinContent(iBin, jBin);
+      }
+      if(!column_total){continue;}
+      for(int jBin = 0; jBin < hreco_unfolding_matrix_normalized->GetNbinsX(); jBin++){
+        double normalized_value = hreco_unfolding_matrix->GetBinContent(iBin, jBin) / column_total;
+        hreco_unfolding_matrix_normalized->SetBinContent(iBin, jBin, normalized_value);
+      }
+    }
+
+    // ## unfolding signal distributions ##
+    for(int iBin = 0; iBin < hreco_unfolding_matrix_normalized->GetNbinsX(); iBin++){
+      int n_int_entries = hreco_folded_intke_signal->GetBinContent(iBin);
+      int n_inc_entries = hreco_folded_incke_signal->GetBinContent(iBin);
+      for(int jBin = 0; jBin < hreco_unfolding_matrix_normalized->GetNbinsY(); jBin++){
+        double weight = hreco_unfolding_matrix_normalized->GetBinContent(iBin, jBin);
+        double int_value = n_int_entries * weight;
+        double inc_value = n_inc_entries * weight;
+        hreco_unfolded_intke_signal->AddBinContent(jBin, int_value);
+        hreco_unfolded_incke_signal->AddBinContent(jBin, inc_value);
+      }
+    }
+
+    // ## epsilon curves ##
+    for(int iBin = 0; iBin < hreco_intke->GetNbinsX(); iBin++){
+      if(sintke->GetBinContent(iBin)){
+        double int_eff = hreco_unfolded_intke_signal->GetBinContent(iBin) / sintke->GetBinContent(iBin);
+        hreco_intke_eff->SetBinContent(iBin, int_eff);
+      }
+      if(sincke->GetBinContent(iBin)){
+        double inc_eff = hreco_unfolded_incke_signal->GetBinContent(iBin) / sincke->GetBinContent(iBin);
+        hreco_incke_eff->SetBinContent(iBin, inc_eff);
+      }
+    }
+
+    // ## putting the pieces together ##
+    for(int iBin = 0; iBin < hreco_unfolded_intke_signal->GetNbinsX(); iBin++){
+      if(hreco_unfolded_incke_signal->GetBinContent(iBin) == 0){continue;}
+      // num:   (N_int - Background_int)*U_ij * 1/eps
+      double num = hreco_unfolded_intke_signal->GetBinContent(iBin) / hreco_intke_eff->GetBinContent(iBin);
+      if(num == 0){num = 1;}
+      // denom: (N_inc - Background_inc)*U_ij * 1/eps
+      double dem = hreco_unfolded_incke_signal->GetBinContent(iBin) / hreco_incke_eff->GetBinContent(iBin);
+      if(dem == 0){dem =1;}
+
+      // # ratio #
+      double ratio = num / dem;
+      double temp_xs = ratio * sparse_recip_num_density;
+      double xs = temp_xs / barn;
+    
+      // # error #
+      double num_err = pow(num, .5);
+      double term1 = num_err/num;
+      double dem_err = pow(sincke->GetBinContent(iBin), .5);
+      double term2 = dem_err/dem;
+      double totalError = temp_xs*pow(pow(term1,2) + pow(term2,2), 0.5)/barn;//*recip_num_density*barn;
+
+      //std::cout <<"xs: " << xs << " +- " << totalError << std::endl;
+      hreco_xs->SetBinContent(iBin, xs); 
+      hreco_xs->SetBinError(iBin,totalError);
+    }
+
+
+
    // ## writing histograms ##
    TFile myfile("spacepoints.root", "RECREATE");
    hNumPts->Write();
    hDistanceBetweenPoints->Write();
+   hdistvske->Write();
    hdedx->Write();
    hfirstx->Write();
    hfirsty->Write();
    hfirstz->Write();
    hintke->Write();
    hincke->Write();
+   h2incke->Write();
    hxs->Write();
+   mintke->Write();
+   mincke->Write();
+   mxs->Write();
    sDistanceBetweenSlabs->Write();
    sdedx->Write();
    sxpos->Write();
@@ -705,9 +1039,26 @@ void points::Loop()
    sincke->Write();
    sintke->Write();
    sxs->Write();
+   slab_vs_dense_intke->Write();
    ratio_int->Write();
    ratio_inc->Write();
    ratio_entries->Write();
    ahh->Write();
    RDSptAngle->Write();
+
+   hreco_incke->Write();
+   hreco_incke_signal->Write();
+   hreco_folded_incke_signal->Write();
+   hreco_unfolded_incke_signal->Write();
+   hreco_incke_background->Write();
+   hreco_intke->Write();
+   hreco_intke_signal->Write();
+   hreco_folded_intke_signal->Write();
+   hreco_unfolded_intke_signal->Write();
+   hreco_intke_background->Write();
+   hreco_intke_eff->Write();
+   hreco_incke_eff->Write();
+   hreco_unfolding_matrix->Write();
+   hreco_unfolding_matrix_normalized->Write();
+   hreco_xs->Write();
 }//<---End macro
