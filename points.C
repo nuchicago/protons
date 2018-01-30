@@ -6,6 +6,11 @@
 #include <TCanvas.h>
 
 // ### don't go more than 110 char on the width -------------------------------------------------------------|
+// ### ---- this was more just a note for me to try and make things more readable 
+// ### ---- didn't really succeed everywhere...
+
+
+// === Diagnositcs ===
 TH1D *hNumPts = new TH1D("hNumPts", "Number of spts inside the TPC", 50, 0, 2000);
 TH1D *hDistanceBetweenPoints = new TH1D("hDistanceBetweenPoints", "dist between pts", 25, 0, .1);
 TH2D *hdistvske = new TH2D("hdistvske", "dist btwn pts vs ke", 1000, 0, .1, 20, 0, 1000);
@@ -13,16 +18,21 @@ TH1D *hfirstx = new TH1D("hfirstx", "dense first x", 100, 0, 50);
 TH1D *hfirsty = new TH1D("hfirsty", "dense first x", 80,  0, 40);
 TH1D *hfirstz = new TH1D("hfirstz", "dense first z", 50, 0, 10);
 TH1D *hdedx = new TH1D("hdedx", "dedx", 500, 0, 50);
+
+
+// === Deliverables ===
 TH1D *hintke = new TH1D("hintke", "int ke", 20, 0, 1000);
 TH1D *hincke = new TH1D("hincke", "inc ke", 20, 0, 1000);
 TH1D *h2incke = new TH1D("h2incke", "inc ke", 20, 0, 1000);
 TH1D *hxs    = new TH1D("hxs",    "xs",     20, 0, 1000);
 
+// === Diagnostics ===
 TH1D *mintke = new TH1D("mintke", "int ke", 20, 0, 1000);
 TH1D *mincke = new TH1D("mincke", "inc ke", 20, 0, 1000);
 TH1D *mxs = new TH1D("mxs", "xs", 20, 0, 1000);
 
 
+// === Diagnostics ===
 TH1D *sDistanceBetweenSlabs = new TH1D("sDistanceBetweenSlabs", "distance between slabs", 100, 0,5);
 TH1D *sdedx = new TH1D("sdedx", "slab dedx", 100, 0,   50);
 TH1D *sxpos = new TH1D("sxpos", "slab xpos", 100, 0,   50);
@@ -33,19 +43,22 @@ TH1D *sfirstx = new TH1D("sfirstx", "slab first x", 100, 0, 50);
 TH1D *sfirsty = new TH1D("sfirsty", "slab first x", 80,  0, 40);
 TH1D *sfirstz = new TH1D("sfirstz", "slab first z", 50, 0, 10);
 
+// === Deliverables ===
 TH1D *sincke = new TH1D("sincke", "slab inc ke", 20, 0, 1000);
 TH1D *sintke = new TH1D("sintke", "slab int ke", 20, 0, 1000);
 TH1D *sxs    = new TH1D("sxs",    "slab xs",     20, 0, 1000);
 
+// === Diagnostics ===
 TH2D *slab_vs_dense_intke = new TH2D("slab_vs_dense_intke", "slab vs dense int ke", 20, 0, 1000, 20, 0, 1000);
 TH1D *ratio_int = new TH1D("ratio_int", "interaction ratio", 20, 0, 1000);
 TH1D *ratio_inc = new TH1D("ratio_inc", "intcident ratio",   20, 0, 1000);
 TH1D *ratio_xs  = new TH1D("ratio_xs",  "xs ratio",          20, 0, 1000);
 TH1D *ratio_entries = new TH1D("ratio_entries", "ratio incident entries", 100, 0, 2);
 TH2D *ahh = new TH2D("ahh", ":/", 100, 0, 2, 100, 0, 100);
-
 TH1D *RDSptAngle = new TH1D("RDSptAngle", "Angle Between Spts", 1000, 0, 10);
 
+
+// === Deliverables (xs ingredients!) ===
 TH1D *hreco_incke = new TH1D("hreco_incke", "incident ke", 20, 0, 1000);
 TH1D *hreco_incke_signal = new TH1D("hreco_incke_signal", "incident ke (signal)", 20, 0, 1000);
 TH1D *hreco_folded_incke_signal = new TH1D("hreco_folded_incke_signal", "incident ke (signal)", 20, 0, 1000);
@@ -56,19 +69,19 @@ TH1D *hreco_intke_signal = new TH1D("hreco_intke_signal", "interacting ke (signa
 TH1D *hreco_folded_intke_signal = new TH1D("hreco_folded_intke_signal", "interacting ke (signal)", 20, 0, 1000);
 TH1D *hreco_unfolded_intke_signal = new TH1D("hreco_unfolded_intke_signal", "interacting ke (signal)", 20, 0, 1000);
 TH1D *hreco_intke_background = new TH1D("hreco_intke_background", "interacting ke (background)", 20, 0, 1000);
-
 TH1D *hreco_intke_eff = new TH1D("hreco_int_eff", "interacting selection efficiency", 20, 0, 1000);
 TH1D *hreco_incke_eff = new TH1D("hreco_inc_eff", "incident selection efficiency", 20, 0, 1000);
-
 TH2D *hreco_unfolding_matrix=new TH2D("hreco_unfolding_matrix","energy unfolding matrix",20,0,1000,20,0,1000);
 TH2D *hreco_unfolding_matrix_normalized=new TH2D("hreco_unfolding_matrix_normalized","energy unfolding matrix",20,0,1000,20,0,1000);
-
 TH1D *hreco_xs = new TH1D("hreco_xs", "p-ar inelastic xs", 20, 0, 1000);
 
+// ## constants for xs measurement ##
 double mass = 938.57;
+// z: dense g4 spts. z2: sparse g4 spts and reco slab size. z3: trying to prove a point about slab size.
 double z = 0.03;
 double z2 = .5;
 double z3 = .1;
+
 double rho = 1.3954;                   // ## g/cm3
 double molar_mass = 39.95;                    // ## g/mol
 double N_A = 6.022 * pow(10, 23);      // ## num/mol
@@ -79,6 +92,7 @@ double sparse_recip_num_density = molar_mass / (rho * z2 * N_A); // ## cm2/num
 double barn = pow(10, -24);
 
 // ## dumb debug counters ##
+// ## these help make sure things are working properly ##
 int TotSlabEntries = 0;
 int TotDenseEntries = 0;
 int nG4Interactions = 0;
@@ -90,6 +104,7 @@ int nTopology2 = 0;
 int nTopology3 = 0;
 int nTopology4 = 0;
 
+// ## flags for whether or not we want to print things
 bool print = false;
 bool event_slection_print  = false;
 bool geant4_print = false;
@@ -107,7 +122,7 @@ void points::Loop()
       nb = fChain->GetEntry(jentry);   nbytes += nb;
       if(jentry%1000 == 0){std::cout<<"nentries: "<<jentry<<std::endl;}
       if(print){std::cout<<"\n---------------------new event-------------------------"<<std::endl;}
-      // ## printout vars ##
+      // ## geant 4 interaction variables ##
       bool dense_int = false;
       bool g4_interaction = false;
       double intx = 0;
@@ -133,6 +148,12 @@ void points::Loop()
       std::vector<double> true_slab_zpos;
       std::vector<double> true_slab_ke;
 
+
+	  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	  // ~~~~~~~~ Start Code Block A ~~~~~~~~~~~
+	  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      // ### MC ONLY ###
+	  // ### big geant 4 particle loop ###
       for(int g4part = 0; g4part < geant_list_size; g4part++){
         if((*process_primary)[g4part] != 1){continue;}
         if(geant4_print){
@@ -376,6 +397,15 @@ void points::Loop()
 
       }//<---End geant particle loop
       hNumPts->Fill(num_pts_inTPC);
+	  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	  // ~~~~~~~~~ End Code Block A ~~~~~~~~~~~~
+	  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+
+	  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	  // ~~~~~~~~ Start Code Block B ~~~~~~~~~~~
+	  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
       // ### Reconstructed Vars Below ###
       // ### Going to redo a lot of the work in the old macro ###
@@ -404,7 +434,14 @@ void points::Loop()
         std::cout << "earliest primary: " << reco_primary << std::endl; 
       }
 
+	  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	  // ~~~~~~~~~ End Code Block B ~~~~~~~~~~~~
+	  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+
+	  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	  // ~~~~~~~~ Start Code Block C ~~~~~~~~~~~
+	  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
       // ### Inelastic Event Selection ###
       // ### In principle this is a cleaner version of this code block ###
@@ -477,12 +514,10 @@ void points::Loop()
           double end_track_dedx_mean = end_track_dedx_sum / end_track_counter;
           if(end_track_dedx_mean < 13){ // need to make this number a variable at some point
             missing_bragg++;
-          }
-
-
-
+          }//<--End if this track had no bragg peak
 
         }//<---End if primary  
+
         if(rtrack != reco_primary){
           //~~~~~~~~~~~~std::cout<<"\n\n\nother tracks!!!!\n";
           // ## for each of these other tracks need to compare the start of this track ##
@@ -572,6 +607,15 @@ void points::Loop()
         }
       }
 
+	  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	  // ~~~~~~~~~ End Code Block C ~~~~~~~~~~~~
+	  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+	  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	  // ~~~~~~~~ Start Code Block D ~~~~~~~~~~~
+	  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
       // ### MC ONLY ###
       // ### Comparing interaction candidate position to truth info ###
       // ### if the int candidate is within a certain distance of a true inelastic interaction ###
@@ -619,6 +663,14 @@ void points::Loop()
         }
       }//<--End if flagged an interaction 
 
+	  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	  // ~~~~~~~~~ End Code Block D ~~~~~~~~~~~~
+	  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+	  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	  // ~~~~~~~~ Start Code Block E ~~~~~~~~~~~
+	  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
       // ### DENOMINATOR ###
       // ### also a cleaner version of this code block ###
@@ -678,6 +730,14 @@ void points::Loop()
         }//<--End if this calo obj and the next step surround a slab
         calo_ke -= calo_de;
       }//<---End loop over reco calo objects to get slab information
+
+	  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	  // ~~~~~~~~~ End Code Block E ~~~~~~~~~~~~
+	  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+	  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	  // ~~~~~~~~ Start Code Block F ~~~~~~~~~~~
+	  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       
       // ### MC ONLY ###
       // ### taking the slabs that will build incident distribution and comparing to mc ###
@@ -750,6 +810,15 @@ void points::Loop()
           }
         }//<--End if not surrounded
       }//<---End loop on calo level slabs
+
+	  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	  // ~~~~~~~~~ End Code Block F ~~~~~~~~~~~~
+	  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+	  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	  // ~~~~~~~~ Start Code Block G ~~~~~~~~~~~
+	  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
       // ### MORE HISTOGRAM FILLING ###
       // ### Take calo slabs and take interaction point candidates ###
@@ -833,6 +902,10 @@ void points::Loop()
       //}
       //std::cout<<std::endl;
 
+	  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	  // ~~~~~~~~~ End Code Block G ~~~~~~~~~~~~
+	  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 
    }//<---End tree event loop
 
@@ -847,6 +920,11 @@ void points::Loop()
     std::cout<<"\t\tTopology2: "<<nTopology2<<std::endl;
     std::cout<<"\t\tTopology3: "<<nTopology3<<std::endl;
     std::cout<<"\t\tTopology4: "<<nTopology4<<std::endl;
+
+
+	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	// ~~~~~~~~ Start Code Block H ~~~~~~~~~~~
+	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
    // ## xs calculation ##
    for(int iBin = 0; iBin < hintke->GetNbinsX(); iBin++){
@@ -1008,6 +1086,10 @@ void points::Loop()
       hreco_xs->SetBinContent(iBin, xs); 
       hreco_xs->SetBinError(iBin,totalError);
     }
+
+	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	// ~~~~~~~~~ End Code Block H ~~~~~~~~~~~~
+	// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
 
