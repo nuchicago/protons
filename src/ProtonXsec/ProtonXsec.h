@@ -11,8 +11,8 @@ class ProtonXsec : public LArIATAnalysis {
  public:
 
   ProtonXsec( );
+  ProtonXsec( char* jobOptionsFile );
  
-
   //------------------------------------
   // function signatures
   //------------------------------------
@@ -23,6 +23,11 @@ class ProtonXsec : public LArIATAnalysis {
  private:
 
   TChain *tuple;
+  TFile *outputFile;
+  TPostScript *ps;
+  int psPage;
+
+  long numEventsToProcess;
 
 };
 
