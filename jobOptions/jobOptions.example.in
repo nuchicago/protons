@@ -3,7 +3,6 @@
  Input File Lists - these are ASCII files that 
   contain lists of ntuple files to be processed.
 -----------------------------------------------------
-
 inputFiles files/MC_ntuples.dat
 
 -----------------------------------------------------
@@ -19,8 +18,13 @@ events 50
 -----------------------------------------------------
  Data Set description
 -----------------------------------------------------
+DataMC MC
 
-DataMC DATA
+
+
+-----------------------------------------------------
+ old HARP inputs
+-----------------------------------------------------
 target Be5
 targetThickness 2.0455
 targetDensity 1.2349
