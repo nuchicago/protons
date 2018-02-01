@@ -4,7 +4,7 @@ override LIBDIR := $(TOPDIR)$(LIBDIR)
 
 PROG = $(BINDIR)/ProtonXsec.exe
 
-LIBS  = -L$(ROOTSYS)/lib -lCore -lHist -lGraf -lGraf3d -lMatrix -lTree -lGpad -lPostscript -ldl \
+LIBS  = -L$(ROOTSYS)/lib -lCore -lHist -lGraf -lGraf3d -lMatrix -lTree -lGpad -lRIO -lPostscript -ldl \
 	-L$(LIBDIR) -lanalysisutils 
 
 INCLUDES = -I$(ROOTSYS)/include
