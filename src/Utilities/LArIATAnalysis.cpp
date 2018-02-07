@@ -208,9 +208,9 @@ void LArIATAnalysis::bookNtuple( TChain* tuple ){
   tuple->SetBranchAddress("ind_track_pitch_hit", &ind_track_pitch_hit, &b_ind_track_pitch_hit);
   tuple->SetBranchAddress("col_track_hits", &col_track_hits, &b_col_track_hits);
   tuple->SetBranchAddress("col_track_ke", &col_track_ke, &b_col_track_ke);
-  tuple->SetBranchAddress("col_track_x", &col_track_x, &b_col_track_x);
-  tuple->SetBranchAddress("col_track_y", &col_track_y, &b_col_track_y);
-  tuple->SetBranchAddress("col_track_z", &col_track_z, &b_col_track_z);
+  //tuple->SetBranchAddress("col_track_x", &col_track_x, &b_col_track_x);
+  //tuple->SetBranchAddress("col_track_y", &col_track_y, &b_col_track_y);
+  //tuple->SetBranchAddress("col_track_z", &col_track_z, &b_col_track_z);
   tuple->SetBranchAddress("col_track_wire", &col_track_wire, &b_col_track_wire);
   tuple->SetBranchAddress("col_track_dedx", &col_track_dedx, &b_col_track_dedx);
   tuple->SetBranchAddress("col_track_dqdx", &col_track_dqdx, &b_col_track_dqdx);

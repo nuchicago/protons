@@ -2,9 +2,12 @@
 #ifndef LARIATANALYSIS_H
 #define LARIATANALYSIS_H
 
-
+#include <vector>
+#include <iostream>
 #include "ROOTinclude.h"
 #include "UserInputs.h"
+
+
 
 
 class LArIATAnalysis {
@@ -36,6 +39,7 @@ class LArIATAnalysis {
 
   UserInputs *UI;
   int verbose;
+  bool isMC;
 
 
   //---------------------------------------------
@@ -94,86 +98,86 @@ class LArIATAnalysis {
   Double_t        efield[3];
   Int_t           t0;
   Int_t           ntracks_reco;
-  vector<int>     *track_primary;
-  vector<double>  *track_start_x;
-  vector<double>  *track_start_y;
-  vector<double>  *track_start_z;
-  vector<double>  *track_end_x;
-  vector<double>  *track_end_y;
-  vector<double>  *track_end_z;
-  vector<double>  *track_length;
-  vector<int>     *ntrack_hits;
-  vector<vector<double> > *track_xpos;
-  vector<vector<double> > *track_ypos;
-  vector<vector<double> > *track_zpos;
-  vector<int>     *ind_track_hits;
-  vector<double>  *ind_track_ke;
-  vector<vector<double> > *ind_track_wire;
-  vector<vector<double> > *ind_track_dedx;
-  vector<vector<double> > *ind_track_dqdx;
-  vector<vector<double> > *ind_track_rr;
-  vector<vector<double> > *ind_track_pitch_hit;
-  vector<int>     *col_track_hits;
-  vector<double>  *col_track_ke;
-  vector<vector<double> > *col_track_x;
-  vector<vector<double> > *col_track_y;
-  vector<vector<double> > *col_track_z;
-  vector<vector<double> > *col_track_wire;
-  vector<vector<double> > *col_track_dedx;
-  vector<vector<double> > *col_track_dqdx;
-  vector<vector<double> > *col_track_rr;
-  vector<vector<double> > *col_track_pitch_hit;
+  std::vector<int>     *track_primary;
+  std::vector<double>  *track_start_x;
+  std::vector<double>  *track_start_y;
+  std::vector<double>  *track_start_z;
+  std::vector<double>  *track_end_x;
+  std::vector<double>  *track_end_y;
+  std::vector<double>  *track_end_z;
+  std::vector<double>  *track_length;
+  std::vector<int>     *ntrack_hits;
+  std::vector<std::vector<double> > *track_xpos;
+  std::vector<std::vector<double> > *track_ypos;
+  std::vector<std::vector<double> > *track_zpos;
+  std::vector<int>     *ind_track_hits;
+  std::vector<double>  *ind_track_ke;
+  std::vector<std::vector<double> > *ind_track_wire;
+  std::vector<std::vector<double> > *ind_track_dedx;
+  std::vector<std::vector<double> > *ind_track_dqdx;
+  std::vector<std::vector<double> > *ind_track_rr;
+  std::vector<std::vector<double> > *ind_track_pitch_hit;
+  std::vector<int>     *col_track_hits;
+  std::vector<double>  *col_track_ke;
+  std::vector<std::vector<double> > *col_track_x;
+  std::vector<std::vector<double> > *col_track_y;
+  std::vector<std::vector<double> > *col_track_z;
+  std::vector<std::vector<double> > *col_track_wire;
+  std::vector<std::vector<double> > *col_track_dedx;
+  std::vector<std::vector<double> > *col_track_dqdx;
+  std::vector<std::vector<double> > *col_track_rr;
+  std::vector<std::vector<double> > *col_track_pitch_hit;
   Int_t           no_primaries;
   Int_t           geant_list_size;
   Double_t        primary_p;
-  vector<int>     *PDG;
-  vector<double>  *StartEnergy;
-  vector<double>  *StartPx;
-  vector<double>  *StartPy;
-  vector<double>  *StartPz;
-  vector<double>  *EndEnergy;
-  vector<double>  *EndPx;
-  vector<double>  *EndPy;
-  vector<double>  *EndPz;
-  vector<double>  *StartPointx;
-  vector<double>  *StartPointy;
-  vector<double>  *StartPointz;
-  vector<double>  *EndPointx;
-  vector<double>  *EndPointy;
-  vector<double>  *EndPointz;
-  vector<int>     *Process;
-  vector<int>     *NumberDaughters;
-  vector<int>     *Mother;
-  vector<int>     *TrackId;
-  vector<int>     *process_primary;
-  vector<string>  *G4Process;
-  vector<string>  *G4FinalProcess;
-  vector<int>     *NTrTrajPts;
+  std::vector<int>     *PDG;
+  std::vector<double>  *StartEnergy;
+  std::vector<double>  *StartPx;
+  std::vector<double>  *StartPy;
+  std::vector<double>  *StartPz;
+  std::vector<double>  *EndEnergy;
+  std::vector<double>  *EndPx;
+  std::vector<double>  *EndPy;
+  std::vector<double>  *EndPz;
+  std::vector<double>  *StartPointx;
+  std::vector<double>  *StartPointy;
+  std::vector<double>  *StartPointz;
+  std::vector<double>  *EndPointx;
+  std::vector<double>  *EndPointy;
+  std::vector<double>  *EndPointz;
+  std::vector<int>     *Process;
+  std::vector<int>     *NumberDaughters;
+  std::vector<int>     *Mother;
+  std::vector<int>     *TrackId;
+  std::vector<int>     *process_primary;
+  std::vector<string>  *G4Process;
+  std::vector<string>  *G4FinalProcess;
+  std::vector<int>     *NTrTrajPts;
   Int_t           NProtonDaughters;
   Int_t           NNeutronDaughters;
-  vector<double>  *NDTrTrajPts;
-  vector<int>     *DPdgCode;
-  vector<int>     *DStartEnergy;
-  vector<vector<double> > *MidPosX;
-  vector<vector<double> > *MidPosY;
-  vector<vector<double> > *MidPosZ;
-  vector<vector<double> > *MidPx;
-  vector<vector<double> > *MidPy;
-  vector<vector<double> > *MidPz;
-  vector<double>  *SlabX;
-  vector<double>  *SlabY;
-  vector<double>  *SlabZ;
-  vector<double>  *SlapX;
-  vector<double>  *SlapY;
-  vector<double>  *SlapZ;
-  vector<int>     *SlabN;
-  vector<double>  *SlabE;
+  std::vector<double>  *NDTrTrajPts;
+  std::vector<int>     *DPdgCode;
+  std::vector<int>     *DStartEnergy;
+  std::vector<std::vector<double> > *MidPosX;
+  std::vector<std::vector<double> > *MidPosY;
+  std::vector<std::vector<double> > *MidPosZ;
+  std::vector<std::vector<double> > *MidPx;
+  std::vector<std::vector<double> > *MidPy;
+  std::vector<std::vector<double> > *MidPz;
+  std::vector<double>  *SlabX;
+  std::vector<double>  *SlabY;
+  std::vector<double>  *SlabZ;
+  std::vector<double>  *SlapX;
+  std::vector<double>  *SlapY;
+  std::vector<double>  *SlapZ;
+  std::vector<int>     *SlabN;
+  std::vector<double>  *SlabE;
   Int_t           LastSlabInt;
-  vector<vector<double> > *DPMidPosX;
-  vector<vector<double> > *DPMidPosY;
-  vector<vector<double> > *DPMidPosZ;
-  vector<int>     *InteractionPoint;
-  vector<int>     *InteractionPointType;
+  std::vector<std::vector<double> > *DPMidPosX;
+  std::vector<std::vector<double> > *DPMidPosY;
+  std::vector<std::vector<double> > *DPMidPosZ;
+  std::vector<int>     *InteractionPoint;
+  std::vector<int>     *InteractionPointType;
   
   // List of branches
   TBranch        *b_run;   //!

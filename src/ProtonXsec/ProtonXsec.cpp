@@ -14,6 +14,7 @@
 #include "../Selection/BeamSelector.h"
 
 
+
 //=============================================================================
 // MAIN
 //=============================================================================
@@ -73,6 +74,7 @@ int main( int argc, char * argv[] ){
   //gRandom->SetSeed(0);
 
 
+
   //--------------------------------------------------------------------------
   // Create a ProtonXsec object and call main analysis function
   //--------------------------------------------------------------------------
@@ -94,6 +96,7 @@ int main( int argc, char * argv[] ){
 ProtonXsec::ProtonXsec( ) : LArIATAnalysis( ) { 
 
   tuple = NULL;
+  proton_hist = new TH1D("proton_hist","True False Proton Histogram",100,-3,3);
 
 }
 
@@ -101,6 +104,8 @@ ProtonXsec::ProtonXsec( ) : LArIATAnalysis( ) {
 ProtonXsec::ProtonXsec( char* jobOptionsFile ) : LArIATAnalysis( jobOptionsFile ) { 
 
   tuple = NULL;
+  proton_hist = new TH1D("proton_hist","True False Proton Histogram",100,-3,3);
+  
 
   //== Open list of ntuple files 
   if( UI->inputFilesSet ){
@@ -130,6 +135,7 @@ ProtonXsec::ProtonXsec( char* jobOptionsFile ) : LArIATAnalysis( jobOptionsFile 
   
   
   verbose = UI->verbose;
+  isMC = UI->isMC;
   
 }
 
@@ -140,11 +146,15 @@ ProtonXsec::ProtonXsec( char* jobOptionsFile ) : LArIATAnalysis( jobOptionsFile 
 
 void ProtonXsec::AnalyzeFromNtuples(){
 
+
   std::cout << "I calculate the p-Ar cross section! \n";
   
   EventSelector *ES = new EventSelector();
   std::cout << ES->classifyEvent( 4 ) << std::endl;
   std::cout << ES->classifyEvent( 7 ) << std::endl;
+
+
+  BeamSelector *BS = new BeamSelector();
   
   bookNtuple( tuple );
   if (tuple == 0) return;
@@ -155,8 +165,30 @@ void ProtonXsec::AnalyzeFromNtuples(){
   for (Long64_t jentry=0; jentry < numEventsToProcess && jentry < nentries; jentry++) {
     
     printEvent( tuple, jentry );
+    bool beam_result = BS->isProton( track_zpos, ntracks_reco, isMC);
+    if(beam_result){
+      std::cout << "is Proton" << std::endl;
+      proton_hist->Fill(1);
+
+    }
+    else{
+      std::cout << "not Proton" << std::endl;
+      proton_hist->Fill(-1);
+    }
+
+
   
   }
+  TCanvas *c = new TCanvas;
+
+  
+  TImage *img = TImage::Create();
+  proton_hist->Draw();
+  img->FromPad(c);
+  img->WriteImage("proton_hist.png");
+
+
+
 
 }
 

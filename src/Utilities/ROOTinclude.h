@@ -69,6 +69,7 @@ using std::vector;
 #include "TVector.h"
 #include "TArray.h"
 #include "TLegend.h"
+#include "TImage.h"
 #endif
 
 

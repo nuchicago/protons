@@ -20,8 +20,9 @@ class ProtonXsec : public LArIATAnalysis {
   void AnalyzeFromNtuples( );
 
 
- private:
 
+ private:
+  TH1D *proton_hist;
   TChain *tuple;
   TFile *outputFile;
   TPostScript *ps;
