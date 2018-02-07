@@ -167,12 +167,12 @@ void ProtonXsec::AnalyzeFromNtuples(){
     printEvent( tuple, jentry );
     bool beam_result = BS->isProton( track_zpos, ntracks_reco, isMC);
     if(beam_result){
-      std::cout << "is Proton" << std::endl;
+      std::cout << "is Proton\n" << std::endl;
       proton_hist->Fill(1);
 
     }
     else{
-      std::cout << "not Proton" << std::endl;
+      std::cout << "not Proton\n" << std::endl;
       proton_hist->Fill(-1);
     }
 

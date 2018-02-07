@@ -35,7 +35,7 @@ bool BeamSelector::isProton(std::vector<std::vector<double>> *track_zpos,int ntr
 
         if(print){
           std::cout<<"MC Beam Selection"<<std::endl;
-          std::cout<<"\n>>>>>>>>>>>>>>>>reco<<<<<<<<<<<<<<<<"<<std::endl;
+          std::cout<<">>>>>>>>>>>>>>>>reco<<<<<<<<<<<<<<<<"<<std::endl;
         }
         int reco_primary = -1;
         double first_reco_z = 99.;

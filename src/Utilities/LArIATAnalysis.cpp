@@ -309,7 +309,7 @@ void LArIATAnalysis::printEvent(TChain* tuple, Long64_t entry){
   nb = tuple->GetEntry(entry);
 
   
-  cout << "run = " << run << ", subrun = " << subrun << ", event = " << event << ", evt time = " << evttime << ", t0 = " << t0 << endl;
+  cout << "run = " << run << ", subrun = " << subrun << ", event = " << event << ", Ntracks = " << ntracks_reco << ", t0 = " << t0 << endl;
 
   
 
