@@ -8,7 +8,7 @@ mkdir lib
 make clean
 make
 make
-./bin/ProtonXsec jobOptions.example.in
+./bin/ProtonXsec.exe jobOptions/jobOptions.example.in
 
 
 # From points.C ----> modules
