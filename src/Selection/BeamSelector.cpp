@@ -26,7 +26,7 @@ BeamSelector::BeamSelector(){
 //=============================================================================
 // classsifyEvent()
 //=============================================================================
-bool BeamSelector::isProton(std::vector<std::vector<double>> *track_zpos,int ntracks_reco,  bool mc_mode){
+bool BeamSelector::isProton(std::vector<std::vector<double>> *track_zpos,int ntracks_reco,  bool mc_mode, double zPointCutoff){
 
       bool print = true;
 
@@ -44,7 +44,7 @@ bool BeamSelector::isProton(std::vector<std::vector<double>> *track_zpos,int ntr
           if(print){
             std::cout << "first z point: " << z1 << std::endl;
           }
-          if(z1 < first_reco_z && z1 < 2){
+          if(z1 < first_reco_z && z1 < zPointCutoff){
             first_reco_z = z1;
             reco_primary = rtrack;
           }

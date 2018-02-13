@@ -96,7 +96,8 @@ int main( int argc, char * argv[] ){
 ProtonXsec::ProtonXsec( ) : LArIATAnalysis( ) { 
 
   tuple = NULL;
-  proton_hist = new TH1D("proton_hist","True False Proton Histogram",100,-3,3);
+
+
 
 }
 
@@ -104,7 +105,6 @@ ProtonXsec::ProtonXsec( ) : LArIATAnalysis( ) {
 ProtonXsec::ProtonXsec( char* jobOptionsFile ) : LArIATAnalysis( jobOptionsFile ) { 
 
   tuple = NULL;
-  proton_hist = new TH1D("proton_hist","True False Proton Histogram",100,-3,3);
   
 
   //== Open list of ntuple files 
@@ -160,32 +160,66 @@ void ProtonXsec::AnalyzeFromNtuples(){
   if (tuple == 0) return;
 
   Long64_t nentries = tuple->GetEntriesFast();
+  TCanvas *c = new TCanvas;
+  TH1D *BeamSelHistMC = new TH1D("BeamSelHistMC","True False Proton Histogram: MC",100,-3,3);
+  BeamSelHistMC->GetYaxis()->SetTitle("Number of Events");
+  TH1D *BeamSelHistData = new TH1D("BeamSelHistData","True False Proton Histogram: Data",100,-3,3);
+  BeamSelHistData->GetYaxis()->SetTitle("Number of Events");
    
   // ## event loop ##
   for (Long64_t jentry=0; jentry < numEventsToProcess && jentry < nentries; jentry++) {
+    std::cout << "loading Entry" << jentry << std::endl;
+    Long64_t ientry = tuple->LoadTree(jentry);
+    if (ientry < 0){continue;}
+    Long64_t nb = 0;
+    nb = tuple->GetEntry(jentry);
     
-    printEvent( tuple, jentry );
-    bool beam_result = BS->isProton( track_zpos, ntracks_reco, isMC);
+    printEvent();
+    bool beam_result = BS->isProton( track_zpos, ntracks_reco, isMC, UI->zBeamCutoff);
     if(beam_result){
       std::cout << "is Proton\n" << std::endl;
-      proton_hist->Fill(1);
+      if(isMC){
+        BeamSelHistMC->Fill(1);
+      
+      }
+      else{BeamSelHistData->Fill(1);}
 
     }
     else{
       std::cout << "not Proton\n" << std::endl;
-      proton_hist->Fill(-1);
+      if(isMC){BeamSelHistMC->Fill(-1);}
+      else{BeamSelHistData->Fill(-1);}
+    }
+  }
+
+
+  
+  
+  
+  if(isMC){
+    c->cd();
+
+    BeamSelHistMC->Draw();
+
+
+    if(UI->rootOutputFileSet){
+       BeamSelHistMC->Write();
     }
 
+    TImage *img = TImage::Create();
+    img->FromPad(c);
+    img->WriteImage("BeamSelHistMC.png");}
+  else if (!(isMC)){BeamSelHistData->Draw();
+    c->cd();
 
-  
-  }
-  TCanvas *c = new TCanvas;
 
-  
-  TImage *img = TImage::Create();
-  proton_hist->Draw();
-  img->FromPad(c);
-  img->WriteImage("proton_hist.png");
+    if(UI->rootOutputFileSet){
+       BeamSelHistData->Write();
+    }
+
+    TImage *img = TImage::Create();
+    img->FromPad(c);
+    img->WriteImage("BeamSelHistData.png");}
 
 
 

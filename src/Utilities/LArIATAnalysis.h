@@ -21,7 +21,7 @@ class LArIATAnalysis {
   LArIATAnalysis( );
   LArIATAnalysis( char* jobOptionsFile );
 
-  void printEvent(TChain* tuple, Long64_t entry);
+  void printEvent();
 
  protected:
 

@@ -20,9 +20,10 @@ class ProtonXsec : public LArIATAnalysis {
   void AnalyzeFromNtuples( );
 
 
-
+  //TH1D *BeamSelHistMC;
+  //TH1D *BeamSelHistData;
  private:
-  TH1D *proton_hist;
+
   TChain *tuple;
   TFile *outputFile;
   TPostScript *ps;

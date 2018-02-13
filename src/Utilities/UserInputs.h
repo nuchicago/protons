@@ -47,6 +47,13 @@ class UserInputs {
   bool potTargetSet;
   int  potEmpty;
   bool potEmptySet;
+  
+
+  //== BeamSelect Values
+  bool zBeamCutoffSet;
+  double zBeamCutoff;
+
+
     
   //== target parameters
   char   *target;

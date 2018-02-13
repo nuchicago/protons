@@ -300,13 +300,10 @@ void LArIATAnalysis::setKinematicBinning( ){
 // printEvent( )
 //=============================================================================
 
-void LArIATAnalysis::printEvent(TChain* tuple, Long64_t entry){
+void LArIATAnalysis::printEvent(){
 
   
-  Long64_t ientry = tuple->LoadTree(entry);
-  if (ientry < 0) return;
-  Long64_t nb = 0;
-  nb = tuple->GetEntry(entry);
+
 
   
   cout << "run = " << run << ", subrun = " << subrun << ", event = " << event << ", Ntracks = " << ntracks_reco << ", t0 = " << t0 << endl;

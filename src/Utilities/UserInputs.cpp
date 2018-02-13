@@ -179,6 +179,8 @@ void UserInputs::initialize( ){
   protonNumGaus = 1;
   kaonNumGausSet = false;
   kaonNumGaus = 1;
+  zBeamCutoffSet = false;
+  zBeamCutoff = 2;
 
   useElectronVeto = true;
   electronVetoThresholdSet = false;
@@ -619,6 +621,11 @@ void UserInputs::readAnalysisCuts( ifstream *jobOptionsFile ){
   if( paramLookUp( jobOptionsFile, (char*)"kaonNumGaus" ) ){
     *jobOptionsFile >> kaonNumGaus;
     kaonNumGausSet = true;
+  }
+
+  if( paramLookUp( jobOptionsFile, (char*)"zBeamCutoff" ) ){
+    *jobOptionsFile >> zBeamCutoff;
+    zBeamCutoffSet = true;
   }
   
   if( paramLookUp( jobOptionsFile, (char*)"chi2Vertex4MatchCut" ) ){

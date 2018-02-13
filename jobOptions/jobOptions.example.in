@@ -6,6 +6,13 @@
 inputFiles files/MC_ntuples.dat
 
 -----------------------------------------------------
+Output File Lists - .root and PostScript
+----------------------------------------------------- 
+
+rootOutputFile files/XsecOutput.root
+psOutputFile files/XSecOutput.ps
+
+-----------------------------------------------------
  verbosity
 -----------------------------------------------------
 verbose 2
@@ -49,6 +56,8 @@ pdfReadFormat parameterization
 pionNumGaus 1
 protonNumGaus 1
 kaonNumGaus 1
+
+zBeamCutoff 2
 
 pidMethod probCut
 
