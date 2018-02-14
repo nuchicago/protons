@@ -1,0 +1,92 @@
+
+-----------------------------------------------------
+ Input File Lists - these are ASCII files that 
+  contain lists of ntuple files to be processed.
+-----------------------------------------------------
+inputFiles files/Data_ntuples.dat
+
+-----------------------------------------------------
+Output File Lists - .root and PostScript
+----------------------------------------------------- 
+
+rootOutputFile files/XsecOutput.root
+psOutputFile files/XSecOutput.ps
+
+-----------------------------------------------------
+ verbosity
+-----------------------------------------------------
+verbose 2
+
+-----------------------------------------------------
+ number of event to process
+-----------------------------------------------------
+events 50
+
+-----------------------------------------------------
+ Data Set description
+-----------------------------------------------------
+DataMC MC
+
+
+
+-----------------------------------------------------
+ old HARP inputs
+-----------------------------------------------------
+target Be5
+targetThickness 2.0455
+targetDensity 1.2349
+targetStartZ -10
+targetStopZ 10
+targetRadius 15
+
+potTarget 13074880
+potEmpty  1990400
+
+
+------------------------------------------------------
+ Particle ID and PDF files
+------------------------------------------------------
+
+tofPdfFile     ../../dataFiles/pid/tof_pdf/all_settings/tof_pdf_all_settings_tof_pdf_parameters_data.dat
+tofPdfFileBins ../../dataFiles/pid/tof_pdf/all_settings/tof_pdf_all_settings_tof_pdf_data.dat
+ckovPdfFile    ../../dataFiles/pid/ckov_pdf/Be5_pos8.9GeV/ckov_pdf_Be5_pos8.9GeV_Binary_ckov_pdf_bins_mctruth.dat
+
+pdfReadFormat parameterization
+
+pionNumGaus 1
+protonNumGaus 1
+kaonNumGaus 1
+
+zBeamCutoff 2
+
+pidMethod probCut
+
+pionProbCut 0.6
+protonProbCut 0.6
+
+includeKaons 0
+
+correctionMethod trackWeight
+
+multiplePass 0
+
+
+------------------------------------------------------
+ Yield correction files
+------------------------------------------------------
+
+reconEffFile            ../../dataFiles/reconEfficiency/all_settings/reconstruction_efficiency_all_settings_positives_totalRecon_VERTEX2.txt
+
+absorptionFilePions     ../../dataFiles/absorption/all_settings/absorption_all_settings_total_loss_piplus.txt
+absorptionFileProtons   ../../dataFiles/absorption/all_settings/absorption_all_settings_absorption_protons.txt
+absorptionFileKaons     ../../dataFiles/absorption/all_settings/absorption_all_settings_total_loss_kplus.txt
+
+tertiariesFilePions     ../../dataFiles/tertiaries/Be5_pos8.9GeV/forced_Binary/tertiary_Be5_pos8.9GeV_forced_Binary_piplus.txt
+tertiariesFileMuons     ../../dataFiles/tertiaries/Be5_pos8.9GeV/forced_Binary/tertiary_Be5_pos8.9GeV_forced_Binary_muplus.txt
+tertiariesFileProtons   ../../dataFiles/tertiaries/Be5_pos8.9GeV/forced_Binary/tertiary_Be5_pos8.9GeV_forced_Binary_protons.txt
+
+unfoldingFile2          ../../dataFiles/migration/Be5_pos8.9GeV/forced_Binary/momentum_migration_Be5_pos8.9GeV_forced_Binary_positives_mc_p2-ptrue.txt
+
+pidMatrixFile           ../../dataFiles/pid/eff_mig_matrix/Be5_pos8.9GeV/pid_eff_mig_Be5_pos8.9GeV_forced_Binary_tofData_ckovMCTruth.dat
+electronVetoFilePions   ../../dataFiles/pid/eveto/all_settings/pions_eff_ptrue.txt
+electronVetoFileProtons ../../dataFiles/pid/eveto/all_settings/protons_eff_ptrue.txt

@@ -165,21 +165,33 @@ void ProtonXsec::AnalyzeFromNtuples(){
   BeamSelHistMC->GetYaxis()->SetTitle("Number of Events");
   TH1D *BeamSelHistData = new TH1D("BeamSelHistData","True False Proton Histogram: Data",100,-3,3);
   BeamSelHistData->GetYaxis()->SetTitle("Number of Events");
+  TH2D *BeamPositionXY =  new TH2D("BeamPositionXY","Position of incoming particles",
+    20, 0, 80, 20, -40, 40);
+  BeamPositionXY->GetYaxis()->SetTitle("Y");
+  BeamPositionXY->GetXaxis()->SetTitle("X");
+
    
   // ## event loop ##
   for (Long64_t jentry=0; jentry < numEventsToProcess && jentry < nentries; jentry++) {
-    std::cout << "loading Entry" << jentry << std::endl;
+    
     Long64_t ientry = tuple->LoadTree(jentry);
     if (ientry < 0){continue;}
     Long64_t nb = 0;
     nb = tuple->GetEntry(jentry);
-    
+
+    int reco_primary = -1;
+    double first_reco_z = 99.;
     printEvent();
-    bool beam_result = BS->isProton( track_zpos, ntracks_reco, isMC, UI->zBeamCutoff);
+    bool beam_result = BS->isProton( track_zpos, ntracks_reco, isMC, UI->zBeamCutoff,
+     reco_primary, first_reco_z);
     if(beam_result){
       std::cout << "is Proton\n" << std::endl;
       if(isMC){
         BeamSelHistMC->Fill(1);
+
+        
+        BeamPositionXY->Fill((*track_xpos)[reco_primary][first_reco_z],
+          (*track_ypos)[reco_primary][first_reco_z]);
       
       }
       else{BeamSelHistData->Fill(1);}
@@ -205,10 +217,22 @@ void ProtonXsec::AnalyzeFromNtuples(){
     if(UI->rootOutputFileSet){
        BeamSelHistMC->Write();
     }
-
+    /*if(UI->psOutputFileSet){
+       BeamSelHistMC->Print(UI->psOutputFile);
+       BeamPositionXY->Print(UI->psOutputFile);
+    }*/
     TImage *img = TImage::Create();
     img->FromPad(c);
-    img->WriteImage("BeamSelHistMC.png");}
+    img->WriteImage("BeamSelHistMC.png");
+    BeamPositionXY->Draw("COLZ");
+    TImage *BeamXYimg = TImage::Create();
+    BeamXYimg->FromPad(c);
+    BeamXYimg->WriteImage("BeamXY.png");}
+
+  
+
+
+
   else if (!(isMC)){BeamSelHistData->Draw();
     c->cd();
 
@@ -216,6 +240,7 @@ void ProtonXsec::AnalyzeFromNtuples(){
     if(UI->rootOutputFileSet){
        BeamSelHistData->Write();
     }
+
 
     TImage *img = TImage::Create();
     img->FromPad(c);
