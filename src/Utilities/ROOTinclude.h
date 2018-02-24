@@ -22,6 +22,7 @@
 #include<time.h>
 #include<zlib.h>
 #include<algorithm>
+#include<vector>
 
 using std::cout;
 using std::cin;
