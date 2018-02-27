@@ -25,4 +25,5 @@ $(PROG) : $(OBJS)
 	$(CXX) -g -Wall -std=c++11 $(OBJS) $(LIBS) -o $(PROG)
 
 %.o : %.cpp
-	$(CXX) -g -Wall -std=c++11 -c $(INCLUDES) $<
+	$(CXX) -g -Wall -std=c++1y -c $(INCLUDES) $<
+	#$(CXX) -g -Wall -std=c++11 -c $(INCLUDES) $<

@@ -52,6 +52,8 @@ class UserInputs {
   //== BeamSelect Values
   bool zBeamCutoffSet;
   double zBeamCutoff;
+  bool zTPCCutoffSet;
+  double zTPCCutoff;
 
 
     

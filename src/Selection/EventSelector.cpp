@@ -28,6 +28,10 @@ int EventSelector::classifyEvent( int type ){
 
 }
 
+bool EventSelector::findInt(int ntracks, int primaryID) {
+  return true;
+}
+
 
 //#############################################################################
 //

@@ -346,7 +346,7 @@ void points::Loop()
           }//<---End if in tpc
         }//<---End slab loop
         snslb->Fill(inslabs);
-        //if(fmod(total_dense_dist,(int)total_dense_dist) < .05){
+        //if(fmod(total_dense_dist,(int)total_dense_dist) < .05){}
         if(geant4_print){
           std::cout << "dense total distance: " << total_dense_dist << std::endl;
           std::cout << "slab total distance: " << total_slab_distance << std::endl;

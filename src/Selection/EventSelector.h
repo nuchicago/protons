@@ -10,6 +10,7 @@ class EventSelector {
   EventSelector( );
  
   int classifyEvent( int type );
+  bool findInt(int ntracks, int primaryID);
 
   
  private:

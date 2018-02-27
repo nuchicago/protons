@@ -1,18 +1,35 @@
 
-#ifndef PROTONANALYZERMC_H
-#define PROTONANALYZERMC_H
+#ifndef PROTONXSEC_H
+#define PROTONXSEC_H
 
 
-class ProtonAnalyzerMC {
+#include "../Utilities/LArIATAnalysis.h"
+
+
+class ProtonAnalyzerMC : public LArIATAnalysis {
 
  public:
 
   ProtonAnalyzerMC( );
+  ProtonAnalyzerMC( char* jobOptionsFile );
  
-  int testFunction ();
+  //------------------------------------
+  // function signatures
+  //------------------------------------
 
+  void AnalyzeFromNtuples( );
+
+
+  //TH1D *BeamSelHistMC;
+  //TH1D *BeamSelHistData;
  private:
 
+  TChain *tuple;
+  TFile *outputFile;
+  TPostScript *ps;
+  int psPage;
+
+  long numEventsToProcess;
 
 };
 
