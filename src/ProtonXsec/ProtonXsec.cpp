@@ -60,15 +60,15 @@ int main( int argc, char * argv[] ){
   gStyle->SetOptStat(0000);
   gStyle->SetOptFit(0000);
   gStyle->SetOptTitle(0);
-  gStyle->SetFillColor(0);
+  //gStyle->SetFillColor(0);
   gStyle->SetPadColor(0);
   gStyle->SetCanvasColor(0);
-  gStyle->SetStatColor(0);
+  //gStyle->SetStatColor(0);
   gStyle->SetTitleColor(0);
   gStyle->SetPadBorderMode(0);
   gStyle->SetFrameBorderMode(0);
   gStyle->SetCanvasBorderMode(0);
-  gStyle->SetPalette(18,0);
+  //gStyle->SetPalette(18,0);
   gStyle->SetPaperSize(20,26);
 
   //gRandom->SetSeed(0);
@@ -134,7 +134,7 @@ ProtonXsec::ProtonXsec( char* jobOptionsFile ) : LArIATAnalysis( jobOptionsFile 
     numEventsToProcess = 100000000;
   
   
-  verbose = UI->verbose;
+  bool verbose = (UI->verbose > 0);
   isMC = UI->isMC;
   
 }
@@ -150,27 +150,41 @@ void ProtonXsec::AnalyzeFromNtuples(){
   std::cout << "I calculate the p-Ar cross section! \n";
   
   EventSelector *ES = new EventSelector();
-  std::cout << ES->classifyEvent( 4 ) << std::endl;
-  std::cout << ES->classifyEvent( 7 ) << std::endl;
-
 
   BeamSelector *BS = new BeamSelector();
   
-  bookNtuple( tuple );
+  bookNtuple( tuple , UI->isMC);
   if (tuple == 0) return;
 
   Long64_t nentries = tuple->GetEntriesFast();
-  TCanvas *c = new TCanvas;
-  TH1D *BeamSelHistMC = new TH1D("BeamSelHistMC","True False Proton Histogram: MC",100,-3,3);
+  TCanvas *c = new TCanvas("c","c",1000, 1000);
+
+
+  TH1D *BeamSelHistMC = new TH1D("BeamSelHistMC","Primary Track Identified for Event: MC",100,-3,3);
   BeamSelHistMC->GetYaxis()->SetTitle("Number of Events");
-  TH1D *BeamSelHistData = new TH1D("BeamSelHistData","True False Proton Histogram: Data",100,-3,3);
+  
+  TH1D *BeamSelHistData = new TH1D("BeamSelHistData","Primary Tracks Identified",100,-3,3);
   BeamSelHistData->GetYaxis()->SetTitle("Number of Events");
-  TH2D *BeamPositionXY =  new TH2D("BeamPositionXY","Position of incoming particles",
-    20, 0, 80, 20, -40, 40);
-  BeamPositionXY->GetYaxis()->SetTitle("Y");
-  BeamPositionXY->GetXaxis()->SetTitle("X");
+  BeamSelHistData->GetYaxis()->SetTitle("Number of Events");
+
+  TH1D *BeamToF = new TH1D("BeamToF","Incoming Particle TOF",20,-2,2);
+  BeamToF->GetXaxis()->SetTitle("ns");
+  BeamToF->GetYaxis()->SetTitle("Number of Events");
+
+  
+
+  TH2D *TrackPositionXY =  new TH2D("TrackPositionXY","Position of TPC track start",
+    20, 0, 47.5, 20, -20, 20);
+  TrackPositionXY->GetYaxis()->SetTitle("Y");
+  TrackPositionXY->GetXaxis()->SetTitle("X");
 
    
+
+  TH1D *BeamMomentum = new TH1D("BeamMomentum","Incoming Particle Momentum",20,300,700);
+  BeamMomentum->GetXaxis()->SetTitle("[MeV/c]");
+  BeamMomentum->GetYaxis()->SetTitle("Number of Events");
+
+
   // ## event loop ##
   for (Long64_t jentry=0; jentry < numEventsToProcess && jentry < nentries; jentry++) {
     
@@ -182,25 +196,34 @@ void ProtonXsec::AnalyzeFromNtuples(){
     int reco_primary = -1;
     double first_reco_z = 99.;
     printEvent();
-    bool beam_result = BS->isProton( track_zpos, ntracks_reco, isMC, UI->zBeamCutoff,
+    bool found_primary = BS->PrimaryTrack( track_zpos, ntracks_reco, UI->zBeamCutoff,
      reco_primary, first_reco_z);
-    if(beam_result){
-      std::cout << "is Proton\n" << std::endl;
+    
+    if(found_primary){
+      std::cout << "Found Primary\n" << std::endl;
       if(isMC){
-        BeamSelHistMC->Fill(1);
-
-        
-        BeamPositionXY->Fill((*track_xpos)[reco_primary][first_reco_z],
-          (*track_ypos)[reco_primary][first_reco_z]);
+        BeamSelHistMC->Fill(1);        
+        TrackPositionXY->Fill((*track_xpos)[reco_primary][0],
+          (*track_ypos)[reco_primary][0]);
       
       }
-      else{BeamSelHistData->Fill(1);}
+      else{//
+        BeamSelHistData->Fill(1);
+          TrackPositionXY->Fill((*track_xpos)[reco_primary][0],
+          (*track_ypos)[reco_primary][0]);
+
+          for (int wctrack = 0 ; wctrack < num_wctracks; wctrack++){
+          BeamMomentum->Fill(wctrk_momentum[wctrack]);
+          BeamToF->Fill(tofObject[wctrack]);}
+
+      }
 
     }
     else{
-      std::cout << "not Proton\n" << std::endl;
+      std::cout << "No Valid Primary \n" << std::endl;
       if(isMC){BeamSelHistMC->Fill(-1);}
       else{BeamSelHistData->Fill(-1);}
+
     }
   }
 
@@ -219,12 +242,12 @@ void ProtonXsec::AnalyzeFromNtuples(){
     }
     /*if(UI->psOutputFileSet){
        BeamSelHistMC->Print(UI->psOutputFile);
-       BeamPositionXY->Print(UI->psOutputFile);
+       TrackPositionXY->Print(UI->psOutputFile);
     }*/
     TImage *img = TImage::Create();
     img->FromPad(c);
     img->WriteImage("BeamSelHistMC.png");
-    BeamPositionXY->Draw("COLZ");
+    TrackPositionXY->Draw("COLZ");
     TImage *BeamXYimg = TImage::Create();
     BeamXYimg->FromPad(c);
     BeamXYimg->WriteImage("BeamXY.png");}
@@ -233,18 +256,42 @@ void ProtonXsec::AnalyzeFromNtuples(){
 
 
 
-  else if (!(isMC)){BeamSelHistData->Draw();
+  else if (!(isMC)){
     c->cd();
+    
+    
 
 
     if(UI->rootOutputFileSet){
-       BeamSelHistData->Write();
+
+    BeamSelHistData->Draw();
+    BeamSelHistData->Write();
+    TImage *img = TImage::Create();
+    img->FromPad(c);
+    img->WriteImage("BeamSelHistData.png");
+    
+    TrackPositionXY->Draw("COLZ");
+    TrackPositionXY->Write();
+    TImage *BeamXYimg = TImage::Create();
+    BeamXYimg->FromPad(c);
+    BeamXYimg->WriteImage("BeamXYData.png");
+    
+    BeamToF->Draw();
+    BeamToF->Write();
+    TImage *Beamtofimg = TImage::Create();
+    Beamtofimg->FromPad(c);
+    Beamtofimg->WriteImage("BeamToFData.png");
+
+    BeamMomentum->Draw();
+    BeamMomentum->Write();
+    TImage *BeamMomImg = TImage::Create();
+    BeamMomImg->FromPad(c);
+    BeamMomImg->WriteImage("BeamMomentum.png");
+
     }
 
 
-    TImage *img = TImage::Create();
-    img->FromPad(c);
-    img->WriteImage("BeamSelHistData.png");}
+}
 
 
 

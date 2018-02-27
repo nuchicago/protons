@@ -26,16 +26,16 @@ BeamSelector::BeamSelector(){
 //=============================================================================
 // classsifyEvent()
 //=============================================================================
-bool BeamSelector::isProton(std::vector<std::vector<double>> *track_zpos,int ntracks_reco,  bool mc_mode, 
+bool BeamSelector::PrimaryTrack(std::vector<std::vector<double>> *track_zpos,int ntracks_reco, 
   double zPointCutoff, int& reco_primary, double& first_reco_z){
 
       bool print = true;
 
 
-      if(mc_mode){
+      
 
         if(print){
-          std::cout<<"MC Beam Selection"<<std::endl;
+          std::cout<<"Primary Track Lookup"<<std::endl;
           std::cout<<">>>>>>>>>>>>>>>>reco<<<<<<<<<<<<<<<<"<<std::endl;
         }
 
@@ -53,10 +53,7 @@ bool BeamSelector::isProton(std::vector<std::vector<double>> *track_zpos,int ntr
         else{
           if(print){std::cout << "earliest primary: " << reco_primary << std::endl;} 
         return true;}
-      }
-      else{
-        std::cout<<"Beam Selection for data not available\n"<<std::endl;
-      return false;}
+      
 
 }
 

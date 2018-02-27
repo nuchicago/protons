@@ -1,0 +1,31 @@
+
+-----------------------------------------------------
+ Input File Lists - these are ASCII files that 
+  contain lists of ntuple files to be processed.
+-----------------------------------------------------
+inputFiles files/MC_ntuples.dat
+
+-----------------------------------------------------
+Output File Lists - .root and PostScript
+----------------------------------------------------- 
+
+rootOutputFile files/MCOutput.root
+psOutputFile files/MCOutput.ps
+
+-----------------------------------------------------
+ verbosity
+-----------------------------------------------------
+verbose 2
+
+-----------------------------------------------------
+ number of event to process
+-----------------------------------------------------
+events 50
+
+-----------------------------------------------------
+ Data Set description
+-----------------------------------------------------
+DataMC MC
+
+
+zTPCCutOff 2
