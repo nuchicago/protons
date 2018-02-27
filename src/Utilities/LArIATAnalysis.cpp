@@ -96,7 +96,7 @@ void LArIATAnalysis::openNtupleFiles( char* file, TChain* &tuple ){
 //===================================================================
 // booNtuple -- set the branch addresses for the current ntuple
 //===================================================================
-void LArIATAnalysis::bookNtuple( TChain* tuple ){
+void LArIATAnalysis::bookNtuple( TChain* tuple, bool isMC ){
 
   if( !tuple ){
     std::cout << "You did not supply an ntuple file!!" << std::endl;
@@ -177,8 +177,12 @@ void LArIATAnalysis::bookNtuple( TChain* tuple ){
   DPMidPosZ = 0;
   InteractionPoint = 0;
   InteractionPointType = 0;
+  num_wctracks = 0;
+
+
   
   tuple->SetMakeClass(1);
+  
   
   tuple->SetBranchAddress("run", &run, &b_run);
   tuple->SetBranchAddress("subrun", &subrun, &b_subrun);
@@ -267,6 +271,15 @@ void LArIATAnalysis::bookNtuple( TChain* tuple ){
   tuple->SetBranchAddress("DPMidPosZ", &DPMidPosZ, &b_DPMidPosZ);
   tuple->SetBranchAddress("InteractionPoint", &InteractionPoint, &b_InteractionPoint);
   tuple->SetBranchAddress("InteractionPointType", &InteractionPointType, &b_InteractionPointType);
+  if(!isMC){
+    tuple->SetBranchAddress("wctrk_momentum", &wctrk_momentum, &b_wctrk_momentum);
+    tuple->SetBranchAddress("wctrk_XFace", &wctrk_XFace, &b_wctrk_XFace);
+    tuple->SetBranchAddress("wctrk_YFace", &wctrk_YFace, &b_wctrk_YFace);
+    tuple->SetBranchAddress("wctrk_theta", &wctrk_theta, &b_wctrk_theta);
+    tuple->SetBranchAddress("wctrk_phi", &wctrk_phi, &b_wctrk_phi);
+    tuple->SetBranchAddress("num_wctracks", &num_wctracks, &b_num_wctracks);
+    tuple->SetBranchAddress("tofObject", &tofObject, &b_tofObject); }
+
   
 }
 
@@ -306,7 +319,7 @@ void LArIATAnalysis::printEvent(){
 
 
   
-  cout << "run = " << run << ", subrun = " << subrun << ", event = " << event << ", Ntracks = " << ntracks_reco << ", t0 = " << t0 << endl;
+  cout << "run = " << run << ", subrun = " << subrun << ", event = " << event << ", Ntracks = " << ntracks_reco << ", wctrk_momentum = " << wctrk_momentum[0] << endl;
 
   
 

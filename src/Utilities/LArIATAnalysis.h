@@ -26,7 +26,7 @@ class LArIATAnalysis {
  protected:
 
   void openNtupleFiles( char* file, TChain* &tuple ); 
-  void bookNtuple( TChain* tuple ); 
+  void bookNtuple( TChain* tuple , bool isMC); 
   
   void setKinematicBinning( );
 
@@ -178,6 +178,18 @@ class LArIATAnalysis {
   std::vector<std::vector<double> > *DPMidPosZ;
   std::vector<int>     *InteractionPoint;
   std::vector<int>     *InteractionPointType;
+
+  const static int max_num_wctracks = 3;
+  Int_t     num_wctracks;
+  Double_t  wctrk_momentum[max_num_wctracks];
+  Double_t  wctrk_XFace[max_num_wctracks];
+  Double_t  wctrk_YFace[max_num_wctracks];
+  Double_t  wctrk_theta[max_num_wctracks];
+  Double_t  wctrk_phi[max_num_wctracks];
+  Int_t     num_tof_objects;  
+  Double_t  tofObject[max_num_wctracks];
+
+
   
   // List of branches
   TBranch        *b_run;   //!
@@ -266,7 +278,14 @@ class LArIATAnalysis {
   TBranch        *b_DPMidPosY;   //!
   TBranch        *b_DPMidPosZ;   //!
   TBranch        *b_InteractionPoint;   //!
-  TBranch        *b_InteractionPointType;   //!
+  TBranch        *b_InteractionPointType;
+  TBranch        *b_wctrk_momentum;   //!
+  TBranch        *b_wctrk_XFace; 
+  TBranch        *b_wctrk_YFace; 
+  TBranch        *b_wctrk_theta;
+  TBranch        *b_wctrk_phi;  
+  TBranch        *b_num_wctracks;  //!
+  TBranch        *b_tofObject;   //!
   
 };
 
