@@ -113,17 +113,17 @@ ProtonAnalyzerMC::ProtonAnalyzerMC( char* jobOptionsFile ) : LArIATAnalysis( job
     exit(0);
   }
 
-  ////== Open output root file and postscript file
-  //if( UI->rootOutputFileSet && UI->psOutputFileSet ){
-  //  outputFile = new TFile( UI->rootOutputFile, "RECREATE" );
+  //== Open output root file and postscript file
+  if( UI->rootOutputFileSet && UI->psOutputFileSet ){
+    outputFile = new TFile( UI->rootOutputFile, "RECREATE" );
 
-  //  //ps = new TPostScript( UI->psOutputFile, 112 );
-  //  //ps->Range(26,18); 
-  //  //psPage = 1; 
-  //}
-  //else{
-  //  cout << endl << "#### No output files specified!!!!" << endl << endl;
-  //}
+    ps = new TPostScript( UI->psOutputFile, 112 );
+    ps->Range(26,18); 
+    psPage = 1; 
+  }
+  else{
+    cout << endl << "#### No output files specified!!!!" << endl << endl;
+  }
 
   //== number of events to process
   if( UI->numEventsToProcessSet )
@@ -168,10 +168,11 @@ void ProtonAnalyzerMC::AnalyzeFromNtuples() {
   EventSelector *ES = new EventSelector();
   BeamSelector *BS = new BeamSelector();
   
-  bookNtuple( tuple );
+  bookNtuple( tuple, true );
   if (tuple == 0) return;
 
   Long64_t nentries = tuple->GetEntriesFast();
+  TCanvas *c = new TCanvas("c","c",1000, 1000);
    
   // ## event loop ##
   for(Long64_t jentry=0; jentry < numEventsToProcess && jentry < nentries; jentry++) {
@@ -180,6 +181,8 @@ void ProtonAnalyzerMC::AnalyzeFromNtuples() {
     if (ientry < 0){continue;}
     Long64_t nb = 0;
     nb = tuple->GetEntry(jentry);
+
+    std::cout<<std::endl;
     printEvent();
 
     // ### Geant4 Information ###
@@ -409,7 +412,29 @@ void ProtonAnalyzerMC::AnalyzeFromNtuples() {
     }//<- skipping events that didn't pass isTPCPrimary 
 
     // ## grabbing interaction point ##
-    bool signal_candidate = ES->findInt(ntracks_reco, reco_primary);
+    //bool signal_candidate = ES->findInt(ntracks_reco, reco_primary);
+    //bool signal_candidate = ES->findInt(reco_primary, ntracks_reco,
+    //                                    //track_end_x, track_end_y, track_end_z);
+    //                                    ntrack_hits, track_xpos, track_ypos, track_zpos);
+    //                                    //col_track_hits, col_track_dedx, col_track_pitch_hit,
+    //                                    //col_track_x, col_track_y, col_track_z);
+    bool signal_candidate = ES->findInt(reco_primary, ntracks_reco, 
+                                        ntrack_hits, track_xpos, track_ypos, track_zpos,
+                                        track_end_x, track_end_y, track_end_z,
+                                        col_track_hits, col_track_dedx, col_track_pitch_hit,
+                                        col_track_x, col_track_y, col_track_z);
+
+  //bool findInt( int reco_primary, int &ntracks_reco, 
+  //      std::vector<double>* track_end_x, std::vector<double>* track_end_y, std::vector<double>* track_end_z,
+  //      std::vector<double>* ntrack_hits, std::vector<std::vector<double>>* track_xpos,
+  //      std::vector<std::vector<double>>* track_ypos, std::vector<std::vector<double>>* track_zpos,
+  //      std::vector<double>* col_track_hits, std::vector<std::vector<double>>* col_track_dedx,
+  //      std::vector<std::vector<double>>* col_track_pitch_hit, 
+  //      std::vector<std::vector<double>>* col_track_x, std::vector<std::vector<double>>* col_track_y,
+  //      std::vector<std::vector<double>>* col_track_z ) {
+
+
+
     if(signal_candidate) {
       std::cout << "found inealstic event.\n";
     }//<- End if we found a possible inelastic event
@@ -420,17 +445,19 @@ void ProtonAnalyzerMC::AnalyzeFromNtuples() {
 
 
   // ## write histos ##
-  //if(UI->rootOutputFileSet) {
-  //  hdedx->Write();
-  //  hintke->Write();
-  //  hincke->Write();
-  //  h2incke->Write();
-  //  hxs->Write();
-  //  sdedx->Write();
-  //  sintke->Write();
-  //  sincke->Write();
-  //  sxs->Write();
-  //}
+  if(UI->rootOutputFileSet) {
+    c->cd();
+    //hdedx->Draw();
+    hdedx->Write();
+    hintke->Write();
+    hincke->Write();
+    h2incke->Write();
+    hxs->Write();
+    sdedx->Write();
+    sintke->Write();
+    sincke->Write();
+    sxs->Write();
+  }
 
 }// End AnalyzeFromNtuples
 
