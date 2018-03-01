@@ -223,11 +223,11 @@ points::points(TTree *tree) : fChain(0)
 // used to generate this class and read the Tree.
    if (tree == 0) {
       //TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("anaTree.root");
-      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("mid_anaTree.root");
+      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("../files/small_anaTree.root");
       if (!f || !f->IsOpen()) {
-         f = new TFile("mid_anaTree.root");
+         f = new TFile("../files/small_anaTree.root");
       }
-      TDirectory * dir = (TDirectory*)f->Get("mid_anaTree.root:/anatree");
+      TDirectory * dir = (TDirectory*)f->Get("../files/small_anaTree.root:/anatree");
       dir->GetObject("anatree",tree);
 
    }

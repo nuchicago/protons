@@ -116,7 +116,8 @@ void points::Loop()
    Long64_t nentries = fChain->GetEntriesFast();
    Long64_t nbytes = 0, nb = 0;
    // ## event loop ##
-   for (Long64_t jentry=0; jentry<nentries;jentry++) {
+   //for (Long64_t jentry=0; jentry<nentries;jentry++) {
+   for (Long64_t jentry=0; jentry<10000;jentry++) {
       Long64_t ientry = LoadTree(jentry);
       if (ientry < 0) break;
       nb = fChain->GetEntry(jentry);   nbytes += nb;
@@ -636,9 +637,10 @@ void points::Loop()
         if(g4_interaction){
           //std::cout<<"\nthere was an inelastic yeah?"<<std::endl;
           //std::cout<<"\t\t("<<intx<<", "<<inty<<", "<<intz<<")\n";
-          double reco_x = (*track_xpos)[reco_primary][candidate_spt];
-          double reco_y = (*track_ypos)[reco_primary][candidate_spt];
-          double reco_z = (*track_zpos)[reco_primary][candidate_spt];
+
+          //double reco_x = (*track_xpos)[reco_primary][candidate_spt];
+          //double reco_y = (*track_ypos)[reco_primary][candidate_spt];
+          //double reco_z = (*track_zpos)[reco_primary][candidate_spt];
           double dist_reco_g4 = sqrt( pow(reco_x-intx,2)
                                     + pow(reco_y-inty,2)
                                     + pow(reco_z-intz,2) );

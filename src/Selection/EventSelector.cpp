@@ -28,7 +28,7 @@ int EventSelector::classifyEvent( int type ){
 
 }
 
-bool EventSelector::findInt(int reco_primary, Int_t &ntracks_reco, std::vector<int>* ntrack_hits, 
+double* EventSelector::findInt(double* candidate_array, int reco_primary, Int_t &ntracks_reco, std::vector<int>* ntrack_hits, 
                             std::vector<std::vector<double>>* track_xpos, std::vector<std::vector<double>>* track_ypos,
                             std::vector<std::vector<double>>* track_zpos, std::vector<double>* track_end_x,
                             std::vector<double>* track_end_y, std::vector<double>* track_end_z,
@@ -54,15 +54,15 @@ bool EventSelector::findInt(int reco_primary, Int_t &ntracks_reco, std::vector<i
   //std::cout<<"\t\t\tfirst hit x: "<<(*col_track_x)[reco_primary][0]<<std::endl;
   //return true;
 
-
-
+    // # return this #
+    //double candidate_array[4];
 
     // ### Inelastic Event Selection ###
     std::vector<std::vector<double>> branches;
     std::vector<std::vector<double>> kinks;
     int missing_bragg = 0;
-    double prim_endx = (*track_end_x)[reco_primary];
-    double prim_endy = (*track_end_y)[reco_primary];
+    //double prim_endx = (*track_end_x)[reco_primary];
+    //double prim_endy = (*track_end_y)[reco_primary];
     double prim_endz = (*track_end_z)[reco_primary];
     // # track loop #
     for(int rtrack = 0; rtrack < ntracks_reco; rtrack++){
@@ -80,15 +80,15 @@ bool EventSelector::findInt(int reco_primary, Int_t &ntracks_reco, std::vector<i
           double prim_next_z = (*track_zpos)[rtrack][rspt+1];
 
           // # calculating angle along the track #
-          double this_pt [] = {prim_x, prim_y, prim_z};
-          double last_pt [] = {prim_prev_x, prim_prev_y, prim_prev_z};
-          double next_pt [] = {prim_next_x, prim_next_y, prim_next_z};
+          //double this_pt [] = {prim_x, prim_y, prim_z};
+          //double last_pt [] = {prim_prev_x, prim_prev_y, prim_prev_z};
+          //double next_pt [] = {prim_next_x, prim_next_y, prim_next_z};
           double a_vec [] = {prim_x - prim_prev_x, prim_y - prim_prev_y, prim_z - prim_prev_z};
           double b_vec [] = {prim_next_x - prim_x, prim_next_y - prim_y, prim_next_z - prim_z};
           double a_dot_b = (a_vec[0]*b_vec[0]) + (a_vec[1]*b_vec[1]) + (a_vec[2]*b_vec[2]);
           double mag_a = sqrt( pow(a_vec[0],2) + pow(a_vec[1],2) + pow(a_vec[2],2));
           double mag_b = sqrt( pow(b_vec[0],2) + pow(b_vec[1],2) + pow(b_vec[2],2));
-          double denom = mag_a * mag_b;
+          //double denom = mag_a * mag_b;
           double theta = acos(a_dot_b / (mag_a*mag_b));
           if(TMath::IsNaN(theta)){theta = 0.;}
           //RDSptAngle->Fill(theta);
@@ -193,11 +193,15 @@ bool EventSelector::findInt(int reco_primary, Int_t &ntracks_reco, std::vector<i
     // # getting earliest of topology 1,3,4
     for(int i = 0; i < potential_interaction_pts.size(); i++){
       interacting_candidate = true;
+      candidate_array[0] = 1;
       if(potential_interaction_pts[i] < candidate_spt){
         candidate_spt = potential_interaction_pts[i];
         candidate_xpos = (*track_xpos)[reco_primary][potential_interaction_pts[i]];
         candidate_ypos = (*track_ypos)[reco_primary][potential_interaction_pts[i]];
         candidate_zpos = (*track_zpos)[reco_primary][potential_interaction_pts[i]];
+        candidate_array[1] = candidate_xpos;
+        candidate_array[2] = candidate_ypos;
+        candidate_array[3] = candidate_zpos;
       }
     }
     // # topology 2
@@ -205,21 +209,92 @@ bool EventSelector::findInt(int reco_primary, Int_t &ntracks_reco, std::vector<i
       if(missing_bragg && prim_endz < 88){
         //nTopology2++;
         interacting_candidate = true;
+        candidate_array[0] = 1;
         candidate_spt = (*ntrack_hits)[reco_primary] - 1;
         candidate_xpos = (*col_track_x)[reco_primary][(*col_track_hits)[reco_primary]-1];
         candidate_ypos = (*col_track_y)[reco_primary][(*col_track_hits)[reco_primary]-1];
         candidate_zpos = (*col_track_z)[reco_primary][(*col_track_hits)[reco_primary]-1];
+        candidate_array[1] = candidate_xpos;
+        candidate_array[2] = candidate_ypos;
+        candidate_array[3] = candidate_zpos;
       }
       else{
         interacting_candidate = false;
+        candidate_array[0] = 0;
+        candidate_array[1] = -1;
+        candidate_array[2] = -1;
+        candidate_array[3] = -1;
       }
     }//<-End if no branches or kinks
 
     // ## gonna need to change this an array at some point
-    return interacting_candidate;
+    //return interacting_candidate;
+    return candidate_array;
+
+}
 
 
+int EventSelector::getSlabInfo(std::vector<double> &calo_slab_xpos, std::vector<double> &calo_slab_ypos,
+                                std::vector<double> &calo_slab_zpos, std::vector<double> &calo_slab_KE,
+                                int reco_primary, double z2, double initial_ke,
+                                std::vector<int>* col_track_hits, std::vector<std::vector<double>>* col_track_dedx,
+                                std::vector<std::vector<double>>* col_track_pitch_hit,
+                                std::vector<std::vector<double>>* col_track_x, std::vector<std::vector<double>>* col_track_y,
+                                std::vector<std::vector<double>>* col_track_z) {
 
+    // ### DENOMINATOR ###
+    double calo_ke = initial_ke;
+    double proj_distance = 0;
+    double next_step = 0;
+    int ncalo_slab = 1;
+    for(int calo_pt = 0; calo_pt < (*col_track_hits)[reco_primary] - 1; calo_pt++){
+      proj_distance += (*col_track_pitch_hit)[reco_primary][calo_pt];
+      next_step = proj_distance + (*col_track_pitch_hit)[reco_primary][calo_pt+1];
+      double calo_x = (*col_track_x)[reco_primary][calo_pt]; 
+      double calo_y = (*col_track_y)[reco_primary][calo_pt]; 
+      double calo_z = (*col_track_z)[reco_primary][calo_pt]; 
+      double calo_de = (*col_track_dedx)[reco_primary][calo_pt]*
+                       (*col_track_pitch_hit)[reco_primary][calo_pt];
+      double next_ke = calo_ke - calo_de; 
+      double calo_next_x = (*col_track_x)[reco_primary][calo_pt+1]; 
+      double calo_next_y = (*col_track_y)[reco_primary][calo_pt+1]; 
+      double calo_next_z = (*col_track_z)[reco_primary][calo_pt+1]; 
+      if(proj_distance < ncalo_slab*z2 && next_step > ncalo_slab*z2){
+        // ## 3d parametrization of 2 calo points ##
+        // ## using this to calculate the (x,y,z) of the slab pos ##
+        double vx = calo_next_x - calo_x;
+        double vy = calo_next_y - calo_y;
+        double vz = calo_next_z - calo_z;
+        double r = ncalo_slab*z2; 
+        double A = pow(vx,2) + pow(vy,2) + pow(vz,2);  
+        double B = 2*(calo_x*vx + calo_y*vy + calo_z*vz);
+        double C = pow(proj_distance,2) - pow(r,2);
+        double t = (-1*B + pow( pow(B,2) - 4*A*C, .5))/(2*A);
+        double calo_slab_x = calo_x + t*vx;
+        double calo_slab_y = calo_y + t*vy;
+        double calo_slab_z = calo_z + t*vz;
+        // ## 1d line between KE values ##
+        double calo_ke_slope = (next_ke - calo_ke) / (next_step - proj_distance);
+        double calo_slab_ke = calo_ke_slope*(r - proj_distance) + calo_ke;
+        //std::cout<<"~~~fillin histos??~~~\n";
+        //std::cout<<"number of the calo slab: "<<ncalo_slab<<std::endl;
+        //std::cout<<"ncalo_slab*slab size: "<<ncalo_slab*z2<<std::endl;
+        //std::cout<<"\t\tprojected distance: "<<proj_distance<<" ke: "<<calo_ke<<std::endl;
+        //std::cout<<"\t\tnext step: "<<next_step<<" next ke: "<<next_ke<<std::endl;
+        //std::cout<<"\t\t\tcalo pt ("<<calo_x<<", "<<calo_y<<", "<<calo_z<<")\n";
+        //std::cout<<"\t\t\tnext calo pt ("<<calo_next_x<<", "<<calo_next_y<<", "<<calo_next_z<<")\n";
+        //std::cout<<"\n\tdistance to next slab: "<<r-proj_distance<<std::endl;
+        //std::cout<<"\t\tslab pt: ("<<calo_slab_x<<", "<<calo_slab_y<<", "<<calo_slab_z<<")\n";
+        //std::cout<<"\t\tslab ke: "<<calo_slab_ke<<std::endl;
+        ncalo_slab++;
+        calo_slab_xpos.push_back(calo_slab_x);
+        calo_slab_ypos.push_back(calo_slab_y);
+        calo_slab_zpos.push_back(calo_slab_z);
+        calo_slab_KE.push_back(calo_slab_ke);
+      }//<--End if this calo obj and the next step surround a slab
+      calo_ke -= calo_de;
+    }//<---End loop over reco calo objects to get slab information
+    return 1;
 }
 
 
