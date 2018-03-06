@@ -180,9 +180,22 @@ void ProtonXsec::AnalyzeFromNtuples(){
 
    
 
-  TH1D *BeamMomentum = new TH1D("BeamMomentum","Incoming Particle Momentum",20,300,700);
+  TH1D *BeamMomentum = new TH1D("BeamMomentum","Incoming Particle Momentum",100,300,1000);
   BeamMomentum->GetXaxis()->SetTitle("[MeV/c]");
   BeamMomentum->GetYaxis()->SetTitle("Number of Events");
+
+  TH1D * delXHist =  new TH1D("delXHist","tpc to wc delta x",100,-50,50);
+  delXHist->GetXaxis()->SetTitle("[cm]");
+  delXHist->GetYaxis()->SetTitle("Number of Events");
+  TH1D * delYHist =  new TH1D("delYHist","tpc to wc delta y",100,-50,50);
+  delYHist->GetXaxis()->SetTitle("[cm]");
+  delYHist->GetYaxis()->SetTitle("Number of Events");
+  TH1D * delThetaHist =  new TH1D("delThetaHist","tpc to wc delta Theta",100,-4,4);
+  delThetaHist->GetXaxis()->SetTitle("[radians]");
+  delThetaHist->GetYaxis()->SetTitle("Number of Events");
+  TH1D * delPhiHist =  new TH1D("delPhiHist","tpc to wc delta Phi",100,-4,4);
+  delPhiHist->GetXaxis()->SetTitle("[radians]");
+  delPhiHist->GetYaxis()->SetTitle("Number of Events");
 
 
   // ## event loop ##
@@ -198,7 +211,33 @@ void ProtonXsec::AnalyzeFromNtuples(){
     printEvent();
     bool found_primary = BS->PrimaryTrack( track_zpos, ntracks_reco, UI->zBeamCutoff,
      reco_primary, first_reco_z);
+
+
     
+    if(!isMC){
+      if (num_wctracks < 2){
+        std::vector< std::vector<double> > wctpc_mvect = BS->wcTPCMatch(wctrk_XFace[0],wctrk_YFace[0], wctrk_theta[0], wctrk_phi[0], track_xpos,
+         track_ypos, track_zpos, ntracks_reco);
+
+        if(wctpc_mvect.size() > 0 ){
+          for(int rtrack = 0; rtrack < num_wctracks; rtrack++){
+            delXHist->Fill(wctpc_mvect[rtrack][0]);
+            delYHist->Fill(wctpc_mvect[rtrack][1]);
+            delThetaHist->Fill(wctpc_mvect[rtrack][2]);
+            delPhiHist->Fill(wctpc_mvect[rtrack][3]);
+
+          }
+        }
+
+
+
+
+
+      }
+    }
+
+
+
     if(found_primary){
       std::cout << "Found Primary\n" << std::endl;
       if(isMC){
@@ -215,6 +254,7 @@ void ProtonXsec::AnalyzeFromNtuples(){
           for (int wctrack = 0 ; wctrack < num_wctracks; wctrack++){
           BeamMomentum->Fill(wctrk_momentum[wctrack]);
           BeamToF->Fill(tofObject[wctrack]);}
+
 
       }
 
@@ -264,6 +304,8 @@ void ProtonXsec::AnalyzeFromNtuples(){
 
     if(UI->rootOutputFileSet){
 
+
+
     BeamSelHistData->Draw();
     BeamSelHistData->Write();
     TImage *img = TImage::Create();
@@ -288,6 +330,35 @@ void ProtonXsec::AnalyzeFromNtuples(){
     BeamMomImg->FromPad(c);
     BeamMomImg->WriteImage("BeamMomentum.png");
 
+
+    delXHist->Draw();
+    delXHist->Write();
+    TImage *delXimg = TImage::Create();
+    delXimg->FromPad(c);
+    delXimg->WriteImage("delXHist.png");
+
+
+
+
+
+    delYHist->Draw();
+    delYHist->Write();
+    TImage *delYimg = TImage::Create();
+    delYimg->FromPad(c);
+    delYimg->WriteImage("delYHist.png");
+
+    delThetaHist->Draw();
+    delThetaHist->Write();
+    TImage *delThetaimg = TImage::Create();
+    delThetaimg->FromPad(c);
+    delThetaimg->WriteImage("delThetaHist.png");
+
+
+    delPhiHist->Draw();
+    delPhiHist->Write();
+    TImage *delPhiimg = TImage::Create();
+    delPhiimg->FromPad(c);
+    delPhiimg->WriteImage("delPhiHist.png");
     }
 
 
