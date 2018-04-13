@@ -25,9 +25,9 @@ namespace UtilityFunctions {
                         std::vector< std::vector<double> > *track_ypos){
 
 
-  	double xDist = (*track_xpos)[trackId][0];
-  	double yDist = (*track_ypos)[trackId][0];
-  	double Phi = atan(yDist/xDist);
+  	double xDist = (*track_xpos)[trackId][1] - (*track_xpos)[trackId][0];
+  	double yDist = (*track_ypos)[trackId][1] - (*track_ypos)[trackId][0];
+  	double Phi = atan2(yDist,xDist);
 
   	return Phi;
 

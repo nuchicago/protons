@@ -59,9 +59,10 @@ bool BeamSelector::PrimaryTrack(std::vector<std::vector<double>> *track_zpos,int
 }
 
 int BeamSelector::isTPCPrimary(std::vector<std::vector<double>> *track_zpos,int ntracks_reco,  bool mc_mode, 
-  double zPointCutoff, int& reco_primary, double& first_reco_z){
+  double zPointCutoff, int& reco_primary, double& first_reco_z, int verbose){
 
-      bool print = true;
+      bool print = false;
+      if(verbose == 2){print = true;}
       if(mc_mode){
         if(print){
           std::cout<<"MC Primary Selection"<<std::endl;
@@ -88,17 +89,17 @@ int BeamSelector::isTPCPrimary(std::vector<std::vector<double>> *track_zpos,int 
 
 }
 
-std::vector<std::vector<double>> BeamSelector::wcTPCMatch(double wc_x, double wc_y, double wc_theta, double wc_phi,
+std::vector<std::vector<double>> BeamSelector::wcTPCMatchPlots(double wc_x, double wc_y, double wc_theta, double wc_phi,
                   std::vector< std::vector<double> > *track_xpos,
                   std::vector< std::vector<double> > *track_ypos,
-                  std::vector< std::vector<double> > *track_zpos, int ntracks_reco){
+                  std::vector< std::vector<double> > *track_zpos, int ntracks_reco, double zPointCutoff){
 
 
   std::vector<std::vector<double>> vOut;
   
   for(int mtrack = 0; mtrack < ntracks_reco; mtrack++){
 
-    if((*track_zpos)[mtrack][0] < 4){
+    if((*track_zpos)[mtrack][0] < zPointCutoff){
       double delX = wc_x - (*track_xpos)[mtrack][0];
       double delY = wc_y - (*track_ypos)[mtrack][0];
       double delTheta = wc_theta - UtilityFunctions::getTrackTheta(mtrack, track_xpos,track_ypos,track_zpos);
@@ -111,7 +112,40 @@ std::vector<std::vector<double>> BeamSelector::wcTPCMatch(double wc_x, double wc
   return vOut;
 }
 
+std::vector<double> BeamSelector::wcTPCMatch(double wc_x, double wc_y, double wc_theta, double wc_phi,
+                  std::vector< std::vector<double> > *track_xpos,
+                  std::vector< std::vector<double> > *track_ypos,
+                  std::vector< std::vector<double> > *track_zpos, int ntracks_reco, double zPointCutoff, int& MatchedTrack){
 
+  
+  double rValueMin = 99.;
+  double delThetaMin = 99.;
+  double delPhiMin = 99.;
+  
+  for(int mtrack = 0; mtrack < ntracks_reco; mtrack++){
+
+    if((*track_zpos)[mtrack][0] < zPointCutoff){
+      double delX = wc_x - (*track_xpos)[mtrack][0];
+      double delY = wc_y - (*track_ypos)[mtrack][0];
+      double delTheta = wc_theta - UtilityFunctions::getTrackTheta(mtrack, track_xpos,track_ypos,track_zpos);
+      double delPhi = wc_phi - UtilityFunctions::getTrackPhi(mtrack, track_xpos,track_ypos);
+
+
+      double rValue = sqrt(pow(delX,2) + pow(delY,2));
+      if(rValue < rValueMin){
+        rValueMin = rValue;
+        MatchedTrack = mtrack;
+        delThetaMin = delTheta;
+        delPhiMin = delPhi;
+      }
+      
+      }
+  }
+
+  std::vector<double> minVector = {rValueMin,delThetaMin,delPhiMin};
+
+  return minVector;
+}
 
 
 

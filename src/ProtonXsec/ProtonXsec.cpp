@@ -59,15 +59,15 @@ int main( int argc, char * argv[] ){
   
   gStyle->SetOptStat(0000);
   gStyle->SetOptFit(0000);
-  gStyle->SetOptTitle(0);
+  //gStyle->SetOptTitle(0);
   //gStyle->SetFillColor(0);
   gStyle->SetPadColor(0);
   gStyle->SetCanvasColor(0);
   //gStyle->SetStatColor(0);
-  gStyle->SetTitleColor(0);
-  gStyle->SetPadBorderMode(0);
-  gStyle->SetFrameBorderMode(0);
-  gStyle->SetCanvasBorderMode(0);
+  //gStyle->SetTitleColor(0);
+  //gStyle->SetPadBorderMode(0);
+  //gStyle->SetFrameBorderMode(0);
+  //gStyle->SetCanvasBorderMode(0);
   //gStyle->SetPalette(18,0);
   gStyle->SetPaperSize(20,26);
 
@@ -134,7 +134,7 @@ ProtonXsec::ProtonXsec( char* jobOptionsFile ) : LArIATAnalysis( jobOptionsFile 
     numEventsToProcess = 100000000;
   
   
-  bool verbose = (UI->verbose > 0);
+  verbose = UI->verbose;
   isMC = UI->isMC;
   
 }
@@ -145,6 +145,15 @@ ProtonXsec::ProtonXsec( char* jobOptionsFile ) : LArIATAnalysis( jobOptionsFile 
 //=============================================================================
 
 void ProtonXsec::AnalyzeFromNtuples(){
+
+  // counters for cuts
+
+  double numEventsStart = 0;
+  double numWCTrack = 0;
+  double xyDeltaCut = 0;
+  double angleCut = 0;
+
+
 
 
   std::cout << "I calculate the p-Ar cross section! \n";
@@ -184,13 +193,10 @@ void ProtonXsec::AnalyzeFromNtuples(){
   BeamMomentum->GetXaxis()->SetTitle("[MeV/c]");
   BeamMomentum->GetYaxis()->SetTitle("Number of Events");
 
-  TH1D * delXHist =  new TH1D("delXHist","tpc to wc delta x",100,-50,50);
-  delXHist->GetXaxis()->SetTitle("[cm]");
-  delXHist->GetYaxis()->SetTitle("Number of Events");
-  TH1D * delYHist =  new TH1D("delYHist","tpc to wc delta y",100,-50,50);
-  delYHist->GetXaxis()->SetTitle("[cm]");
-  delYHist->GetYaxis()->SetTitle("Number of Events");
-  TH1D * delThetaHist =  new TH1D("delThetaHist","tpc to wc delta Theta",100,-4,4);
+  TH2D * delXYHist =  new TH2D("delXYHist","tpc to wc delta x",100,-40,40,100,-40,40);
+  delXYHist->GetXaxis()->SetTitle("X[cm]");
+  delXYHist->GetYaxis()->SetTitle("Y[cm]");
+  TH1D * delThetaHist =  new TH1D("delThetaHist","tpc to wc delta Theta",100,-1,1);
   delThetaHist->GetXaxis()->SetTitle("[radians]");
   delThetaHist->GetYaxis()->SetTitle("Number of Events");
   TH1D * delPhiHist =  new TH1D("delPhiHist","tpc to wc delta Phi",100,-4,4);
@@ -207,26 +213,42 @@ void ProtonXsec::AnalyzeFromNtuples(){
     nb = tuple->GetEntry(jentry);
 
     int reco_primary = -1;
-    double first_reco_z = 99.;
-    printEvent();
-    bool found_primary = BS->PrimaryTrack( track_zpos, ntracks_reco, UI->zBeamCutoff,
-     reco_primary, first_reco_z);
+    
+    numEventsStart++;
+    if(verbose == 2){printEvent();}
+    bool found_primary = false; //BS->PrimaryTrack( track_zpos, ntracks_reco, UI->zBeamCutoff,
+     //reco_primary, first_reco_z,verbose);
 
 
     
     if(!isMC){
       if (num_wctracks < 2){
-        std::vector< std::vector<double> > wctpc_mvect = BS->wcTPCMatch(wctrk_XFace[0],wctrk_YFace[0], wctrk_theta[0], wctrk_phi[0], track_xpos,
-         track_ypos, track_zpos, ntracks_reco);
+        numWCTrack++;
+        std::vector< std::vector<double> > wctpc_mvect = BS->wcTPCMatchPlots(wctrk_XFace[0],wctrk_YFace[0], wctrk_theta[0], wctrk_phi[0], track_xpos,
+         track_ypos, track_zpos, ntracks_reco, UI->zTPCCutoff);
 
         if(wctpc_mvect.size() > 0 ){
-          for(int rtrack = 0; rtrack < num_wctracks; rtrack++){
-            delXHist->Fill(wctpc_mvect[rtrack][0]);
-            delYHist->Fill(wctpc_mvect[rtrack][1]);
+          for(int rtrack = 0; rtrack < wctpc_mvect.size(); rtrack++){
+            delXYHist->Fill(wctpc_mvect[rtrack][0],wctpc_mvect[rtrack][1]);
             delThetaHist->Fill(wctpc_mvect[rtrack][2]);
             delPhiHist->Fill(wctpc_mvect[rtrack][3]);
+          }
+          std::vector <double> MinVector = BS->wcTPCMatch(wctrk_XFace[0],wctrk_YFace[0], wctrk_theta[0], wctrk_phi[0],track_xpos,
+          track_ypos, track_zpos, ntracks_reco, UI->zTPCCutoff,reco_primary);
+
+          if(reco_primary > 0 && MinVector[0] < 5){
+            xyDeltaCut++;
+            if(abs(MinVector[1]) < 1 && abs(MinVector[2]) <1){
+              angleCut++;
+            }
+
 
           }
+
+
+
+
+
         }
 
 
@@ -239,7 +261,7 @@ void ProtonXsec::AnalyzeFromNtuples(){
 
 
     if(found_primary){
-      std::cout << "Found Primary\n" << std::endl;
+      if(verbose == 2){std::cout << "Found Primary\n" << std::endl;}
       if(isMC){
         BeamSelHistMC->Fill(1);        
         TrackPositionXY->Fill((*track_xpos)[reco_primary][0],
@@ -260,11 +282,18 @@ void ProtonXsec::AnalyzeFromNtuples(){
 
     }
     else{
-      std::cout << "No Valid Primary \n" << std::endl;
+      if(verbose == 2){std::cout << "No Valid Primary \n" << std::endl;}
       if(isMC){BeamSelHistMC->Fill(-1);}
       else{BeamSelHistData->Fill(-1);}
 
     }
+  } //end of event Loop
+
+  if(verbose > 0){
+    std::cout << "Total events processed: "<< numEventsStart << std::endl;
+    std::cout << "Events with only one wc track: "<< numWCTrack << std::endl;
+    std::cout << "Events after XY plane distance cut: "<< xyDeltaCut << std::endl;
+    std::cout << "Events after angle cut: "<< angleCut << std::endl;
   }
 
 
@@ -331,21 +360,15 @@ void ProtonXsec::AnalyzeFromNtuples(){
     BeamMomImg->WriteImage("BeamMomentum.png");
 
 
-    delXHist->Draw();
-    delXHist->Write();
-    TImage *delXimg = TImage::Create();
-    delXimg->FromPad(c);
-    delXimg->WriteImage("delXHist.png");
+    delXYHist->Draw("COLZ");
+    delXYHist->Write();
+    //XYcut->Write();
+    TImage *delXYimg = TImage::Create();
+    delXYimg->FromPad(c);
+    delXYimg->WriteImage("delXYHist.png");
 
 
 
-
-
-    delYHist->Draw();
-    delYHist->Write();
-    TImage *delYimg = TImage::Create();
-    delYimg->FromPad(c);
-    delYimg->WriteImage("delYHist.png");
 
     delThetaHist->Draw();
     delThetaHist->Write();

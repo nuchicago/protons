@@ -436,7 +436,7 @@ void ProtonAnalyzerMC::AnalyzeFromNtuples() {
     // ## grabbing reco primary ##
     int reco_primary = -1;
     double first_reco_z = 99.;
-    reco_primary = BS->isTPCPrimary(track_zpos, ntracks_reco, isMC, UI->zBeamCutoff, reco_primary, first_reco_z);
+    reco_primary = BS->isTPCPrimary(track_zpos, ntracks_reco, isMC, UI->zBeamCutoff, reco_primary, first_reco_z, verbose);
     if(reco_primary == -1) {
       continue;
     }//<- skipping events that didn't pass isTPCPrimary 
