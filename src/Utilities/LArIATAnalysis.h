@@ -157,7 +157,8 @@ class LArIATAnalysis {
   Int_t           NNeutronDaughters;
   std::vector<double>  *NDTrTrajPts;
   std::vector<int>     *DPdgCode;
-  std::vector<int>     *DStartEnergy;
+  std::vector<double>     *DStartEnergy;
+  std::vector<double>     *DStartP;
   std::vector<std::vector<double> > *MidPosX;
   std::vector<std::vector<double> > *MidPosY;
   std::vector<std::vector<double> > *MidPosZ;
@@ -173,9 +174,9 @@ class LArIATAnalysis {
   std::vector<int>     *SlabN;
   std::vector<double>  *SlabE;
   Int_t           LastSlabInt;
-  std::vector<std::vector<double> > *DPMidPosX;
-  std::vector<std::vector<double> > *DPMidPosY;
-  std::vector<std::vector<double> > *DPMidPosZ;
+  std::vector<std::vector<double> > *DMidPosX;
+  std::vector<std::vector<double> > *DMidPosY;
+  std::vector<std::vector<double> > *DMidPosZ;
   std::vector<int>     *InteractionPoint;
   std::vector<int>     *InteractionPointType;
 
@@ -259,6 +260,7 @@ class LArIATAnalysis {
   TBranch        *b_NDTrTrajPts;   //!
   TBranch        *b_DPdgCode;   //!
   TBranch        *b_DStartEnergy;   //!
+  TBranch        *b_DStartP;   //!
   TBranch        *b_MidPosX;   //!
   TBranch        *b_MidPosY;   //!
   TBranch        *b_MidPosZ;   //!
@@ -274,9 +276,9 @@ class LArIATAnalysis {
   TBranch        *b_SlabN;   //!
   TBranch        *b_SlabE;   //!
   TBranch        *b_LastSlabInt;   //!
-  TBranch        *b_DPMidPosX;   //!
-  TBranch        *b_DPMidPosY;   //!
-  TBranch        *b_DPMidPosZ;   //!
+  TBranch        *b_DMidPosX;   //!
+  TBranch        *b_DMidPosY;   //!
+  TBranch        *b_DMidPosZ;   //!
   TBranch        *b_InteractionPoint;   //!
   TBranch        *b_InteractionPointType;
   TBranch        *b_wctrk_momentum;   //!

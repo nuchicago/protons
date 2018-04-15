@@ -60,7 +60,7 @@ bool BeamSelector::PrimaryTrack(std::vector<std::vector<double>> *track_zpos,int
 int BeamSelector::isTPCPrimary(std::vector<std::vector<double>> *track_zpos,int ntracks_reco,  bool mc_mode, 
   double zPointCutoff, int& reco_primary, double& first_reco_z){
 
-      bool print = true;
+      bool print = false;
       if(mc_mode){
         if(print){
           std::cout<<"MC Primary Selection"<<std::endl;
