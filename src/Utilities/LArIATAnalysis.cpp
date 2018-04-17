@@ -158,6 +158,7 @@ void LArIATAnalysis::bookNtuple( TChain* tuple, bool isMC ){
   NDTrTrajPts = 0;
   DPdgCode = 0;
   DStartEnergy = 0;
+  DStartP = 0;
   MidPosX = 0;
   MidPosY = 0;
   MidPosZ = 0;
@@ -251,6 +252,7 @@ void LArIATAnalysis::bookNtuple( TChain* tuple, bool isMC ){
   tuple->SetBranchAddress("NDTrTrajPts", &NDTrTrajPts, &b_NDTrTrajPts);
   tuple->SetBranchAddress("DPdgCode", &DPdgCode, &b_DPdgCode);
   tuple->SetBranchAddress("DStartEnergy", &DStartEnergy, &b_DStartEnergy);
+  tuple->SetBranchAddress("DStartP", &DStartP, &b_DStartP);
   tuple->SetBranchAddress("MidPosX", &MidPosX, &b_MidPosX);
   tuple->SetBranchAddress("MidPosY", &MidPosY, &b_MidPosY);
   tuple->SetBranchAddress("MidPosZ", &MidPosZ, &b_MidPosZ);

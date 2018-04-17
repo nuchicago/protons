@@ -159,10 +159,14 @@ void ProtonAnalyzerMC::AnalyzeFromNtuples() {
   double barn = pow(10, -24);
 
 
+  // ## signal regions ##
+  bool sr;
+
 
   // histograms, keeping minimal diagnostics
   TH1D *hdedx = new TH1D("hdedx", "dedx", 500, 0, 50);
   TH1D *hintke = new TH1D("hintke", "int ke", 20, 0, 1000);
+  TH1D *hintke_sr = new TH1D("hintke_sr", "int ke sr", 20, 0, 1000);
   TH1D *hincke = new TH1D("hincke", "inc ke", 20, 0, 1000);
   TH1D *h2incke = new TH1D("h2incke", "inc ke", 20, 0, 1000);
   TH1D *hxs    = new TH1D("hxs",    "xs",     20, 0, 1000);
@@ -170,14 +174,20 @@ void ProtonAnalyzerMC::AnalyzeFromNtuples() {
   TH1D *sdedx = new TH1D("sdedx", "slab dedx", 100, 0,   50);
   TH1D *sincke = new TH1D("sincke", "slab inc ke", 20, 0, 1000);
   TH1D *sintke = new TH1D("sintke", "slab int ke", 20, 0, 1000);
+  TH1D *sintke_sr = new TH1D("sintke_sr", "slab int ke sr", 20, 0, 1000);
   TH1D *sxs    = new TH1D("sxs",    "slab xs",     20, 0, 1000);
 
   TH1D *hreco_initialKE = new TH1D("hreco_initialKE", "initial ke", 20, 0, 1000);
   TH1D *hreco_intke = new TH1D("hreco_intke", "int ke", 20, 0, 1000);
+  TH1D *hreco_intke_sr = new TH1D("hreco_intke_sr", "int ke sr", 20, 0, 1000);
   TH1D *hreco_intke_signal = new TH1D("hreco_intke_signal", "int ke signal", 20, 0, 1000);
+  TH1D *hreco_intke_signal_sr = new TH1D("hreco_intke_signal_sr", "int ke signal sr", 20, 0, 1000);
   TH1D *hreco_folded_intke_signal = new TH1D("hreco_folded_intke_signal", "interacting ke (signal)", 20, 0, 1000);
+  TH1D *hreco_folded_intke_signal_sr = new TH1D("hreco_folded_intke_signal_sr", "interacting ke (signal) sr", 20, 0, 1000);
   TH1D *hreco_unfolded_intke_signal = new TH1D("hreco_unfolded_intke_signal", "interacting ke (signal)", 20, 0, 1000);
+  TH1D *hreco_unfolded_intke_signal_sr = new TH1D("hreco_unfolded_intke_signal_sr", "interacting ke (signal) sr", 20, 0, 1000);
   TH1D *hreco_intke_background = new TH1D("hreco_intke_background", "int ke background", 20, 0, 1000);
+  TH1D *hreco_intke_background_sr = new TH1D("hreco_intke_background sr", "int ke background sr", 20, 0, 1000);
 
   TH1D *hreco_incke = new TH1D("hreco_incke", "inc ke", 20, 0, 1000);
   TH1D *hreco_incke_signal = new TH1D("hreco_incke_signal", "inc ke signal", 20, 0, 1000);
@@ -187,11 +197,23 @@ void ProtonAnalyzerMC::AnalyzeFromNtuples() {
 
 
   TH1D *hreco_intke_eff = new TH1D("hreco_int_eff", "interacting selection efficiency", 20, 0, 1000);
+  TH1D *hreco_intke_eff_sr = new TH1D("hreco_int_eff_sr", "interacting selection efficiency sr", 20, 0, 1000);
   TH1D *hreco_incke_eff = new TH1D("hreco_inc_eff", "incident selection efficiency", 20, 0, 1000);
 
   TH2D *hreco_unfolding_matrix = new TH2D("hreco_unfolding_matrix", "unfolding", 20, 0, 1000, 20, 0, 1000);
   TH2D *hreco_unfolding_matrix_normalized=new TH2D("hreco_unfolding_matrix_normalized","energy unfolding matrix",20,0,1000,20,0,1000);
   TH1D *hreco_xs = new TH1D("hreco_xs", "p-ar inelastic xs", 20, 0, 1000);
+
+
+  // ## diagnostics for signal region ##
+  TH1D *hmc_numDaughters = new TH1D("hmc_numDaughters", "# daughters", 40, 0, 40);
+  TH1D *hmc_daughterPDG = new TH1D("hmc_daughterPDG", "daughter PDGs", 2600, -250, 2350);
+  TH1D *hmc_isCharged = new TH1D("hmc_isCharged", "neutral(0), charged(1)", 2, 0, 2);
+  TH1D *hmc_leadingDaughterKE = new TH1D("hmc_leadingDaughterKE", "leading charged daughter KE", 100, 0, 1000);
+  TH1D *hmc_nextLeadingDaughterKE = new TH1D("hmc_nextLeadingDaughterKE", "nxt2 leading charged daughter KE", 100, 0, 1000);
+  TH1D *hmc_leadingDaughterTheta = new TH1D("hmc_leadingDaughterTheta", "leading charged daughter theta", 100, 0, 100);
+  TH2D *hmc_leadingKE_theta = new TH2D("hmc_leadingKE_theta", "leading ke vs theta", 10, 0, 1000, 18, 0, 180);
+  TH2D *hreco_leadingKE_theta = new TH2D("hreco_leadingKE_theta", "leading ke vs theta", 10, 0, 1000, 18, 0, 180);
 
 
   std::cout<<"welp.\n";
@@ -213,8 +235,8 @@ void ProtonAnalyzerMC::AnalyzeFromNtuples() {
     Long64_t nb = 0;
     nb = tuple->GetEntry(jentry);
 
-    std::cout<<std::endl;
-    printEvent();
+    //std::cout<<std::endl;
+    //printEvent();
 
     // ### Geant4 Information ###
     bool dense_int = false;
@@ -228,6 +250,10 @@ void ProtonAnalyzerMC::AnalyzeFromNtuples() {
     double g4_intx = -99;    
     double g4_inty = -99;
     double g4_intz = -99;
+
+    double leading_ke = 0;
+    double leading_theta = 0;
+    bool isCharged = false;
 
     double initial_ke = 0;
     int num_pts_inTPC = 0;
@@ -254,7 +280,7 @@ void ProtonAnalyzerMC::AnalyzeFromNtuples() {
           g4_intx = (*MidPosX)[g4part][(*InteractionPoint)[nint]];
           g4_inty = (*MidPosY)[g4part][(*InteractionPoint)[nint]];
           g4_intz = (*MidPosZ)[g4part][(*InteractionPoint)[nint]];
-          std::cout<<"\tg4 int: ("<<g4_intx<<", "<<g4_inty<<", "<<g4_intz<<")\n";
+          //std::cout<<"\tg4 int: ("<<g4_intx<<", "<<g4_inty<<", "<<g4_intz<<")\n";
         }//< End if interaction is signal
       }//<- End loop over interaction vector
       
@@ -274,6 +300,9 @@ void ProtonAnalyzerMC::AnalyzeFromNtuples() {
         double prev_xpos = (*MidPosX)[g4part][pt-1];
         double prev_ypos = (*MidPosY)[g4part][pt-1];
         double prev_zpos = (*MidPosZ)[g4part][pt-1];
+        double pri_vecx = xpos - prev_xpos;
+        double pri_vecy = ypos - prev_ypos;
+        double pri_vecz = zpos - prev_zpos;
     
         double p = sqrt(pow(1000*(*MidPx)[g4part][pt], 2)
                       + pow(1000*(*MidPy)[g4part][pt], 2)
@@ -320,6 +349,73 @@ void ProtonAnalyzerMC::AnalyzeFromNtuples() {
                 //std::cout<<"\t\t\t\tx,y,z: "<<xpos<<", "<<ypos<<", "<<zpos<<std::endl;
                 dense_int = true;
                 hintke->Fill(prev_ke);
+
+                // ### let's carve up this inelastic sample ###
+                std::cout<<"Inelastic Event:\n";
+                std::cout<<"\tNumber of daughter particles: "<<(*NumberDaughters)[g4part]<<std::endl;
+                hmc_numDaughters->Fill((*NumberDaughters)[g4part]);
+                int num_charged_daughters = 0;
+                int num_long_charged_daughters = 0;
+                //double leading_ke = 0;
+                //double leading_theta = 0;
+                //bool isCharged = false;
+                for(unsigned int g4d = 0; g4d < (*NumberDaughters)[g4part]; g4d++) {
+                  int pdg = (*DPdgCode)[g4d];
+                  // ### PDG Code (is it charged?) ###
+                  hmc_daughterPDG->Fill((*DPdgCode)[g4d]);
+                  if(pdg == 2212 || pdg == 211 || pdg == -211) {
+                    isCharged = true;
+                    hmc_isCharged->Fill(1);
+                    // ## x,y,z and angles ##
+                    double daughter_ax = (*DMidPosX)[g4d][0];
+                    double daughter_ay = (*DMidPosY)[g4d][0];
+                    double daughter_az = (*DMidPosZ)[g4d][0];
+                    double daughter_bx = (*DMidPosX)[g4d][3];
+                    double daughter_by = (*DMidPosY)[g4d][3];
+                    double daughter_bz = (*DMidPosZ)[g4d][3];
+                    double daughter_vecx = daughter_bx - daughter_ax;
+                    double daughter_vecy = daughter_by - daughter_ay;
+                    double daughter_vecz = daughter_bz - daughter_az;
+                    double pri_dot_daughter = pri_vecx*daughter_vecx + pri_vecy*daughter_vecy + pri_vecz*daughter_vecz;
+                    double pri_mag = sqrt(pow(pri_vecx, 2) + pow(pri_vecy, 2) + pow(pri_vecz, 2));
+                    double daughter_mag = sqrt(pow(daughter_vecx, 2) + pow(daughter_vecy, 2) + pow(daughter_vecz, 2));
+                    double interaction_theta = acos(pri_dot_daughter / (pri_mag*daughter_mag)) * (180/3.14);
+                    std::cout<<"\tinteraction theta: "<<interaction_theta<<std::endl;
+
+                    // ## E&P ##
+                    double daughter_mass;
+                    if(pdg == 2212) {daughter_mass = 938.57;}
+                    if(pdg == 211 || pdg == -211) {daughter_mass = 139.57;}
+                    double daughter_p = (*DStartP)[g4d]*1000;
+                    double daughter_ke = sqrt(pow(daughter_mass, 2) + pow(daughter_p, 2)) - daughter_mass; 
+                    // ## grabbing leading daughter particle ##
+                    if(daughter_ke > leading_ke) {
+                      leading_ke = daughter_ke;
+                      leading_theta = interaction_theta;
+                    }
+                  }//<-- protons, pi+-
+                  else {
+                    hmc_isCharged->Fill(0);
+                  }//<-- gammas, neutrons, other
+                //  if((*DPdgCode)[g4d] == 2212 || (*DPdgCode)[g4d] == 211) {
+                //    num_charged_daughters++;
+                //    std::cout<<"\t\t\tnum trj pts: "<<(*NDTrTrajPts)[g4d]<<std::endl;
+                //    if((*NDTrTrajPts)[g4d] > 100) {
+                //      num_long_charged_daughters++;
+                //    }
+                //  }
+                }
+                if(isCharged) {
+                  hmc_leadingDaughterKE->Fill(leading_ke);
+                  hmc_leadingDaughterTheta->Fill(leading_theta);
+                  hmc_leadingKE_theta->Fill(leading_ke, leading_theta);
+                }
+                //std::cout<<"\tNumber of charged daughter particles: "<<num_charged_daughters<<std::endl;
+                //std::cout<<"\tMost energetic charged daughter particle: \n";
+                if(num_long_charged_daughters > 2) {sr = true; hintke_sr->Fill(prev_ke);}
+                else {sr = false;}
+                
+                
               }//<--End if the interaction is inelastic
             }//<--End if the point we're looking at is the interaction point
           }//<--End loop over all interactions (could be 0!)
@@ -415,9 +511,15 @@ void ProtonAnalyzerMC::AnalyzeFromNtuples() {
         //}//<---End if inelastic interaction 
         if(true_slab_ke[inslabs-1]){
           sintke->Fill(true_slab_ke[inslabs-1]);
+          if(sr) {
+            sintke_sr->Fill(true_slab_ke[inslabs-1]);
+          }
         }
         else{
           sintke->Fill(true_slab_ke[inslabs-2]);
+          if(sr) {
+            sintke_sr->Fill(true_slab_ke[inslabs-1]);
+          }
         }
         //slab_vs_dense_intke->Fill(true_slab_ke[inslabs-1], int_ke);
         //if(!true_slab_ke[inslabs-1]){
@@ -452,6 +554,7 @@ void ProtonAnalyzerMC::AnalyzeFromNtuples() {
 
     // ## comparing int candidate to g4 info ##
     bool signal = false;
+    bool sr_signal = false;
     if(candidate_info[0]){ 
       //nRecoCandidates++;
       double reco_x = candidate_info[1];
@@ -470,12 +573,17 @@ void ProtonAnalyzerMC::AnalyzeFromNtuples() {
         if(dist_reco_g4 < 2){
           //std::cout<<"signal event!\n";
           signal = true;
+          if(sr) {sr_signal = true;}
+          if(isCharged) {
+            hreco_leadingKE_theta->Fill(leading_ke, leading_theta);
+          }
           //nRecoSignalEvts++;
           // pass a label to histo filling
         }
         else{
           //std::cout<<"background event!\n";
           signal = false;
+          sr_signal = false;
           //nRecoBckgrdEvts++;
           // pass a label to histo filling
         }
@@ -483,6 +591,7 @@ void ProtonAnalyzerMC::AnalyzeFromNtuples() {
       else{
         //std::cout<<"background event!\n";
         signal = false;
+        sr_signal = false;
         //nRecoBckgrdEvts++;
         // pass a label to histo filling
       }
@@ -494,16 +603,20 @@ void ProtonAnalyzerMC::AnalyzeFromNtuples() {
     std::vector<double> calo_slab_ypos;
     std::vector<double> calo_slab_zpos;
     std::vector<double> calo_slab_KE;
+<<<<<<< HEAD
     std::cout<<"initial_ke: "<<initial_ke<<std::endl;
     hreco_initialKE->Fill(initial_ke);
+=======
+    //std::cout<<"initial_ke: "<<initial_ke<<std::endl;
+>>>>>>> mc-kinematic-study
     int slabPass = ES->getSlabInfo(calo_slab_xpos, calo_slab_ypos, calo_slab_zpos, calo_slab_KE,
                                     reco_primary, z2, initial_ke,
                                     col_track_hits, col_track_dedx, col_track_pitch_hit,
                                     col_track_x, col_track_y, col_track_z);
     if(slabPass) {
-      std::cout<<"\ttesting multiple vectors D:\n";
-      std::cout<<"\t\tz2: "<<z2<<std::endl;
-      std::cout<<"\t\tcalo_slab_xpos.size(): "<<calo_slab_xpos.size()<<std::endl;
+      //std::cout<<"\ttesting multiple vectors D:\n";
+      //std::cout<<"\t\tz2: "<<z2<<std::endl;
+      //std::cout<<"\t\tcalo_slab_xpos.size(): "<<calo_slab_xpos.size()<<std::endl;
     }
 
     // ## comparing to g4 info ##
@@ -626,11 +739,18 @@ void ProtonAnalyzerMC::AnalyzeFromNtuples() {
         // ## also need to check on non-physical entries (negative ?)
         // ### should probably also just grab any non terminating protons as interactions...
         hreco_intke->Fill(calo_slab_KE[calo_slab]);
+        hreco_intke_sr->Fill(calo_slab_KE[calo_slab]);
         if(signal){
           hreco_intke_signal->Fill(calo_slab_KE[calo_slab]); 
         }
         if(!signal){
           hreco_intke_background->Fill(calo_slab_KE[calo_slab]);
+        }
+        if(sr_signal) {
+          hreco_intke_signal_sr->Fill(calo_slab_KE[calo_slab]);
+        }
+        if(!sr_signal) {
+          hreco_intke_background_sr->Fill(calo_slab_KE[calo_slab]);
         }
       }//<-- End if this is the interacting slab
     }//<--End calo slab loop
@@ -686,6 +806,11 @@ void ProtonAnalyzerMC::AnalyzeFromNtuples() {
     double background = hreco_intke_background->GetBinContent(iBin);
     hreco_folded_intke_signal->SetBinContent(iBin, total-background); 
   }
+  for(int iBin = 0; iBin < hreco_intke->GetNbinsX(); iBin++){
+    double total = hreco_intke_sr->GetBinContent(iBin);
+    double background = hreco_intke_background_sr->GetBinContent(iBin);
+    hreco_folded_intke_signal_sr->SetBinContent(iBin, total-background); 
+  }
   for(int iBin = 0; iBin < hreco_incke->GetNbinsX(); iBin++){
     double total = hreco_incke->GetBinContent(iBin);
     double background = hreco_incke_background->GetBinContent(iBin);
@@ -709,12 +834,15 @@ void ProtonAnalyzerMC::AnalyzeFromNtuples() {
   for(int iBin = 0; iBin < hreco_unfolding_matrix_normalized->GetNbinsX(); iBin++){
     int n_int_entries = hreco_folded_intke_signal->GetBinContent(iBin);
     int n_inc_entries = hreco_folded_incke_signal->GetBinContent(iBin);
+    int n_int_entries_sr = hreco_folded_intke_signal_sr->GetBinContent(iBin);
     for(int jBin = 0; jBin < hreco_unfolding_matrix_normalized->GetNbinsY(); jBin++){
       double weight = hreco_unfolding_matrix_normalized->GetBinContent(iBin, jBin);
       double int_value = n_int_entries * weight;
       double inc_value = n_inc_entries * weight;
+      double int_value_sr = n_int_entries_sr * weight;
       hreco_unfolded_intke_signal->AddBinContent(jBin, int_value);
       hreco_unfolded_incke_signal->AddBinContent(jBin, inc_value);
+      hreco_unfolded_intke_signal_sr->AddBinContent(jBin, int_value_sr);
     }
   }
 
@@ -727,6 +855,11 @@ void ProtonAnalyzerMC::AnalyzeFromNtuples() {
     if(sincke->GetBinContent(iBin)){
       double inc_eff = hreco_unfolded_incke_signal->GetBinContent(iBin) / sincke->GetBinContent(iBin);
       hreco_incke_eff->SetBinContent(iBin, inc_eff);
+    }
+    // ## this is not super accurate...
+    if(sintke_sr->GetBinContent(iBin)){
+      double int_eff_sr = hreco_unfolded_intke_signal_sr->GetBinContent(iBin) / sintke_sr->GetBinContent(iBin);
+      hreco_intke_eff_sr->SetBinContent(iBin, int_eff_sr);
     }
   }
 
@@ -757,6 +890,19 @@ void ProtonAnalyzerMC::AnalyzeFromNtuples() {
       hreco_xs->SetBinError(iBin,totalError);
     }
 
+    // ## signal region study ##
+    TH2D *hreco_effScan = new TH2D("hreco_effScan", "efficiency scan", 18, 0, 180, 10, 0, 1000);
+    for(int iBin = 0; iBin < hreco_leadingKE_theta->GetNbinsX(); iBin++) {
+      for(int jBin = 0; jBin < hreco_leadingKE_theta->GetNbinsY(); jBin++) {
+        double reco_count = hreco_leadingKE_theta->GetBinContent(iBin, jBin);
+        double true_count = hmc_leadingKE_theta->GetBinContent(iBin, jBin);
+        if(true_count == 0) {continue;}
+        double total_eff = reco_count / true_count;
+        std::cout<<"total eff: "<<total_eff<<std::endl;
+        hreco_effScan->SetBinContent(iBin, jBin, total_eff);
+      } 
+    }
+
 
   // ## write histos ##
   if(UI->rootOutputFileSet) {
@@ -764,6 +910,7 @@ void ProtonAnalyzerMC::AnalyzeFromNtuples() {
     //hdedx->Draw();
     hdedx->Write();
     hintke->Write();
+    hintke_sr->Write();
     hincke->Write();
     h2incke->Write();
     hxs->Write();
@@ -774,19 +921,33 @@ void ProtonAnalyzerMC::AnalyzeFromNtuples() {
     hreco_initialKE->Write();
     hreco_intke->Write();
     hreco_intke_signal->Write();
+    hreco_intke_signal_sr->Write();
     hreco_folded_intke_signal->Write();
     hreco_unfolded_intke_signal->Write();
     hreco_intke_background->Write();
+    hreco_intke_background_sr->Write();
     hreco_incke->Write();
     hreco_incke_signal->Write();
     hreco_folded_incke_signal->Write();
     hreco_unfolded_incke_signal->Write();
     hreco_incke_background->Write();
     hreco_intke_eff->Write();
+    hreco_intke_eff_sr->Write();
     hreco_incke_eff->Write();
     hreco_unfolding_matrix->Write();
     hreco_unfolding_matrix_normalized->Write();
     hreco_xs->Write();
+
+    hmc_numDaughters->Write();
+    hmc_daughterPDG->Write();
+    hmc_isCharged->Write();
+    hmc_leadingDaughterKE->Write();
+    hmc_nextLeadingDaughterKE->Write();
+    hmc_leadingDaughterTheta->Write();
+    hmc_leadingKE_theta->Write();
+    hreco_leadingKE_theta->Write();
+    hreco_effScan->Write();
+
   }
 
 }// End AnalyzeFromNtuples

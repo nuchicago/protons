@@ -89,7 +89,8 @@ double* EventSelector::findInt(double* candidate_array, int reco_primary, Int_t 
           double mag_a = sqrt( pow(a_vec[0],2) + pow(a_vec[1],2) + pow(a_vec[2],2));
           double mag_b = sqrt( pow(b_vec[0],2) + pow(b_vec[1],2) + pow(b_vec[2],2));
           //double denom = mag_a * mag_b;
-          double theta = acos(a_dot_b / (mag_a*mag_b));
+          //double theta = acos(a_dot_b / (mag_a*mag_b));
+          double theta = acos(a_dot_b / (mag_a*mag_b)) * (180/3.14);
           if(TMath::IsNaN(theta)){theta = 0.;}
           //RDSptAngle->Fill(theta);
           if(theta>4){

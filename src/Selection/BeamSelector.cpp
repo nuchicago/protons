@@ -62,7 +62,10 @@ int BeamSelector::isTPCPrimary(std::vector<std::vector<double>> *track_zpos,int 
   double zPointCutoff, int& reco_primary, double& first_reco_z, int verbose){
 
       bool print = false;
+<<<<<<< HEAD
       if(verbose == 2){print = true;}
+=======
+>>>>>>> mc-kinematic-study
       if(mc_mode){
         if(print){
           std::cout<<"MC Primary Selection"<<std::endl;

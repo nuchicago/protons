@@ -157,7 +157,8 @@ class LArIATAnalysis {
   Int_t           NNeutronDaughters;
   std::vector<double>  *NDTrTrajPts;
   std::vector<int>     *DPdgCode;
-  std::vector<int>     *DStartEnergy;
+  std::vector<double>     *DStartEnergy;
+  std::vector<double>     *DStartP;
   std::vector<std::vector<double> > *MidPosX;
   std::vector<std::vector<double> > *MidPosY;
   std::vector<std::vector<double> > *MidPosZ;
@@ -259,6 +260,7 @@ class LArIATAnalysis {
   TBranch        *b_NDTrTrajPts;   //!
   TBranch        *b_DPdgCode;   //!
   TBranch        *b_DStartEnergy;   //!
+  TBranch        *b_DStartP;   //!
   TBranch        *b_MidPosX;   //!
   TBranch        *b_MidPosY;   //!
   TBranch        *b_MidPosZ;   //!
