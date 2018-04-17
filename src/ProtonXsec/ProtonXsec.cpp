@@ -237,7 +237,7 @@ void ProtonXsec::AnalyzeFromNtuples(){
          track_ypos, track_zpos, ntracks_reco, UI->zTPCCutoff);
 
         if(wctpc_mvect.size() > 0 ){
-          for(int rtrack = 0; rtrack < wctpc_mvect.size(); rtrack++){
+          for(unsigned int rtrack = 0; rtrack < wctpc_mvect.size(); rtrack++){
             delXYHist->Fill(wctpc_mvect[rtrack][0],wctpc_mvect[rtrack][1]);
             delThetaHist->Fill(wctpc_mvect[rtrack][2]);
             delPhiHist->Fill(wctpc_mvect[rtrack][3]);
@@ -352,7 +352,7 @@ void ProtonXsec::AnalyzeFromNtuples(){
       double int_candidate_z = candidate_info[3];
       // loop over slabs to find slab closest to interaction candidate
       double min_dist_int = 99;
-      for(int calo_slab = 0; calo_slab < calo_slab_KE.size(); calo_slab++){
+      for(unsigned int calo_slab = 0; calo_slab < calo_slab_KE.size(); calo_slab++){
         double calo_slab_x = calo_slab_xpos[calo_slab];  
         double calo_slab_y = calo_slab_ypos[calo_slab];  
         double calo_slab_z = calo_slab_zpos[calo_slab];  
@@ -370,8 +370,7 @@ void ProtonXsec::AnalyzeFromNtuples(){
 
 
     // ## incident slabs ## 
-    int ninc_entries = 0;
-    for(int calo_slab = 1; calo_slab < calo_slab_KE.size(); calo_slab++){
+    for(unsigned int calo_slab = 1; calo_slab < calo_slab_KE.size(); calo_slab++){
       if(calo_slab > calo_int_slab){continue;}//<--stop after interaction slab 
       hreco_incke->Fill(calo_slab_KE[calo_slab]);
       if(calo_slab == calo_int_slab){

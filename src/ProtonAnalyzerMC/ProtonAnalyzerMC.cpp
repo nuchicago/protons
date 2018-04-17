@@ -280,7 +280,7 @@ void ProtonAnalyzerMC::AnalyzeFromNtuples() {
           g4_intx = (*MidPosX)[g4part][(*InteractionPoint)[nint]];
           g4_inty = (*MidPosY)[g4part][(*InteractionPoint)[nint]];
           g4_intz = (*MidPosZ)[g4part][(*InteractionPoint)[nint]];
-          //std::cout<<"\tg4 int: ("<<g4_intx<<", "<<g4_inty<<", "<<g4_intz<<")\n";
+          std::cout<<"\tg4 int: ("<<g4_intx<<", "<<g4_inty<<", "<<g4_intz<<")\n";
         }//< End if interaction is signal
       }//<- End loop over interaction vector
       
@@ -336,7 +336,7 @@ void ProtonAnalyzerMC::AnalyzeFromNtuples() {
           h2incke->Fill(ke, dist_between_points/z);
           //hdistvske->Fill(dist_between_points, ke);
           num_entries_dense++; //TotDenseEntries++;
-          for(int nint = 0; nint < (*InteractionPoint).size(); nint++) {
+          for(unsigned int nint = 0; nint < (*InteractionPoint).size(); nint++) {
             if(pt == (*InteractionPoint)[nint]) {
               //std::cout << "\t\tinteraction point" << std::endl;
               if((*InteractionPointType)[nint] == 13) {
@@ -354,7 +354,7 @@ void ProtonAnalyzerMC::AnalyzeFromNtuples() {
                 std::cout<<"Inelastic Event:\n";
                 std::cout<<"\tNumber of daughter particles: "<<(*NumberDaughters)[g4part]<<std::endl;
                 hmc_numDaughters->Fill((*NumberDaughters)[g4part]);
-                int num_charged_daughters = 0;
+                //int num_charged_daughters = 0;
                 int num_long_charged_daughters = 0;
                 //double leading_ke = 0;
                 //double leading_theta = 0;
@@ -428,7 +428,7 @@ void ProtonAnalyzerMC::AnalyzeFromNtuples() {
       //int inslabs = 0;
       double total_slab_distance = 0;
       //std::cout << "\tslab loop.." << std::endl;
-      for(int slab = 0; slab < (*SlabN).size(); slab++){
+      for(unsigned int slab = 0; slab < (*SlabN).size(); slab++){
         //double slab_e = 1000*(*SlabE)[slab];
         double slab_x = (*SlabX)[slab];
         double slab_y = (*SlabY)[slab];
@@ -603,26 +603,21 @@ void ProtonAnalyzerMC::AnalyzeFromNtuples() {
     std::vector<double> calo_slab_ypos;
     std::vector<double> calo_slab_zpos;
     std::vector<double> calo_slab_KE;
-<<<<<<< HEAD
-    std::cout<<"initial_ke: "<<initial_ke<<std::endl;
     hreco_initialKE->Fill(initial_ke);
-=======
-    //std::cout<<"initial_ke: "<<initial_ke<<std::endl;
->>>>>>> mc-kinematic-study
     int slabPass = ES->getSlabInfo(calo_slab_xpos, calo_slab_ypos, calo_slab_zpos, calo_slab_KE,
                                     reco_primary, z2, initial_ke,
                                     col_track_hits, col_track_dedx, col_track_pitch_hit,
                                     col_track_x, col_track_y, col_track_z);
     if(slabPass) {
-      //std::cout<<"\ttesting multiple vectors D:\n";
-      //std::cout<<"\t\tz2: "<<z2<<std::endl;
-      //std::cout<<"\t\tcalo_slab_xpos.size(): "<<calo_slab_xpos.size()<<std::endl;
+      std::cout<<"\ttesting multiple vectors D:\n";
+      std::cout<<"\t\tz2: "<<z2<<std::endl;
+      std::cout<<"\t\tcalo_slab_xpos.size(): "<<calo_slab_xpos.size()<<std::endl;
     }
 
     // ## comparing to g4 info ##
     std::vector<int> calo_slab_signal(calo_slab_KE.size(), 0);
     int calo_slab_counter = 0;
-    for(int calo_slab = 0; calo_slab < calo_slab_KE.size(); calo_slab++){
+    for(unsigned int calo_slab = 0; calo_slab < calo_slab_KE.size(); calo_slab++){
       double calo_slab_x = calo_slab_xpos[calo_slab];
       double calo_slab_y = calo_slab_ypos[calo_slab];
       double calo_slab_z = calo_slab_zpos[calo_slab];
@@ -718,7 +713,7 @@ void ProtonAnalyzerMC::AnalyzeFromNtuples() {
 
     // ## incident slabs ## 
     int ninc_entries = 0;
-    for(int calo_slab = 1; calo_slab < calo_slab_KE.size(); calo_slab++){
+    for(unsigned int calo_slab = 1; calo_slab < calo_slab_KE.size(); calo_slab++){
       if(calo_slab > calo_int_slab){continue;}//<--stop after interaction slab 
       //std::cout<<"\tincident entry: "<<std::endl;
       //std::cout<<"\t\tke: "<<calo_slab_KE[calo_slab]<<std::endl;

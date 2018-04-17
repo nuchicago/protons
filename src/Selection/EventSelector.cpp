@@ -165,7 +165,6 @@ double* EventSelector::findInt(double* candidate_array, int reco_primary, Int_t 
 
     // ### Topological Sorting and Identifying Potential Interactions ###
     // ### (still a part of inelastic event selection, just putting the pieces together) ###
-    bool interacting_candidate;
     int candidate_spt = 999;
     double candidate_xpos = 999;
     double candidate_ypos = 999;
@@ -174,7 +173,7 @@ double* EventSelector::findInt(double* candidate_array, int reco_primary, Int_t 
     // # topology 3, 4
     if(branches.size()){
       int earliest_branch_spt = 9999;
-      for(int branch_pt = 0; branch_pt < branches.size(); branch_pt++){
+      for(unsigned int branch_pt = 0; branch_pt < branches.size(); branch_pt++){
         if(branches[branch_pt][1] < earliest_branch_spt){
           earliest_branch_spt = branches[branch_pt][1];
         }
@@ -184,7 +183,7 @@ double* EventSelector::findInt(double* candidate_array, int reco_primary, Int_t 
     // # topology 1
     if(kinks.size()){
       int earliest_kink_spt = 9999;
-      for(int kink_pt = 0; kink_pt < kinks.size(); kink_pt++){
+      for(unsigned int kink_pt = 0; kink_pt < kinks.size(); kink_pt++){
         if(kinks[kink_pt][0] < earliest_kink_spt){
           earliest_kink_spt = kinks[kink_pt][0];
         }
@@ -192,8 +191,7 @@ double* EventSelector::findInt(double* candidate_array, int reco_primary, Int_t 
       potential_interaction_pts.push_back((int)earliest_kink_spt);
     }//<--End if there was a kink
     // # getting earliest of topology 1,3,4
-    for(int i = 0; i < potential_interaction_pts.size(); i++){
-      interacting_candidate = true;
+    for(unsigned int i = 0; i < potential_interaction_pts.size(); i++){
       candidate_array[0] = 1;
       if(potential_interaction_pts[i] < candidate_spt){
         candidate_spt = potential_interaction_pts[i];
@@ -208,8 +206,6 @@ double* EventSelector::findInt(double* candidate_array, int reco_primary, Int_t 
     // # topology 2
     if(!(branches.size() || kinks.size())){
       if(missing_bragg && prim_endz < 88){
-        //nTopology2++;
-        interacting_candidate = true;
         candidate_array[0] = 1;
         candidate_spt = (*ntrack_hits)[reco_primary] - 1;
         candidate_xpos = (*col_track_x)[reco_primary][(*col_track_hits)[reco_primary]-1];
@@ -220,7 +216,6 @@ double* EventSelector::findInt(double* candidate_array, int reco_primary, Int_t 
         candidate_array[3] = candidate_zpos;
       }
       else{
-        interacting_candidate = false;
         candidate_array[0] = 0;
         candidate_array[1] = -1;
         candidate_array[2] = -1;
@@ -228,8 +223,6 @@ double* EventSelector::findInt(double* candidate_array, int reco_primary, Int_t 
       }
     }//<-End if no branches or kinks
 
-    // ## gonna need to change this an array at some point
-    //return interacting_candidate;
     return candidate_array;
 
 }

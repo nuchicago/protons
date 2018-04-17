@@ -62,10 +62,7 @@ int BeamSelector::isTPCPrimary(std::vector<std::vector<double>> *track_zpos,int 
   double zPointCutoff, int& reco_primary, double& first_reco_z, int verbose){
 
       bool print = false;
-<<<<<<< HEAD
       if(verbose == 2){print = true;}
-=======
->>>>>>> mc-kinematic-study
       if(mc_mode){
         if(print){
           std::cout<<"MC Primary Selection"<<std::endl;
@@ -179,24 +176,17 @@ double BeamSelector::getMCInitialKE(double initial_ke, unsigned int geant_list_s
     double mass = 938.57;
     int first_pt = 0;
 
-    for(int g4part = 0; g4part < geant_list_size; g4part++) {
+    for(unsigned int g4part = 0; g4part < geant_list_size; g4part++) {
       if((*process_primary)[g4part] != 1) {continue;}// skipping non primary g4 ID
       for(int pt = 1; pt < (*NTrTrajPts)[g4part]; pt++){
         double xpos = (*MidPosX)[g4part][pt];
         double ypos = (*MidPosY)[g4part][pt];
         double zpos = (*MidPosZ)[g4part][pt];
-        double prev_xpos = (*MidPosX)[g4part][pt-1];
-        double prev_ypos = (*MidPosY)[g4part][pt-1];
-        double prev_zpos = (*MidPosZ)[g4part][pt-1];
     
         double p = sqrt(pow(1000*(*MidPx)[g4part][pt], 2)
                       + pow(1000*(*MidPy)[g4part][pt], 2)
                       + pow(1000*(*MidPz)[g4part][pt], 2));
-        double prev_p = sqrt(pow(1000*(*MidPx)[g4part][pt-1], 2)
-                           + pow(1000*(*MidPy)[g4part][pt-1], 2)
-                           + pow(1000*(*MidPz)[g4part][pt-1], 2));
         double ke = sqrt(pow(mass, 2) + pow(p, 2)) - mass; 
-        double prev_ke = sqrt(pow(mass, 2) + pow(prev_p, 2)) - mass; 
         if( xpos > 0 && xpos < 47.5 && ypos > -20 && ypos < 20 && zpos > 0 && zpos < 90 ) {
           if(first_pt == 0){initial_ke = ke; first_pt++;}
         }//<--End if in tpc
