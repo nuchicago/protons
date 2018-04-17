@@ -154,6 +154,9 @@ void ProtonXsec::AnalyzeFromNtuples(){
   double angleCut = 0;
 
 
+  // ### some variables that are needed for the xs calc ###
+  double z2 = 0.5; //<-- slab size. need to move this to jobOptions
+
 
 
   std::cout << "I calculate the p-Ar cross section! \n";
@@ -203,6 +206,12 @@ void ProtonXsec::AnalyzeFromNtuples(){
   delPhiHist->GetXaxis()->SetTitle("[radians]");
   delPhiHist->GetYaxis()->SetTitle("Number of Events");
 
+
+
+  // ## xs histos ##
+  TH1D *hreco_initialKE = new TH1D("hreco_initialKe", "initial ke", 20, 0, 1000);
+  TH1D *hreco_intke = new TH1D("hreco_intke", "int ke", 20, 0, 1000);
+  TH1D *hreco_incke = new TH1D("hreco_incke", "inc ke", 20, 0, 1000);
 
   // ## event loop ##
   for (Long64_t jentry=0; jentry < numEventsToProcess && jentry < nentries; jentry++) {
@@ -287,6 +296,93 @@ void ProtonXsec::AnalyzeFromNtuples(){
       else{BeamSelHistData->Fill(-1);}
 
     }
+
+
+
+    // ### porting over the work from ProtonAnalyzerMC module -- ryan ###
+
+
+    // ## grabbing reco primary ##
+    //int reco_primary = -1;
+    double first_reco_z = 99.;
+    reco_primary = BS->isTPCPrimary(track_zpos, ntracks_reco, isMC, UI->zBeamCutoff, reco_primary, first_reco_z, verbose);
+    if(reco_primary == -1) {
+      continue;
+    }//<- skipping events that didn't pass isTPCPrimary 
+
+
+    // ## grabbing interaction point ##
+    double temp[4];
+    double* candidate_info = ES->findInt(temp, reco_primary, ntracks_reco, 
+                                            ntrack_hits, track_xpos, track_ypos, track_zpos,
+                                            track_end_x, track_end_y, track_end_z,
+                                            col_track_hits, col_track_dedx, col_track_pitch_hit,
+                                            col_track_x, col_track_y, col_track_z);
+
+
+    // ## grabbing what will be histogram entries ##
+    double initial_ke = 99999; //<-- setting to a constant to do dev. needs to be WC info
+    std::vector<double> calo_slab_xpos;
+    std::vector<double> calo_slab_ypos;
+    std::vector<double> calo_slab_zpos;
+    std::vector<double> calo_slab_KE;
+
+    if(isMC) {
+      initial_ke = BS->getMCInitialKE(initial_ke, geant_list_size, process_primary, 
+                                      NTrTrajPts, MidPosX, MidPosY,  MidPosZ, MidPx, MidPy, MidPz); 
+    }
+    if(!isMC) {
+      initial_ke = BS->getDataInitialKE(initial_ke);
+    }
+    hreco_initialKE->Fill(initial_ke);
+    
+    int slabPass = ES->getSlabInfo(calo_slab_xpos, calo_slab_ypos, calo_slab_zpos, calo_slab_KE,
+                                    reco_primary, z2, initial_ke,
+                                    col_track_hits, col_track_dedx, col_track_pitch_hit,
+                                    col_track_x, col_track_y, col_track_z);
+
+
+
+    // ## actually filling histograms ##
+    // ## getting which slab will be used for interactions ##
+    int calo_int_slab = 999;
+    if(candidate_info[0]){
+      double int_candidate_x = candidate_info[1];
+      double int_candidate_y = candidate_info[2];
+      double int_candidate_z = candidate_info[3];
+      // loop over slabs to find slab closest to interaction candidate
+      double min_dist_int = 99;
+      for(int calo_slab = 0; calo_slab < calo_slab_KE.size(); calo_slab++){
+        double calo_slab_x = calo_slab_xpos[calo_slab];  
+        double calo_slab_y = calo_slab_ypos[calo_slab];  
+        double calo_slab_z = calo_slab_zpos[calo_slab];  
+        double dist_int_slab = sqrt( pow(int_candidate_x - calo_slab_x, 2) 
+                                   + pow(int_candidate_y - calo_slab_y, 2) 
+                                   + pow(int_candidate_z - calo_slab_z, 2) );
+        if(calo_slab_z < int_candidate_z){
+          if(dist_int_slab < min_dist_int){
+            min_dist_int = dist_int_slab;
+            calo_int_slab = calo_slab;
+          }
+        }//<--End if this slab is upstream of int
+      }//<--End calo slab loop
+    }//<---End if interaction candidate
+
+
+    // ## incident slabs ## 
+    int ninc_entries = 0;
+    for(int calo_slab = 1; calo_slab < calo_slab_KE.size(); calo_slab++){
+      if(calo_slab > calo_int_slab){continue;}//<--stop after interaction slab 
+      hreco_incke->Fill(calo_slab_KE[calo_slab]);
+      if(calo_slab == calo_int_slab){
+        hreco_intke->Fill(calo_slab_KE[calo_slab]);
+      }//<-- End if this is the interacting slab
+    }//<--End calo slab loop
+
+
+    // ### end of port work -- ryan ###
+
+
   } //end of event Loop
 
   if(verbose > 0){
@@ -319,7 +415,16 @@ void ProtonXsec::AnalyzeFromNtuples(){
     TrackPositionXY->Draw("COLZ");
     TImage *BeamXYimg = TImage::Create();
     BeamXYimg->FromPad(c);
-    BeamXYimg->WriteImage("BeamXY.png");}
+    BeamXYimg->WriteImage("BeamXY.png");
+
+
+    // ## xs histos ##
+    hreco_initialKE->Write();
+    hreco_incke->Write();
+    hreco_intke->Write();
+
+
+  }
 
   
 
@@ -382,6 +487,11 @@ void ProtonXsec::AnalyzeFromNtuples(){
     TImage *delPhiimg = TImage::Create();
     delPhiimg->FromPad(c);
     delPhiimg->WriteImage("delPhiHist.png");
+
+
+    // ## xs histos ##
+    hreco_incke->Write();
+    hreco_intke->Write();
     }
 
 

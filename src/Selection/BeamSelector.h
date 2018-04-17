@@ -29,6 +29,14 @@ class BeamSelector {
                   std::vector< std::vector<double> > *track_zpos, 
                   int ntracks_reco, double zPointCutoff, int& MatchedTrack);
 
+  double getMCInitialKE(double initial_ke, unsigned int geant_list_size, std::vector<int> *process_primary, 
+                      std::vector<int> *NTrTrajPts, std::vector<std::vector<double>> *MidPosX,
+                      std::vector<std::vector<double>> *MidPosY, std::vector<std::vector<double>> *MidPosZ, 
+                      std::vector<std::vector<double>> *MidPx, std::vector<std::vector<double>> *MidPy,
+                      std::vector<std::vector<double>> *MidPz); 
+
+  double getDataInitialKE(double initial_ke);
+
  private:
 
 

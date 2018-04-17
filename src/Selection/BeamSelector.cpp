@@ -83,9 +83,26 @@ int BeamSelector::isTPCPrimary(std::vector<std::vector<double>> *track_zpos,int 
 
       // ## if data ##
       else {
-        std::cout<<"Beam Selection for data not available\n"<<std::endl;
-        return -999;
-      }
+        // ### adding a data version of this function ###
+        // ### right now all it does is make a vector of ###
+        // ### track ids for early tracks (first Zpoint < 2cm) ###
+        // ### im randomly picking the first one in this vector ###
+        // ### later need to do matching on these tracks !!!!!! ###
+        std::vector<int> track_id_early_track;
+        for(int rtrack = 0; rtrack < ntracks_reco; rtrack++) {
+          double z1 = (*track_zpos)[rtrack][0];
+          if(z1 < zPointCutoff) {
+            track_id_early_track.push_back(rtrack);
+          }
+        }//<---End loop reco tracks
+        // ## returning randomly one of the early tracks ##
+        if(track_id_early_track.size()) {
+          return track_id_early_track.at(0);
+        }
+        else {
+          return -1;
+        }
+      }//<-- End if data
 
 }
 
@@ -147,6 +164,52 @@ std::vector<double> BeamSelector::wcTPCMatch(double wc_x, double wc_y, double wc
   return minVector;
 }
 
+
+
+
+double BeamSelector::getMCInitialKE(double initial_ke, unsigned int geant_list_size, std::vector<int> *process_primary, 
+                                    std::vector<int> *NTrTrajPts, std::vector<std::vector<double>> *MidPosX,
+                                    std::vector<std::vector<double>> *MidPosY, std::vector<std::vector<double>> *MidPosZ, 
+                                    std::vector<std::vector<double>> *MidPx, std::vector<std::vector<double>> *MidPy,
+                                    std::vector<std::vector<double>> *MidPz) {
+
+    double mass = 938.57;
+    int first_pt = 0;
+
+    for(int g4part = 0; g4part < geant_list_size; g4part++) {
+      if((*process_primary)[g4part] != 1) {continue;}// skipping non primary g4 ID
+      for(int pt = 1; pt < (*NTrTrajPts)[g4part]; pt++){
+        double xpos = (*MidPosX)[g4part][pt];
+        double ypos = (*MidPosY)[g4part][pt];
+        double zpos = (*MidPosZ)[g4part][pt];
+        double prev_xpos = (*MidPosX)[g4part][pt-1];
+        double prev_ypos = (*MidPosY)[g4part][pt-1];
+        double prev_zpos = (*MidPosZ)[g4part][pt-1];
+    
+        double p = sqrt(pow(1000*(*MidPx)[g4part][pt], 2)
+                      + pow(1000*(*MidPy)[g4part][pt], 2)
+                      + pow(1000*(*MidPz)[g4part][pt], 2));
+        double prev_p = sqrt(pow(1000*(*MidPx)[g4part][pt-1], 2)
+                           + pow(1000*(*MidPy)[g4part][pt-1], 2)
+                           + pow(1000*(*MidPz)[g4part][pt-1], 2));
+        double ke = sqrt(pow(mass, 2) + pow(p, 2)) - mass; 
+        double prev_ke = sqrt(pow(mass, 2) + pow(prev_p, 2)) - mass; 
+        if( xpos > 0 && xpos < 47.5 && ypos > -20 && ypos < 20 && zpos > 0 && zpos < 90 ) {
+          if(first_pt == 0){initial_ke = ke; first_pt++;}
+        }//<--End if in tpc
+      }//<--End spt loop
+    }//<--End g4 loop
+
+
+    return initial_ke;
+
+}
+
+
+double BeamSelector::getDataInitialKE(double initial_ke) {
+
+    return initial_ke; 
+}
 
 
 //#############################################################################

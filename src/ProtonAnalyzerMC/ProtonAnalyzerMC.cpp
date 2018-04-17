@@ -172,6 +172,7 @@ void ProtonAnalyzerMC::AnalyzeFromNtuples() {
   TH1D *sintke = new TH1D("sintke", "slab int ke", 20, 0, 1000);
   TH1D *sxs    = new TH1D("sxs",    "slab xs",     20, 0, 1000);
 
+  TH1D *hreco_initialKE = new TH1D("hreco_initialKE", "initial ke", 20, 0, 1000);
   TH1D *hreco_intke = new TH1D("hreco_intke", "int ke", 20, 0, 1000);
   TH1D *hreco_intke_signal = new TH1D("hreco_intke_signal", "int ke signal", 20, 0, 1000);
   TH1D *hreco_folded_intke_signal = new TH1D("hreco_folded_intke_signal", "interacting ke (signal)", 20, 0, 1000);
@@ -494,6 +495,7 @@ void ProtonAnalyzerMC::AnalyzeFromNtuples() {
     std::vector<double> calo_slab_zpos;
     std::vector<double> calo_slab_KE;
     std::cout<<"initial_ke: "<<initial_ke<<std::endl;
+    hreco_initialKE->Fill(initial_ke);
     int slabPass = ES->getSlabInfo(calo_slab_xpos, calo_slab_ypos, calo_slab_zpos, calo_slab_KE,
                                     reco_primary, z2, initial_ke,
                                     col_track_hits, col_track_dedx, col_track_pitch_hit,
@@ -769,6 +771,7 @@ void ProtonAnalyzerMC::AnalyzeFromNtuples() {
     sintke->Write();
     sincke->Write();
     sxs->Write();
+    hreco_initialKE->Write();
     hreco_intke->Write();
     hreco_intke_signal->Write();
     hreco_folded_intke_signal->Write();

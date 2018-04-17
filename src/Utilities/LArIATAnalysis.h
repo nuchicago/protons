@@ -173,9 +173,9 @@ class LArIATAnalysis {
   std::vector<int>     *SlabN;
   std::vector<double>  *SlabE;
   Int_t           LastSlabInt;
-  std::vector<std::vector<double> > *DPMidPosX;
-  std::vector<std::vector<double> > *DPMidPosY;
-  std::vector<std::vector<double> > *DPMidPosZ;
+  std::vector<std::vector<double> > *DMidPosX;
+  std::vector<std::vector<double> > *DMidPosY;
+  std::vector<std::vector<double> > *DMidPosZ;
   std::vector<int>     *InteractionPoint;
   std::vector<int>     *InteractionPointType;
 
@@ -274,9 +274,9 @@ class LArIATAnalysis {
   TBranch        *b_SlabN;   //!
   TBranch        *b_SlabE;   //!
   TBranch        *b_LastSlabInt;   //!
-  TBranch        *b_DPMidPosX;   //!
-  TBranch        *b_DPMidPosY;   //!
-  TBranch        *b_DPMidPosZ;   //!
+  TBranch        *b_DMidPosX;   //!
+  TBranch        *b_DMidPosY;   //!
+  TBranch        *b_DMidPosZ;   //!
   TBranch        *b_InteractionPoint;   //!
   TBranch        *b_InteractionPointType;
   TBranch        *b_wctrk_momentum;   //!
