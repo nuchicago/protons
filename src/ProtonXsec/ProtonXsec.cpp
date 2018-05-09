@@ -57,8 +57,8 @@ int main( int argc, char * argv[] ){
   // ROOT Style Settings
   //--------------------------------------------------------------------------
   
-  gStyle->SetOptStat(0000);
-  gStyle->SetOptFit(0000);
+  //gStyle->SetOptStat(0000);
+  //gStyle->SetOptFit(0000);
   //gStyle->SetOptTitle(0);
   //gStyle->SetFillColor(0);
   gStyle->SetPadColor(0);
@@ -69,7 +69,7 @@ int main( int argc, char * argv[] ){
   //gStyle->SetFrameBorderMode(0);
   //gStyle->SetCanvasBorderMode(0);
   //gStyle->SetPalette(18,0);
-  gStyle->SetPaperSize(20,26);
+  //gStyle->SetPaperSize(20,26);
 
   //gRandom->SetSeed(0);
 
@@ -149,9 +149,15 @@ void ProtonXsec::AnalyzeFromNtuples(){
   // counters for cuts
 
   double numEventsStart = 0;
+  double numZcutoff = 0;
   double numWCTrack = 0;
   double xyDeltaCut = 0;
   double angleCut = 0;
+
+  double numFinderEvents = 0;
+  double numFinderZcutoff = 0;
+  double numFinderTheta = 0;
+  double numFinderPhi = 0;
 
 
   // ### some variables that are needed for the xs calc ###
@@ -172,39 +178,37 @@ void ProtonXsec::AnalyzeFromNtuples(){
   TCanvas *c = new TCanvas("c","c",1000, 1000);
 
 
-  TH1D *BeamSelHistMC = new TH1D("BeamSelHistMC","Primary Track Identified for Event: MC",100,-3,3);
-  BeamSelHistMC->GetYaxis()->SetTitle("Number of Events");
-  
-  TH1D *BeamSelHistData = new TH1D("BeamSelHistData","Primary Tracks Identified",100,-3,3);
-  BeamSelHistData->GetYaxis()->SetTitle("Number of Events");
-  BeamSelHistData->GetYaxis()->SetTitle("Number of Events");
 
-  TH1D *BeamToF = new TH1D("BeamToF","Incoming Particle TOF",20,-2,2);
-  BeamToF->GetXaxis()->SetTitle("ns");
-  BeamToF->GetYaxis()->SetTitle("Number of Events");
+
 
   
 
-  TH2D *TrackPositionXY =  new TH2D("TrackPositionXY","Position of TPC track start",
-    20, 0, 47.5, 20, -20, 20);
-  TrackPositionXY->GetYaxis()->SetTitle("Y");
-  TrackPositionXY->GetXaxis()->SetTitle("X");
+  TH2D *tpcInTracksXY =  new TH2D("tpcInTracksXY","Position of TPC track start",
+    200, -100, 100, 200, -100, 100);
+  tpcInTracksXY->GetYaxis()->SetTitle("Y");
+  tpcInTracksXY->GetXaxis()->SetTitle("X");
+  TH2D *wctrkPositionXY =  new TH2D("wctrkPositionXY","Position of Wire Chamber Track",
+    200,-100 ,100 , 200, -100, 100);
+  TH2D *wctrkSelectedXY =  new TH2D("wctrkSelectedXY","Position of Wire Chamber Track",
+  200, -100, 100, 200, -100, 100);
+
 
    
 
   TH1D *BeamMomentum = new TH1D("BeamMomentum","Incoming Particle Momentum",100,300,1000);
-  BeamMomentum->GetXaxis()->SetTitle("[MeV/c]");
-  BeamMomentum->GetYaxis()->SetTitle("Number of Events");
 
-  TH2D * delXYHist =  new TH2D("delXYHist","tpc to wc delta x",100,-40,40,100,-40,40);
-  delXYHist->GetXaxis()->SetTitle("X[cm]");
-  delXYHist->GetYaxis()->SetTitle("Y[cm]");
+  TH1D *inTracksNumHist = new TH1D("inTracksNumHist","Number of Entering Tracks TPC",100,0,10);
+
+  TH1D *wctrkNumHist = new TH1D("wctrkNumHist","Number of Entering Tracks TPC",20,0,5);
+
+  //TH1D *phicalctest = new TH1D("phicalctest","Number of Entering Tracks TPC",100,-4,4);
+
+  TH2D * delXYHist =  new TH2D("delXYHist","tpc to wc delta x",200,-100,100,200,-100,100);
+
   TH1D * delThetaHist =  new TH1D("delThetaHist","tpc to wc delta Theta",100,-1,1);
-  delThetaHist->GetXaxis()->SetTitle("[radians]");
-  delThetaHist->GetYaxis()->SetTitle("Number of Events");
+
   TH1D * delPhiHist =  new TH1D("delPhiHist","tpc to wc delta Phi",100,-4,4);
-  delPhiHist->GetXaxis()->SetTitle("[radians]");
-  delPhiHist->GetYaxis()->SetTitle("Number of Events");
+
 
 
 
@@ -213,14 +217,63 @@ void ProtonXsec::AnalyzeFromNtuples(){
   TH1D *hreco_intke = new TH1D("hreco_intke", "int ke", 20, 0, 1000);
   TH1D *hreco_incke = new TH1D("hreco_incke", "inc ke", 20, 0, 1000);
 
-  // ## event loop ##
+
+  // ## looping once to find Beamline center ##
+
+  if(!isMC){
   for (Long64_t jentry=0; jentry < numEventsToProcess && jentry < nentries; jentry++) {
     
     Long64_t ientry = tuple->LoadTree(jentry);
     if (ientry < 0){continue;}
     Long64_t nb = 0;
     nb = tuple->GetEntry(jentry);
+    int numEnteringTracks = 0;
+    int best_candidate = -1;
+    numFinderEvents++;
+    wctrkNumHist->Fill(num_wctracks);
 
+      if (num_wctracks == 1){
+        wctrkPositionXY->Fill(wctrk_XFace[0],wctrk_YFace[0]);
+        std::vector <double> wctpc_mvect = BS->wcTPCMatch(wctrk_XFace[0],wctrk_YFace[0], wctrk_theta[0], wctrk_phi[0],track_xpos,
+          track_ypos, track_zpos, ntracks_reco, UI->zTPCCutoff,best_candidate, numEnteringTracks);
+        inTracksNumHist->Fill(numEnteringTracks);
+
+        //phicalctest->Fill(wctrk_phi[0] - atan2(wctrk_XFace[0]-20,wctrk_YFace[0]));
+
+        if(best_candidate != -1){
+          
+            //if(wctpc_mvect[rtrack][2] < 2){
+            //numFinderTheta++;
+            //if(wctptc_mvect[rtrack][3] < 2){
+            //numFinderPhi++;
+
+            delXYHist->Fill(wctpc_mvect[1],wctpc_mvect[2]);
+            delThetaHist->Fill(wctpc_mvect[3]);
+            delPhiHist->Fill(wctpc_mvect[4]);
+            tpcInTracksXY->Fill((*track_xpos)[best_candidate][0],
+            (*track_ypos)[best_candidate][0]);
+            wctrkSelectedXY->Fill(wctrk_XFace[0],wctrk_YFace[0]);         
+          
+        }
+      }
+    }
+  }// End of beam centering loop
+
+
+
+    // setting beam center values
+  
+    double xMeanTPCentry = delXYHist->GetMean(1);
+    double yMeanTPCentry = delXYHist->GetMean(2);
+
+  // ## event loop ##
+  for (Long64_t jentry=0; jentry < numEventsToProcess && jentry < nentries; jentry++){
+    
+    Long64_t ientry = tuple->LoadTree(jentry);
+    if (ientry < 0){continue;}
+    Long64_t nb = 0;
+    nb = tuple->GetEntry(jentry);
+    int numEnteringTracks = 0;
     int reco_primary = -1;
     
     numEventsStart++;
@@ -231,69 +284,37 @@ void ProtonXsec::AnalyzeFromNtuples(){
 
     
     if(!isMC){
-      if (num_wctracks < 2){
-        numWCTrack++;
-        std::vector< std::vector<double> > wctpc_mvect = BS->wcTPCMatchPlots(wctrk_XFace[0],wctrk_YFace[0], wctrk_theta[0], wctrk_phi[0], track_xpos,
-         track_ypos, track_zpos, ntracks_reco, UI->zTPCCutoff);
-
-        if(wctpc_mvect.size() > 0 ){
-          for(unsigned int rtrack = 0; rtrack < wctpc_mvect.size(); rtrack++){
-            delXYHist->Fill(wctpc_mvect[rtrack][0],wctpc_mvect[rtrack][1]);
-            delThetaHist->Fill(wctpc_mvect[rtrack][2]);
-            delPhiHist->Fill(wctpc_mvect[rtrack][3]);
-          }
+      if (num_wctracks !=1){continue;}
+      else{
+          numWCTrack++;
           std::vector <double> MinVector = BS->wcTPCMatch(wctrk_XFace[0],wctrk_YFace[0], wctrk_theta[0], wctrk_phi[0],track_xpos,
-          track_ypos, track_zpos, ntracks_reco, UI->zTPCCutoff,reco_primary);
-
-          if(reco_primary > 0 && MinVector[0] < 5){
-            xyDeltaCut++;
-            if(abs(MinVector[1]) < 1 && abs(MinVector[2]) <1){
-              angleCut++;
+          track_ypos, track_zpos, ntracks_reco, UI->zTPCCutoff,reco_primary, numEnteringTracks);
+          
+          if(reco_primary == -1){continue;}
+          else{ 
+            numZcutoff++;
+              if( (sqrt( pow((MinVector[1] - xMeanTPCentry),2) + pow((MinVector[2] - yMeanTPCentry),2) )) > 5) {
+                  continue;}
+              else{
+                  xyDeltaCut++;
+                  if(abs(MinVector[3]) > 2 or abs(MinVector[4]) > 2){
+                      continue;}
+                  else{angleCut++;}
+                }     
             }
-
-
           }
-
-
-
-
-
-        }
-
-
-
-
-
       }
-    }
+    
 
 
 
-    if(found_primary){
-      if(verbose == 2){std::cout << "Found Primary\n" << std::endl;}
-      if(isMC){
-        BeamSelHistMC->Fill(1);        
-        TrackPositionXY->Fill((*track_xpos)[reco_primary][0],
-          (*track_ypos)[reco_primary][0]);
-      
-      }
-      else{//
-        BeamSelHistData->Fill(1);
-          TrackPositionXY->Fill((*track_xpos)[reco_primary][0],
-          (*track_ypos)[reco_primary][0]);
 
-          for (int wctrack = 0 ; wctrack < num_wctracks; wctrack++){
-          BeamMomentum->Fill(wctrk_momentum[wctrack]);
-          BeamToF->Fill(tofObject[wctrack]);}
-
-
-      }
-
-    }
     else{
       if(verbose == 2){std::cout << "No Valid Primary \n" << std::endl;}
-      if(isMC){BeamSelHistMC->Fill(-1);}
-      else{BeamSelHistData->Fill(-1);}
+      if(isMC){//BeamSelHistMC->Fill(-1);
+      }
+      else{//BeamSelHistData->Fill(-1);
+      }
 
     }
 
@@ -304,11 +325,11 @@ void ProtonXsec::AnalyzeFromNtuples(){
 
     // ## grabbing reco primary ##
     //int reco_primary = -1;
-    double first_reco_z = 99.;
-    reco_primary = BS->isTPCPrimary(track_zpos, ntracks_reco, isMC, UI->zBeamCutoff, reco_primary, first_reco_z, verbose);
-    if(reco_primary == -1) {
-      continue;
-    }//<- skipping events that didn't pass isTPCPrimary 
+    //double first_reco_z = 99.;
+    //reco_primary = BS->isTPCPrimary(track_zpos, ntracks_reco, isMC, UI->zBeamCutoff, reco_primary, first_reco_z, verbose);
+    if(reco_primary == -1){continue;}//<- skipping events that didn't pass isTPCPrimary 
+    else{ found_primary = true;}
+
 
 
     // ## grabbing interaction point ##
@@ -332,7 +353,7 @@ void ProtonXsec::AnalyzeFromNtuples(){
                                       NTrTrajPts, MidPosX, MidPosY,  MidPosZ, MidPx, MidPy, MidPz); 
     }
     if(!isMC) {
-      initial_ke = BS->getDataInitialKE(initial_ke);
+      initial_ke = BS->getDataInitialKE(initial_ke, wctrk_momentum[0]);
     }
     hreco_initialKE->Fill(initial_ke);
     
@@ -342,7 +363,7 @@ void ProtonXsec::AnalyzeFromNtuples(){
                                     col_track_x, col_track_y, col_track_z);
 
 
-
+    
     // ## actually filling histograms ##
     // ## getting which slab will be used for interactions ##
     int calo_int_slab = 999;
@@ -358,7 +379,7 @@ void ProtonXsec::AnalyzeFromNtuples(){
         double calo_slab_z = calo_slab_zpos[calo_slab];  
         double dist_int_slab = sqrt( pow(int_candidate_x - calo_slab_x, 2) 
                                    + pow(int_candidate_y - calo_slab_y, 2) 
-                                   + pow(int_candidate_z - calo_slab_z, 2) );
+                                   + pow(int_candidate_z - calo_slab_z, 2));
         if(calo_slab_z < int_candidate_z){
           if(dist_int_slab < min_dist_int){
             min_dist_int = dist_int_slab;
@@ -378,17 +399,20 @@ void ProtonXsec::AnalyzeFromNtuples(){
       }//<-- End if this is the interacting slab
     }//<--End calo slab loop
 
-
     // ### end of port work -- ryan ###
 
 
-  } //end of event Loop
+
+   
+  
+  }//end of event Loop
 
   if(verbose > 0){
     std::cout << "Total events processed: "<< numEventsStart << std::endl;
     std::cout << "Events with only one wc track: "<< numWCTrack << std::endl;
+    std::cout << "Events with best match TPC track Z < Cutoff: "<< numZcutoff << std::endl;
     std::cout << "Events after XY plane distance cut: "<< xyDeltaCut << std::endl;
-    std::cout << "Events after angle cut: "<< angleCut << std::endl;
+    std::cout << "Events after; angle cut: "<< angleCut << std::endl;
   }
 
 
@@ -396,31 +420,14 @@ void ProtonXsec::AnalyzeFromNtuples(){
   
   
   if(isMC){
-    c->cd();
-
-    BeamSelHistMC->Draw();
-
 
     if(UI->rootOutputFileSet){
-       BeamSelHistMC->Write();
-    }
-    /*if(UI->psOutputFileSet){
-       BeamSelHistMC->Print(UI->psOutputFile);
-       TrackPositionXY->Print(UI->psOutputFile);
-    }*/
-    TImage *img = TImage::Create();
-    img->FromPad(c);
-    img->WriteImage("BeamSelHistMC.png");
-    TrackPositionXY->Draw("COLZ");
-    TImage *BeamXYimg = TImage::Create();
-    BeamXYimg->FromPad(c);
-    BeamXYimg->WriteImage("BeamXY.png");
-
-
-    // ## xs histos ##
-    hreco_initialKE->Write();
-    hreco_incke->Write();
-    hreco_intke->Write();
+       
+      // ## xs histos ##
+      hreco_initialKE->Write();
+      hreco_incke->Write();
+      hreco_intke->Write();
+  }
 
 
   }
@@ -430,76 +437,48 @@ void ProtonXsec::AnalyzeFromNtuples(){
 
 
   else if (!(isMC)){
-    c->cd();
     
-    
-
-
     if(UI->rootOutputFileSet){
-
-
-
-    BeamSelHistData->Draw();
-    BeamSelHistData->Write();
-    TImage *img = TImage::Create();
-    img->FromPad(c);
-    img->WriteImage("BeamSelHistData.png");
     
-    TrackPositionXY->Draw("COLZ");
-    TrackPositionXY->Write();
-    TImage *BeamXYimg = TImage::Create();
-    BeamXYimg->FromPad(c);
-    BeamXYimg->WriteImage("BeamXYData.png");
+    //BeamSelHistData->Write();
+
     
-    BeamToF->Draw();
-    BeamToF->Write();
-    TImage *Beamtofimg = TImage::Create();
-    Beamtofimg->FromPad(c);
-    Beamtofimg->WriteImage("BeamToFData.png");
+    
+    tpcInTracksXY->Write();
+    wctrkPositionXY->Write();
+    wctrkSelectedXY->Write();
+    wctrkNumHist->Write();
+
+    
+    //BeamToF->Draw();
+    //BeamToF->Write();
+
+    inTracksNumHist->Draw();
+    inTracksNumHist->Write();
+
 
     BeamMomentum->Draw();
     BeamMomentum->Write();
-    TImage *BeamMomImg = TImage::Create();
-    BeamMomImg->FromPad(c);
-    BeamMomImg->WriteImage("BeamMomentum.png");
-
 
     delXYHist->Draw("COLZ");
     delXYHist->Write();
-    //XYcut->Write();
-    TImage *delXYimg = TImage::Create();
-    delXYimg->FromPad(c);
-    delXYimg->WriteImage("delXYHist.png");
-
-
-
 
     delThetaHist->Draw();
     delThetaHist->Write();
-    TImage *delThetaimg = TImage::Create();
-    delThetaimg->FromPad(c);
-    delThetaimg->WriteImage("delThetaHist.png");
-
 
     delPhiHist->Draw();
     delPhiHist->Write();
-    TImage *delPhiimg = TImage::Create();
-    delPhiimg->FromPad(c);
-    delPhiimg->WriteImage("delPhiHist.png");
 
 
     // ## xs histos ##
     hreco_incke->Write();
     hreco_intke->Write();
     }
+  }
 
 
 }
 
-
-
-
-}
 
 
 

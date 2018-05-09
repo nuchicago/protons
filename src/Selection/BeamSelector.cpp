@@ -109,7 +109,7 @@ int BeamSelector::isTPCPrimary(std::vector<std::vector<double>> *track_zpos,int 
 std::vector<std::vector<double>> BeamSelector::wcTPCMatchPlots(double wc_x, double wc_y, double wc_theta, double wc_phi,
                   std::vector< std::vector<double> > *track_xpos,
                   std::vector< std::vector<double> > *track_ypos,
-                  std::vector< std::vector<double> > *track_zpos, int ntracks_reco, double zPointCutoff){
+                  std::vector< std::vector<double> > *track_zpos, int ntracks_reco, double zPointCutoff, int& numEntering){
 
 
   std::vector<std::vector<double>> vOut;
@@ -117,6 +117,7 @@ std::vector<std::vector<double>> BeamSelector::wcTPCMatchPlots(double wc_x, doub
   for(int mtrack = 0; mtrack < ntracks_reco; mtrack++){
 
     if((*track_zpos)[mtrack][0] < zPointCutoff){
+      numEntering++;
       double delX = wc_x - (*track_xpos)[mtrack][0];
       double delY = wc_y - (*track_ypos)[mtrack][0];
       double delTheta = wc_theta - UtilityFunctions::getTrackTheta(mtrack, track_xpos,track_ypos,track_zpos);
@@ -132,16 +133,19 @@ std::vector<std::vector<double>> BeamSelector::wcTPCMatchPlots(double wc_x, doub
 std::vector<double> BeamSelector::wcTPCMatch(double wc_x, double wc_y, double wc_theta, double wc_phi,
                   std::vector< std::vector<double> > *track_xpos,
                   std::vector< std::vector<double> > *track_ypos,
-                  std::vector< std::vector<double> > *track_zpos, int ntracks_reco, double zPointCutoff, int& MatchedTrack){
+                  std::vector< std::vector<double> > *track_zpos, int ntracks_reco, double zPointCutoff, int& MatchedTrack, int& numEntering){
 
   
-  double rValueMin = 99.;
-  double delThetaMin = 99.;
-  double delPhiMin = 99.;
+  double rValueMin = 999.;
+  double delXMin;
+  double delYMin;
+  double delThetaMin;
+  double delPhiMin;
   
   for(int mtrack = 0; mtrack < ntracks_reco; mtrack++){
 
     if((*track_zpos)[mtrack][0] < zPointCutoff){
+      numEntering++;
       double delX = wc_x - (*track_xpos)[mtrack][0];
       double delY = wc_y - (*track_ypos)[mtrack][0];
       double delTheta = wc_theta - UtilityFunctions::getTrackTheta(mtrack, track_xpos,track_ypos,track_zpos);
@@ -151,15 +155,17 @@ std::vector<double> BeamSelector::wcTPCMatch(double wc_x, double wc_y, double wc
       double rValue = sqrt(pow(delX,2) + pow(delY,2));
       if(rValue < rValueMin){
         rValueMin = rValue;
+        delXMin = delX;
+        delYMin = delY;
         MatchedTrack = mtrack;
         delThetaMin = delTheta;
         delPhiMin = delPhi;
       }
-      
-      }
+    }
   }
 
-  std::vector<double> minVector = {rValueMin,delThetaMin,delPhiMin};
+
+  std::vector<double> minVector = {rValueMin,delXMin,delYMin,delThetaMin,delPhiMin};
 
   return minVector;
 }
@@ -199,7 +205,12 @@ double BeamSelector::getMCInitialKE(double initial_ke, unsigned int geant_list_s
 }
 
 
-double BeamSelector::getDataInitialKE(double initial_ke) {
+double BeamSelector::getDataInitialKE(double initial_ke, double wctrk_momentum) {
+  
+  double mass = 938.57;
+  double wc_ke = sqrt(pow(mass, 2) + pow(wctrk_momentum, 2)) - mass;
+  initial_ke = wc_ke;
+
 
     return initial_ke; 
 }
