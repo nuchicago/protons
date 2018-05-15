@@ -110,6 +110,12 @@ class LArIATAnalysis {
   std::vector<std::vector<double> > *track_xpos;
   std::vector<std::vector<double> > *track_ypos;
   std::vector<std::vector<double> > *track_zpos;
+  std::vector<std::vector<int> > *nhit_ids;
+  const static int max_ntracks = 100;
+  const static int max_nhits = 1000;
+  const static int max_nhit_ids = 100;
+  Double_t  track_spt_idarr[max_ntracks][max_nhits][max_nhit_ids];
+  Double_t  track_spt_earr[max_ntracks][max_nhits][max_nhit_ids];
   std::vector<int>     *ind_track_hits;
   std::vector<double>  *ind_track_ke;
   std::vector<std::vector<double> > *ind_track_wire;
@@ -131,6 +137,7 @@ class LArIATAnalysis {
   Int_t           geant_list_size;
   Double_t        primary_p;
   std::vector<int>     *PDG;
+  std::vector<double>  *StartKE;
   std::vector<double>  *StartEnergy;
   std::vector<double>  *StartPx;
   std::vector<double>  *StartPy;
@@ -156,6 +163,7 @@ class LArIATAnalysis {
   Int_t           NProtonDaughters;
   Int_t           NNeutronDaughters;
   std::vector<double>  *NDTrTrajPts;
+  std::vector<int>     *DTrackId;
   std::vector<int>     *DPdgCode;
   std::vector<double>     *DStartEnergy;
   std::vector<double>     *DStartP;
@@ -212,6 +220,9 @@ class LArIATAnalysis {
   TBranch        *b_track_xpos;   //!
   TBranch        *b_track_ypos;   //!
   TBranch        *b_track_zpos;   //!
+  TBranch        *b_nhit_ids;   //!
+  TBranch        *b_track_spt_idarr;   //!
+  TBranch        *b_track_spt_earr;   //!
   TBranch        *b_ind_track_hits;   //!
   TBranch        *b_ind_track_ke;   //!
   TBranch        *b_ind_track_wire;   //!
@@ -233,6 +244,7 @@ class LArIATAnalysis {
   TBranch        *b_geant_list_size;   //!
   TBranch        *b_primary;   //!
   TBranch        *b_PDG;   //!
+  TBranch        *b_StartKE;   //!
   TBranch        *b_StartEnergy;   //!
   TBranch        *b_StartPx;   //!
   TBranch        *b_StartPy;   //!
@@ -258,6 +270,7 @@ class LArIATAnalysis {
   TBranch        *b_NProtonDaughters;   //!
   TBranch        *b_NNeutronDaughters;   //!
   TBranch        *b_NDTrTrajPts;   //!
+  TBranch        *b_DTrackId;   //!
   TBranch        *b_DPdgCode;   //!
   TBranch        *b_DStartEnergy;   //!
   TBranch        *b_DStartP;   //!

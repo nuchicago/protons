@@ -93,7 +93,7 @@ double* EventSelector::findInt(double* candidate_array, int reco_primary, Int_t 
           double theta = acos(a_dot_b / (mag_a*mag_b)) * (180/3.14);
           if(TMath::IsNaN(theta)){theta = 0.;}
           //RDSptAngle->Fill(theta);
-          if(theta>4){
+          if(theta>6){
             std::vector<double> kink_tuple = {1.*rspt, theta};
             kinks.push_back(kink_tuple);
           }//<--End if this is a kink
@@ -173,26 +173,29 @@ double* EventSelector::findInt(double* candidate_array, int reco_primary, Int_t 
     // # topology 3, 4
     if(branches.size()){
       int earliest_branch_spt = 9999;
-      for(unsigned int branch_pt = 0; branch_pt < branches.size(); branch_pt++){
+      for(int branch_pt = 0; branch_pt < branches.size(); branch_pt++){
         if(branches[branch_pt][1] < earliest_branch_spt){
           earliest_branch_spt = branches[branch_pt][1];
         }
       }
       potential_interaction_pts.push_back((int)earliest_branch_spt);
+      std::cout<<"earliest branch pt: "<<earliest_branch_spt<<std::endl;
     }//<--End if there were branches
     // # topology 1
     if(kinks.size()){
       int earliest_kink_spt = 9999;
-      for(unsigned int kink_pt = 0; kink_pt < kinks.size(); kink_pt++){
+      for(int kink_pt = 0; kink_pt < kinks.size(); kink_pt++){
         if(kinks[kink_pt][0] < earliest_kink_spt){
           earliest_kink_spt = kinks[kink_pt][0];
         }
       }
       potential_interaction_pts.push_back((int)earliest_kink_spt);
+      std::cout<<"earliest kink pt: "<<earliest_kink_spt<<std::endl;
     }//<--End if there was a kink
     // # getting earliest of topology 1,3,4
-    for(unsigned int i = 0; i < potential_interaction_pts.size(); i++){
+    for(int i = 0; i < potential_interaction_pts.size(); i++){
       candidate_array[0] = 1;
+      std::cout<<"candidate_array[0] = 1\n";
       if(potential_interaction_pts[i] < candidate_spt){
         candidate_spt = potential_interaction_pts[i];
         candidate_xpos = (*track_xpos)[reco_primary][potential_interaction_pts[i]];

@@ -161,6 +161,8 @@ void ProtonAnalyzerMC::AnalyzeFromNtuples() {
 
   // ## signal regions ##
   bool sr;
+  int n_true_none = 0; int n_true_one = 0; int n_true_more = 0;
+  int n_reco_none = 0; int n_reco_one = 0; int n_reco_more = 0;
 
 
   // histograms, keeping minimal diagnostics
@@ -216,6 +218,25 @@ void ProtonAnalyzerMC::AnalyzeFromNtuples() {
   TH2D *hreco_leadingKE_theta = new TH2D("hreco_leadingKE_theta", "leading ke vs theta", 10, 0, 1000, 18, 0, 180);
 
 
+  int ke_bins[20];
+  for(int i = 0; i < 20; i++) {
+    ke_bins[i] = (i+1)*50;
+  }
+  TH1D *hreco_primary_matchedHits = new TH1D("hreco_primary_matchedHits", "num", 20, 0, 1000);
+  TH1D *hreco_primary_allHits = new TH1D("hreco_primary_allHits", "dem", 20, 0, 1000);
+  TH1D *hreco_primary_purity = new TH1D("hreco_primary_purity", "primary track hit purity", 20, 0, 1000);
+  TH1D *hreco_primary_obsvE = new TH1D("hreco_primary_obsvE", "num", 20, 0, 1000);
+  TH1D *hreco_primary_allE = new TH1D("hreco_primary_allE", "dem", 20, 0, 1000);
+  TH1D *hreco_primary_completeness = new TH1D("hreco_primary_completeness", "primary track e completeness", 20, 0, 1000);
+
+  TH1D *hreco_secondary_matchedHits = new TH1D("hreco_secondary_matchedHits", "num", 20, 0, 1000);
+  TH1D *hreco_secondary_allHits = new TH1D("hreco_secondary_allHits", "dem", 20, 0, 1000);
+  TH1D *hreco_secondary_purity = new TH1D("hreco_secondary_purity", "secondary track hit purity", 20, 0, 1000);
+  TH1D *hreco_secondary_obsvE = new TH1D("hreco_secondary_obsvE", "num", 20, 0, 1000);
+  TH1D *hreco_secondary_allE = new TH1D("hreco_secondary_allE", "dem", 20, 0, 1000);
+  TH1D *hreco_secondary_completeness = new TH1D("hreco_econdarycompleteness", "secondary track e completeness", 20, 0, 1000);
+
+
   std::cout<<"welp.\n";
   
   EventSelector *ES = new EventSelector();
@@ -235,10 +256,14 @@ void ProtonAnalyzerMC::AnalyzeFromNtuples() {
     Long64_t nb = 0;
     nb = tuple->GetEntry(jentry);
 
-    //std::cout<<std::endl;
+    std::cout<<std::endl;
+    std::cout<<std::endl;
+    std::cout<<std::endl;
+    std::cout<<"new event: "<<event<<std::endl;;
     //printEvent();
 
     // ### Geant4 Information ###
+    int primary_trackid;
     bool dense_int = false;
     bool g4_interaction = false;
     double intx = 0;
@@ -251,11 +276,20 @@ void ProtonAnalyzerMC::AnalyzeFromNtuples() {
     double g4_inty = -99;
     double g4_intz = -99;
 
+    std::vector<int> daughter_track_ids;
+
+    // # kin study vars #
+    int n_charged = 0;
+    int n_charged_greaterHundred = 0;
+
     double leading_ke = 0;
     double leading_theta = 0;
     bool isCharged = false;
 
+
+    // # larg4 measurement vars #
     double initial_ke = 0;
+    double last_ke = 0;
     int num_pts_inTPC = 0;
     int first_pt = 0;
     int first_dense_slab = 0;
@@ -274,6 +308,8 @@ void ProtonAnalyzerMC::AnalyzeFromNtuples() {
       if((*process_primary)[g4part] != 1) {
         continue;
       }// skipping non primary g4 ID
+
+      primary_trackid = (*TrackId)[g4part];
 
       for(unsigned int nint = 0; nint < (*InteractionPoint).size(); nint++) {
         if( (*InteractionPointType)[nint] == 13) { // 13 is the ID for protonInelastic in this container
@@ -321,6 +357,7 @@ void ProtonAnalyzerMC::AnalyzeFromNtuples() {
 
           double energy_loss = prev_ke - ke;
           double de_dx = energy_loss / dist_between_points;
+          last_ke = prev_ke;
           total_dense_dist += dist_between_points;
           if(total_dense_dist < 1.){continue;}
           if(!first_dense_slab){
@@ -364,6 +401,8 @@ void ProtonAnalyzerMC::AnalyzeFromNtuples() {
                   // ### PDG Code (is it charged?) ###
                   hmc_daughterPDG->Fill((*DPdgCode)[g4d]);
                   if(pdg == 2212 || pdg == 211 || pdg == -211) {
+                    daughter_track_ids.push_back((*DTrackId)[g4d]);
+                    n_charged++;
                     isCharged = true;
                     hmc_isCharged->Fill(1);
                     // ## x,y,z and angles ##
@@ -380,7 +419,6 @@ void ProtonAnalyzerMC::AnalyzeFromNtuples() {
                     double pri_mag = sqrt(pow(pri_vecx, 2) + pow(pri_vecy, 2) + pow(pri_vecz, 2));
                     double daughter_mag = sqrt(pow(daughter_vecx, 2) + pow(daughter_vecy, 2) + pow(daughter_vecz, 2));
                     double interaction_theta = acos(pri_dot_daughter / (pri_mag*daughter_mag)) * (180/3.14);
-                    std::cout<<"\tinteraction theta: "<<interaction_theta<<std::endl;
 
                     // ## E&P ##
                     double daughter_mass;
@@ -388,6 +426,8 @@ void ProtonAnalyzerMC::AnalyzeFromNtuples() {
                     if(pdg == 211 || pdg == -211) {daughter_mass = 139.57;}
                     double daughter_p = (*DStartP)[g4d]*1000;
                     double daughter_ke = sqrt(pow(daughter_mass, 2) + pow(daughter_p, 2)) - daughter_mass; 
+                    std::cout<<"\t\tke, theta: "<<daughter_ke<<", "<<interaction_theta<<std::endl;
+                    if(daughter_ke > 100){n_charged_greaterHundred++;}
                     // ## grabbing leading daughter particle ##
                     if(daughter_ke > leading_ke) {
                       leading_ke = daughter_ke;
@@ -397,14 +437,8 @@ void ProtonAnalyzerMC::AnalyzeFromNtuples() {
                   else {
                     hmc_isCharged->Fill(0);
                   }//<-- gammas, neutrons, other
-                //  if((*DPdgCode)[g4d] == 2212 || (*DPdgCode)[g4d] == 211) {
-                //    num_charged_daughters++;
-                //    std::cout<<"\t\t\tnum trj pts: "<<(*NDTrTrajPts)[g4d]<<std::endl;
-                //    if((*NDTrTrajPts)[g4d] > 100) {
-                //      num_long_charged_daughters++;
-                //    }
-                //  }
-                }
+                }//<-- End loop over daughter particles
+
                 if(isCharged) {
                   hmc_leadingDaughterKE->Fill(leading_ke);
                   hmc_leadingDaughterTheta->Fill(leading_theta);
@@ -414,6 +448,9 @@ void ProtonAnalyzerMC::AnalyzeFromNtuples() {
                 //std::cout<<"\tMost energetic charged daughter particle: \n";
                 if(num_long_charged_daughters > 2) {sr = true; hintke_sr->Fill(prev_ke);}
                 else {sr = false;}
+                if(n_charged_greaterHundred == 0){n_true_none++;}
+                if(n_charged_greaterHundred == 1){n_true_one++;}
+                if(n_charged_greaterHundred >  1){n_true_more++;}
                 
                 
               }//<--End if the interaction is inelastic
@@ -461,54 +498,23 @@ void ProtonAnalyzerMC::AnalyzeFromNtuples() {
           true_slab_xpos.push_back(slab_x);
           true_slab_ypos.push_back(slab_y);
           true_slab_zpos.push_back(slab_z);
-          //sxpos->Fill(slab_x);
-          //sypos->Fill(slab_y);
-          //szpos->Fill(slab_z);
           // ## getting ke vars ##
           if(slab_ke){
             sincke->Fill(slab_ke);
             true_slab_ke.push_back(slab_ke);
+            //last_ke = slab_ke;
           }
           if(!slab_ke){
             sincke->Fill(zero_protection);
             true_slab_ke.push_back(zero_protection);
+            //last_ke = slab_ke;
           }
           //TotSlabEntries++;
         }//<---End if in tpc
       }//<---End slab loop
-      //snslb->Fill(inslabs);
-      //if(fmod(total_dense_dist,(int)total_dense_dist) < .05){}
-      //if(geant4_print){
-      //  std::cout << "dense total distance: " << total_dense_dist << std::endl;
-      //  std::cout << "slab total distance: " << total_slab_distance << std::endl;
-      //  std::cout << "num slabs: " << inslabs << std::endl;
-      //  std::cout << "\tnum entries dense: " << num_entries_dense << std::endl;
-      //  std::cout << "\tratio: " << (.5*inslabs)/(z*num_entries_dense) << std::endl;
-      //}
-      //ratio_entries->Fill((1.*inslabs)/(z*num_entries_dense));
-      //ahh->Fill((1.*inslabs)/(z*num_entries_dense), total_dense_dist);
       
       // ## interaction debugging :/ ##
       if(dense_int){
-        //std::cout<<"\nintdebug"<<std::endl;
-        //std::cout << "number of slabs: " << inslabs << std::endl;
-        //std::cout << "interaction point:  " << intx              << "\t\t"
-        //                                    << inty              << "\t\t"
-        //                                    << intz              << "\t\t" << std::endl;
-        //std::cout << "last slab position: " << (*SlabX)[inslabs-1] << "\t\t" 
-        //                                    << (*SlabY)[inslabs-1] << "\t\t"
-        //                                    << (*SlabZ)[inslabs-1] << "\t\t" << std::endl;
-
-        //double dist_penult = sqrt( pow(intx - (*SlabX)[inslabs-1], 2) +
-        //                           pow(inty - (*SlabY)[inslabs-1], 2) +
-        //                           pow(intz - (*SlabZ)[inslabs-1], 2) );
-        //if(inslabs && dist_penult < 1){
-        //  double slab_int_p = sqrt( pow(1000*(*SlapX)[inslabs-1], 2) +
-        //                            pow(1000*(*SlapY)[inslabs-1], 2) +
-        //                            pow(1000*(*SlapZ)[inslabs-1], 2) );
-        //  double slab_int_ke = sqrt( pow(slab_int_p, 2) + pow(mass, 2)) - mass;
-        //  sintke->Fill(slab_int_ke);   
-        //}//<---End if inelastic interaction 
         if(true_slab_ke[inslabs-1]){
           sintke->Fill(true_slab_ke[inslabs-1]);
           if(sr) {
@@ -521,17 +527,10 @@ void ProtonAnalyzerMC::AnalyzeFromNtuples() {
             sintke_sr->Fill(true_slab_ke[inslabs-1]);
           }
         }
-        //slab_vs_dense_intke->Fill(true_slab_ke[inslabs-1], int_ke);
-        //if(!true_slab_ke[inslabs-1]){
-        //  std::cout<<"dense ke: "<<int_ke<<std::endl;
-        //  std::cout<<"slab ke: "<<true_slab_ke[inslabs-1]<<std::endl;
-        //  std::cout<<"prev slab ke: "<<true_slab_ke[inslabs-2]<<std::endl;
-        //  std::cout<<std::endl;
-        //}
-
       }//<--End if this event had an inelastic interaction
-    }//<-- End loop over g4 particles
 
+
+    }//<-- End loop over g4 particles
 
 
     // ### Reconstructed Information ###
@@ -543,6 +542,7 @@ void ProtonAnalyzerMC::AnalyzeFromNtuples() {
     if(reco_primary == -1) {
       continue;
     }//<- skipping events that didn't pass isTPCPrimary 
+
 
     // ## grabbing interaction point ##
     double temp[4];
@@ -560,8 +560,8 @@ void ProtonAnalyzerMC::AnalyzeFromNtuples() {
       double reco_x = candidate_info[1];
       double reco_y = candidate_info[2];
       double reco_z = candidate_info[3];
-      //std::cout<<"I found a potential interaction here\n";
-      //std::cout<<"\t\t("<<reco_x<<", "<<reco_y<<", "<<reco_z<<")\n";
+      std::cout<<"I found a potential interaction here\n";
+      std::cout<<"\t\t("<<reco_x<<", "<<reco_y<<", "<<reco_z<<")\n";
       // mark as signal or background ...
       if(g4_interaction){
         //std::cout<<"\nthere was an inelastic yeah?"<<std::endl;
@@ -571,12 +571,17 @@ void ProtonAnalyzerMC::AnalyzeFromNtuples() {
                                   + pow(reco_y-inty,2)
                                   + pow(reco_z-intz,2) );
         if(dist_reco_g4 < 2){
-          //std::cout<<"signal event!\n";
+          std::cout<<"signal event!\n";
           signal = true;
           if(sr) {sr_signal = true;}
           if(isCharged) {
             hreco_leadingKE_theta->Fill(leading_ke, leading_theta);
+            std::cout<<"\tn charged: "<<n_charged<<std::endl;
           }
+          std::cout<<"\tn charged greater 100: "<<n_charged_greaterHundred<<std::endl;
+          if(n_charged_greaterHundred == 0){n_reco_none++;}
+          if(n_charged_greaterHundred == 1){n_reco_one++;}
+          if(n_charged_greaterHundred >  1){n_reco_more++;}
           //nRecoSignalEvts++;
           // pass a label to histo filling
         }
@@ -608,16 +613,17 @@ void ProtonAnalyzerMC::AnalyzeFromNtuples() {
                                     reco_primary, z2, initial_ke,
                                     col_track_hits, col_track_dedx, col_track_pitch_hit,
                                     col_track_x, col_track_y, col_track_z);
-    if(slabPass) {
-      std::cout<<"\ttesting multiple vectors D:\n";
-      std::cout<<"\t\tz2: "<<z2<<std::endl;
-      std::cout<<"\t\tcalo_slab_xpos.size(): "<<calo_slab_xpos.size()<<std::endl;
-    }
+    //if(slabPass) {
+    //  std::cout<<"\ttesting multiple vectors D:\n";
+    //  std::cout<<"\t\tz2: "<<z2<<std::endl;
+    //  std::cout<<"\t\tcalo_slab_xpos.size(): "<<calo_slab_xpos.size()<<std::endl;
+    //}
+    if(!slabPass){std::cout<<"slabPass is 0?\n";}
 
     // ## comparing to g4 info ##
     std::vector<int> calo_slab_signal(calo_slab_KE.size(), 0);
     int calo_slab_counter = 0;
-    for(unsigned int calo_slab = 0; calo_slab < calo_slab_KE.size(); calo_slab++){
+    for(int calo_slab = 0; calo_slab < calo_slab_KE.size(); calo_slab++){
       double calo_slab_x = calo_slab_xpos[calo_slab];
       double calo_slab_y = calo_slab_ypos[calo_slab];
       double calo_slab_z = calo_slab_zpos[calo_slab];
@@ -750,7 +756,217 @@ void ProtonAnalyzerMC::AnalyzeFromNtuples() {
       }//<-- End if this is the interacting slab
     }//<--End calo slab loop
 
+
+    // ~~~~~~~~~~~~~~~~~~~~~ track purity and completeness study ~~~~~~~~~~~~~~~~~~~~~~~~
+    //std::cout<<"number of reconstructed tracks: "<<ntracks_reco<<std::endl;
+    int hit_isPrimary = 0;
+    int all_primaryHits = 0;
+    double obsv_primaryE = 0;
+    std::vector<int> hit_isSecondary_array;
+    std::vector<int> all_secondaryHits_array;
+    std::vector<double> obsv_secondaryE_array;
+    std::vector<double> secondary_track_id_array;
+    for(int ii = 0; ii < ntracks_reco; ii++) {
+      //std::cout<<"\tnumber of hits: "<<(*ntrack_hits)[ii]<<std::endl;
+      if(ii == reco_primary) {
+        double stop_z = 999;
+        if(candidate_info[0]) {stop_z = candidate_info[3];}
+        for(int jj = 0; jj < (*ntrack_hits)[ii]; jj+=2) {
+          //std::cout<<"\t\tx,y,z: "<<(*track_xpos)[ii][jj]<<", "<<(*track_ypos)[ii][jj]<<", "<<(*track_zpos)[ii][jj]<<std::endl;
+          //std::cout<<"\t\tnum contributing: "<<(*nhit_ids)[ii][jj]<<std::endl;
+          if((*track_zpos)[ii][jj] > stop_z) {continue;}
+          double max_e = -1; int dom_id = -99;
+          for(int kk = 0; kk < (*nhit_ids)[ii][jj]; kk++) {
+            int id = track_spt_idarr[ii][jj][kk];
+            double e = track_spt_earr[ii][jj][kk];
+            //std::cout<<"\t\t\t(id,e): "<<id<<", "<<e<<std::endl;
+            if(id == primary_trackid) {
+              obsv_primaryE += e;
+              //std::cout<<"\t\t\t(id,e): "<<id<<", "<<e<<std::endl;
+            }
+            if(e > max_e) {dom_id = id; max_e = e;}
+          }//<-- end backtrackID loop
+          all_primaryHits++;
+          if(dom_id == primary_trackid) {hit_isPrimary++;}
+        }//<-- end hit loop pre vertex
+
+        // ### looking at spts after vertex ####
+        // ## first get a map of all the ids+frequency ##
+        bool pts_after_vertex = false; std::map<int, int> dom_ids;
+        for(int jj = 0; jj < (*ntrack_hits)[ii]; jj++) {
+          if((*track_zpos)[ii][jj] < stop_z) {continue;}
+          pts_after_vertex = true;
+          double max_e = -1; int dom_id = -99;
+          for(int kk = 0; kk < (*nhit_ids)[ii][jj]; kk++) {
+            int id = track_spt_idarr[ii][jj][kk];
+            double e = track_spt_earr[ii][jj][kk];
+            if(e > max_e) {dom_id = id;max_e = e;}
+          }//<-- end backtrackID loop
+          dom_ids[dom_id] += 1;
+        }//<-- end hit loop post vertex
+        if(!pts_after_vertex) {continue;}
+
+        // ## getting the mode id ##
+        int mode = -666; int tmp = -1;
+        for(auto const id : dom_ids) {
+          if(id.second > tmp) {tmp = id.second;mode = id.first;}
+        }//<-- end loop grabbing mode ID
+        // # checking if it's a daughter particle #
+        bool mode_isDaughter = false;
+        for(auto const id : daughter_track_ids) {
+          if(mode == id) {mode_isDaughter = true;}
+        }
+        std::cout<<"mode g4id: "<<mode<<std::endl;
+
+        // --- calculate purity here...
+        double obsv_secondaryE = 0;
+        int hit_isSecondary = 0;
+        int all_secondaryHits = 0;
+        for(int jj = 0; jj < (*ntrack_hits)[ii]; jj+=2) {
+          //std::cout<<"\t\tx,y,z: "<<(*track_xpos)[ii][jj]<<", "<<(*track_ypos)[ii][jj]<<", "<<(*track_zpos)[ii][jj]<<std::endl;
+          //std::cout<<"\t\tnum contributing: "<<(*nhit_ids)[ii][jj]<<std::endl;
+          if((*track_zpos)[ii][jj] < stop_z) {continue;}
+          double max_e = -1; int dom_id = -99;
+          for(int kk = 0; kk < (*nhit_ids)[ii][jj]; kk++) {
+            int id = track_spt_idarr[ii][jj][kk];
+            double e = track_spt_earr[ii][jj][kk];
+            //std::cout<<"\t\t\t(id,e): "<<id<<", "<<e<<std::endl;
+            if(id == mode) {
+              obsv_secondaryE += e;
+              //std::cout<<"\t\t\t(id,e): "<<id<<", "<<e<<std::endl;
+            }
+            if(e > max_e) {dom_id = id; max_e = e;}
+          }//<-- end backtrackID loop
+          all_secondaryHits++;
+          if(dom_id == mode) {hit_isSecondary++;}
+        }//<-- end hit loop pre vertex
+        if(all_secondaryHits < 3) {continue;}//<-- ignoring 2 hit stubs.. 
+        hit_isSecondary_array.push_back(hit_isSecondary);
+        all_secondaryHits_array.push_back(all_secondaryHits);
+        obsv_secondaryE_array.push_back(obsv_secondaryE);
+        secondary_track_id_array.push_back(mode);
+
+        // --- calculate completeness here...
+        if(mode_isDaughter) {
+          std::cout<<"mode is daughter particl\n";
+          // stuff.. 
+        }
+      }//<-- end if primary reco track
+      else {//<-- looking at secondary tracks
+        // ### make a map 
+        std::map<int, int> dom_ids;
+        for(int jj = 0; jj < (*ntrack_hits)[ii]; jj++) {
+          double max_e = -1; int dom_id = -99;
+          for(int kk = 0; kk < (*nhit_ids)[ii][jj]; kk++) {
+            int id = track_spt_idarr[ii][jj][kk];
+            double e = track_spt_earr[ii][jj][kk];
+            if(e > max_e) {dom_id = id;max_e = e;}
+          }//<-- end backtrackID loop
+          dom_ids[dom_id] += 1;
+        }//<-- end hit loop post vertex
+
+        // ### get mode id
+        int mode = -666; int tmp = -1;
+        for(auto const id : dom_ids) {
+          if(id.second > tmp) {tmp = id.second;mode = id.first;}
+        }//<-- end loop grabbing mode ID
+        // # checking if it's a daughter particle #
+        bool mode_isDaughter = false;
+        for(auto const id : daughter_track_ids) {
+          if(mode == id) {mode_isDaughter = true;}
+        }
+
+        // ### calculate purity 
+        double obsv_secondaryE = 0;
+        int hit_isSecondary = 0;
+        int all_secondaryHits = 0;
+        for(int jj = 0; jj < (*ntrack_hits)[ii]; jj+=2) {
+          //std::cout<<"\t\tx,y,z: "<<(*track_xpos)[ii][jj]<<", "<<(*track_ypos)[ii][jj]<<", "<<(*track_zpos)[ii][jj]<<std::endl;
+          //std::cout<<"\t\tnum contributing: "<<(*nhit_ids)[ii][jj]<<std::endl;
+          double max_e = -1; int dom_id = -99;
+          for(int kk = 0; kk < (*nhit_ids)[ii][jj]; kk++) {
+            int id = track_spt_idarr[ii][jj][kk];
+            double e = track_spt_earr[ii][jj][kk];
+            //std::cout<<"\t\t\t(id,e): "<<id<<", "<<e<<std::endl;
+            if(id == mode) {
+              obsv_secondaryE += e;
+              //std::cout<<"\t\t\t(id,e): "<<id<<", "<<e<<std::endl;
+            }
+            if(e > max_e) {dom_id = id; max_e = e;}
+          }//<-- end backtrackID loop
+          all_secondaryHits++;
+          if(dom_id == mode) {hit_isSecondary++;}
+        }//<-- end hit loop pre vertex
+        hit_isSecondary_array.push_back(hit_isSecondary);
+        all_secondaryHits_array.push_back(all_secondaryHits);
+        obsv_secondaryE_array.push_back(obsv_secondaryE);
+        secondary_track_id_array.push_back(mode);
+
+        // ### calculate completeness 
+      }//<-- end if secondary
+    }//<-- end track loop
+
+    // # primary calculations #
+    double primary_hit_purity = (1.*hit_isPrimary/all_primaryHits);
+    double primary_hit_completeness = obsv_primaryE/(initial_ke-last_ke);
+    std::cout<<"Primary track purity: "<<primary_hit_purity<<std::endl;
+    std::cout<<"Primary track completeness: "<<primary_hit_completeness<<std::endl;
+    std::cout<<"\tobsvervable e: "<<obsv_primaryE<<std::endl;
+    std::cout<<"\tinitial ke: "<<initial_ke<<std::endl;
+    std::cout<<"\tlast ke: "<<last_ke<<std::endl;
+    for(int i = 0; i < 20; i++) {
+      double this_edge = ke_bins[i]; // if i = 0, this_edge = 50
+      double last_edge = ke_bins[i] - 50; // if i = 0, this_edge = 0
+      if(initial_ke > last_edge && initial_ke < this_edge) {
+        hreco_primary_matchedHits->AddBinContent(i, hit_isPrimary);
+        hreco_primary_allHits->AddBinContent(i, all_primaryHits);
+        hreco_primary_obsvE->AddBinContent(i, obsv_primaryE);
+        hreco_primary_allE->AddBinContent(i, initial_ke-last_ke);
+      }//<-- end if we're in the right bin
+    }//<-- end loop over initial KE bins
+
+    // # secondary calculations #
+    if(hit_isSecondary_array.size()) {
+      for(int ss = 0; ss < hit_isSecondary_array.size(); ss++) {
+        double secondary_hit_purity = (1.*hit_isSecondary_array[ss]/all_secondaryHits_array[ss]);
+        double secondary_initial_ke;
+        std::cout<<"Secondary track purity: "<<secondary_hit_purity<<std::endl;
+        std::cout<<"\tnum: "<<hit_isSecondary_array[ss]<<std::endl;
+        std::cout<<"\tdem: "<<all_secondaryHits_array[ss]<<std::endl;
+        std::cout<<std::endl;
+        for(int g4part = 0; g4part < geant_list_size; g4part++) {
+          if((*TrackId)[g4part] != secondary_track_id_array[ss]) {continue;}
+          secondary_initial_ke = 1000*(*StartKE)[g4part];
+        }//<-- end loop over all g4 particles to get this trackid
+        for(int i = 0; i < 20; i++) {
+          double this_edge = ke_bins[i]; // if i = 0, this_edge = 50
+          double last_edge = ke_bins[i] - 50; // if i = 0, this_edge = 0
+          if(secondary_initial_ke > last_edge && secondary_initial_ke < this_edge) {
+            hreco_secondary_matchedHits->AddBinContent(i, hit_isSecondary_array[ss]);
+            hreco_secondary_allHits->AddBinContent(i, all_secondaryHits_array[ss]);
+            //hreco_primary_obsvE->AddBinContent(i, obsv_primaryE);
+            //hreco_primary_allE->AddBinContent(i, initial_ke-last_ke);
+          }//<-- end if we're in the right bin
+        }//<-- end loop over initial KE bins
+
+
+      }//<-- end loop over secondary tracks
+    }//<-- end if there are secondary tracks
+
+    // ## global purity and efficiency reco metrics ##
+
+
+
   }//<-- End eventLoop
+
+  // ## post event loop prinout ##
+  std::cout<<"---------------- Loop Printout ------------------------\n";
+  std::cout<<"# d w/ ke >100\t\t | reco \t\t | true \t\t |\n";
+  std::cout<<"zero \t\t\t | "<<n_reco_none<<" \t\t\t | "<<n_true_none<<"\t\t\t|\n";
+  std::cout<<"one \t\t\t | "<<n_reco_one<<" \t\t\t | "<<n_true_one<<"\t\t\t|\n";
+  std::cout<<"more than one \t\t | "<<n_reco_more<<" \t\t\t | "<<n_true_more<<"\t\t\t|\n";
+
+
 
   // ## truth level xs (can go either here or in Xsec module) ##
   for(int iBin = 0; iBin < hintke->GetNbinsX(); iBin++){
@@ -893,9 +1109,35 @@ void ProtonAnalyzerMC::AnalyzeFromNtuples() {
         double true_count = hmc_leadingKE_theta->GetBinContent(iBin, jBin);
         if(true_count == 0) {continue;}
         double total_eff = reco_count / true_count;
-        std::cout<<"total eff: "<<total_eff<<std::endl;
         hreco_effScan->SetBinContent(iBin, jBin, total_eff);
       } 
+    }
+
+
+    // ### track purity -- completeness study ###
+    // ## primary ##
+    for(int iBin = 0; iBin < hreco_primary_allHits->GetNbinsX(); iBin++) {
+      if(hreco_primary_allHits->GetBinContent(iBin) == 0) {continue;}
+      double num = hreco_primary_matchedHits->GetBinContent(iBin);
+      double dem = hreco_primary_allHits->GetBinContent(iBin);
+      double pur = num / dem;
+      hreco_primary_purity->SetBinContent(iBin, pur);
+    }
+    for(int iBin = 0; iBin < hreco_primary_allE->GetNbinsX(); iBin++) {
+      if(hreco_primary_allE->GetBinContent(iBin) == 0) {continue;}
+      double num = hreco_primary_obsvE->GetBinContent(iBin);
+      double dem = hreco_primary_allE->GetBinContent(iBin);
+      double com = num / dem;
+      hreco_primary_completeness->SetBinContent(iBin, com);
+    }
+
+    // ## secondary ##
+    for(int iBin = 0; iBin < hreco_primary_allHits->GetNbinsX(); iBin++) {
+      if(hreco_primary_allHits->GetBinContent(iBin) == 0) {continue;}
+      double num = hreco_secondary_matchedHits->GetBinContent(iBin);
+      double dem = hreco_secondary_allHits->GetBinContent(iBin);
+      double pur = num / dem;
+      hreco_secondary_purity->SetBinContent(iBin, pur);
     }
 
 
@@ -941,7 +1183,11 @@ void ProtonAnalyzerMC::AnalyzeFromNtuples() {
     hmc_leadingDaughterTheta->Write();
     hmc_leadingKE_theta->Write();
     hreco_leadingKE_theta->Write();
-    hreco_effScan->Write();
+    //hreco_effScan->Write();
+
+    hreco_primary_purity->Write();
+    hreco_primary_completeness->Write();
+    hreco_secondary_purity->Write();
 
   }
 

@@ -115,6 +115,9 @@ void LArIATAnalysis::bookNtuple( TChain* tuple, bool isMC ){
   track_xpos = 0;
   track_ypos = 0;
   track_zpos = 0;
+  nhit_ids = 0;
+  //track_spt_idarr = 0;
+  //track_spt_earr = 0;
   ind_track_hits = 0;
   ind_track_ke = 0;
   ind_track_wire = 0;
@@ -134,6 +137,7 @@ void LArIATAnalysis::bookNtuple( TChain* tuple, bool isMC ){
   col_track_pitch_hit = 0;
   PDG = 0;
   StartEnergy = 0;
+  StartKE = 0;
   StartPx = 0;
   StartPy = 0;
   StartPz = 0;
@@ -156,6 +160,7 @@ void LArIATAnalysis::bookNtuple( TChain* tuple, bool isMC ){
   G4FinalProcess = 0;
   NTrTrajPts = 0;
   NDTrTrajPts = 0;
+  DTrackId = 0;
   DPdgCode = 0;
   DStartEnergy = 0;
   DStartP = 0;
@@ -204,6 +209,9 @@ void LArIATAnalysis::bookNtuple( TChain* tuple, bool isMC ){
   tuple->SetBranchAddress("track_xpos", &track_xpos, &b_track_xpos);
   tuple->SetBranchAddress("track_ypos", &track_ypos, &b_track_ypos);
   tuple->SetBranchAddress("track_zpos", &track_zpos, &b_track_zpos);
+  tuple->SetBranchAddress("nhit_ids", &nhit_ids, &b_nhit_ids);
+  tuple->SetBranchAddress("track_spt_idarr", &track_spt_idarr, &b_track_spt_idarr);
+  tuple->SetBranchAddress("track_spt_earr", &track_spt_earr, &b_track_spt_earr);
   tuple->SetBranchAddress("ind_track_hits", &ind_track_hits, &b_ind_track_hits);
   tuple->SetBranchAddress("ind_track_ke", &ind_track_ke, &b_ind_track_ke);
   tuple->SetBranchAddress("ind_track_wire", &ind_track_wire, &b_ind_track_wire);
@@ -225,6 +233,7 @@ void LArIATAnalysis::bookNtuple( TChain* tuple, bool isMC ){
   tuple->SetBranchAddress("geant_list_size", &geant_list_size, &b_geant_list_size);
   tuple->SetBranchAddress("primary_p", &primary_p, &b_primary);
   tuple->SetBranchAddress("PDG", &PDG, &b_PDG);
+  tuple->SetBranchAddress("StartKE", &StartKE, &b_StartKE);
   tuple->SetBranchAddress("StartEnergy", &StartEnergy, &b_StartEnergy);
   tuple->SetBranchAddress("StartPx", &StartPx, &b_StartPx);
   tuple->SetBranchAddress("StartPy", &StartPy, &b_StartPy);
@@ -250,6 +259,7 @@ void LArIATAnalysis::bookNtuple( TChain* tuple, bool isMC ){
   tuple->SetBranchAddress("NProtonDaughters", &NProtonDaughters, &b_NProtonDaughters);
   tuple->SetBranchAddress("NNeutronDaughters", &NNeutronDaughters, &b_NNeutronDaughters);
   tuple->SetBranchAddress("NDTrTrajPts", &NDTrTrajPts, &b_NDTrTrajPts);
+  tuple->SetBranchAddress("DTrackId", &DTrackId, &b_DTrackId);
   tuple->SetBranchAddress("DPdgCode", &DPdgCode, &b_DPdgCode);
   tuple->SetBranchAddress("DStartEnergy", &DStartEnergy, &b_DStartEnergy);
   tuple->SetBranchAddress("DStartP", &DStartP, &b_DStartP);
