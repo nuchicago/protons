@@ -138,6 +138,7 @@ void LArIATAnalysis::bookNtuple( TChain* tuple, bool isMC ){
   PDG = 0;
   StartEnergy = 0;
   StartKE = 0;
+  LastKE = 0;
   StartPx = 0;
   StartPy = 0;
   StartPz = 0;
@@ -234,6 +235,7 @@ void LArIATAnalysis::bookNtuple( TChain* tuple, bool isMC ){
   tuple->SetBranchAddress("primary_p", &primary_p, &b_primary);
   tuple->SetBranchAddress("PDG", &PDG, &b_PDG);
   tuple->SetBranchAddress("StartKE", &StartKE, &b_StartKE);
+  tuple->SetBranchAddress("LastKE", &LastKE, &b_LastKE);
   tuple->SetBranchAddress("StartEnergy", &StartEnergy, &b_StartEnergy);
   tuple->SetBranchAddress("StartPx", &StartPx, &b_StartPx);
   tuple->SetBranchAddress("StartPy", &StartPy, &b_StartPy);

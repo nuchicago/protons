@@ -138,6 +138,7 @@ class LArIATAnalysis {
   Double_t        primary_p;
   std::vector<int>     *PDG;
   std::vector<double>  *StartKE;
+  std::vector<double>  *LastKE;
   std::vector<double>  *StartEnergy;
   std::vector<double>  *StartPx;
   std::vector<double>  *StartPy;
@@ -245,6 +246,7 @@ class LArIATAnalysis {
   TBranch        *b_primary;   //!
   TBranch        *b_PDG;   //!
   TBranch        *b_StartKE;   //!
+  TBranch        *b_LastKE;   //!
   TBranch        *b_StartEnergy;   //!
   TBranch        *b_StartPx;   //!
   TBranch        *b_StartPy;   //!

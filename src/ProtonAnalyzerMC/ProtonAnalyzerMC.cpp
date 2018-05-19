@@ -232,9 +232,15 @@ void ProtonAnalyzerMC::AnalyzeFromNtuples() {
   TH1D *hreco_secondary_matchedHits = new TH1D("hreco_secondary_matchedHits", "num", 20, 0, 1000);
   TH1D *hreco_secondary_allHits = new TH1D("hreco_secondary_allHits", "dem", 20, 0, 1000);
   TH1D *hreco_secondary_purity = new TH1D("hreco_secondary_purity", "secondary track hit purity", 20, 0, 1000);
+  TH2D *hreco_2purity_sctr = new TH2D("hreco_2purity_sctr", "secondary track hit purity", 20, 0, 1000, 20, 0, 1);
   TH1D *hreco_secondary_obsvE = new TH1D("hreco_secondary_obsvE", "num", 20, 0, 1000);
   TH1D *hreco_secondary_allE = new TH1D("hreco_secondary_allE", "dem", 20, 0, 1000);
-  TH1D *hreco_secondary_completeness = new TH1D("hreco_econdarycompleteness", "secondary track e completeness", 20, 0, 1000);
+  TH1D *hreco_secondary_completeness = new TH1D("hreco_secondary_completeness", "secondary track e completeness", 20, 0, 1000);
+  TH2D *hreco_2completeness_sctr = new TH2D("hreco_2completeness_sctr", "secondary track e completeness", 20, 0, 1000, 20, 0, 1);
+
+  TH1D *hreco_secondary_global_got = new TH1D("hreco_secondary_global_got", "num", 20, 0, 1000);
+  TH1D *hreco_secondary_global_all = new TH1D("hreco_secondary_global_all", "dem", 20, 0, 1000);
+  TH1D *hreco_secondary_global_eff = new TH1D("hreco_secondary_global_eff", "eff", 20, 0, 1000);
 
 
   std::cout<<"welp.\n";
@@ -426,6 +432,7 @@ void ProtonAnalyzerMC::AnalyzeFromNtuples() {
                     if(pdg == 211 || pdg == -211) {daughter_mass = 139.57;}
                     double daughter_p = (*DStartP)[g4d]*1000;
                     double daughter_ke = sqrt(pow(daughter_mass, 2) + pow(daughter_p, 2)) - daughter_mass; 
+                    hreco_secondary_global_all->Fill(daughter_ke);
                     std::cout<<"\t\tke, theta: "<<daughter_ke<<", "<<interaction_theta<<std::endl;
                     if(daughter_ke > 100){n_charged_greaterHundred++;}
                     // ## grabbing leading daughter particle ##
@@ -766,6 +773,7 @@ void ProtonAnalyzerMC::AnalyzeFromNtuples() {
     std::vector<int> all_secondaryHits_array;
     std::vector<double> obsv_secondaryE_array;
     std::vector<double> secondary_track_id_array;
+    std::vector<bool> secondary_isDaughter_array;
     for(int ii = 0; ii < ntracks_reco; ii++) {
       //std::cout<<"\tnumber of hits: "<<(*ntrack_hits)[ii]<<std::endl;
       if(ii == reco_primary) {
@@ -845,12 +853,8 @@ void ProtonAnalyzerMC::AnalyzeFromNtuples() {
         all_secondaryHits_array.push_back(all_secondaryHits);
         obsv_secondaryE_array.push_back(obsv_secondaryE);
         secondary_track_id_array.push_back(mode);
+        secondary_isDaughter_array.push_back(mode_isDaughter);
 
-        // --- calculate completeness here...
-        if(mode_isDaughter) {
-          std::cout<<"mode is daughter particl\n";
-          // stuff.. 
-        }
       }//<-- end if primary reco track
       else {//<-- looking at secondary tracks
         // ### make a map 
@@ -901,6 +905,7 @@ void ProtonAnalyzerMC::AnalyzeFromNtuples() {
         all_secondaryHits_array.push_back(all_secondaryHits);
         obsv_secondaryE_array.push_back(obsv_secondaryE);
         secondary_track_id_array.push_back(mode);
+        secondary_isDaughter_array.push_back(mode_isDaughter);
 
         // ### calculate completeness 
       }//<-- end if secondary
@@ -926,34 +931,48 @@ void ProtonAnalyzerMC::AnalyzeFromNtuples() {
     }//<-- end loop over initial KE bins
 
     // # secondary calculations #
+    //std::vector<double> secondary_purity_array;
+    //std::vector<double> secondary_completeness_array;
     if(hit_isSecondary_array.size()) {
       for(int ss = 0; ss < hit_isSecondary_array.size(); ss++) {
         double secondary_hit_purity = (1.*hit_isSecondary_array[ss]/all_secondaryHits_array[ss]);
         double secondary_initial_ke;
-        std::cout<<"Secondary track purity: "<<secondary_hit_purity<<std::endl;
-        std::cout<<"\tnum: "<<hit_isSecondary_array[ss]<<std::endl;
-        std::cout<<"\tdem: "<<all_secondaryHits_array[ss]<<std::endl;
-        std::cout<<std::endl;
+        double secondary_last_ke;
+        //std::cout<<"Secondary track purity: "<<secondary_hit_purity<<std::endl;
+        //std::cout<<"\tnum: "<<hit_isSecondary_array[ss]<<std::endl;
+        //std::cout<<"\tdem: "<<all_secondaryHits_array[ss]<<std::endl;
+        //std::cout<<std::endl;
         for(int g4part = 0; g4part < geant_list_size; g4part++) {
           if((*TrackId)[g4part] != secondary_track_id_array[ss]) {continue;}
           secondary_initial_ke = 1000*(*StartKE)[g4part];
+          secondary_last_ke = 1000*(*LastKE)[g4part];
         }//<-- end loop over all g4 particles to get this trackid
+        double secondary_hit_completeness = obsv_secondaryE_array[ss]/(secondary_initial_ke-secondary_last_ke);
+        //secondary_purity_array.push_back(secondary_hit_purity);
+        //secondary_completeness_array.push_back(secondary_hit_completeness);
         for(int i = 0; i < 20; i++) {
           double this_edge = ke_bins[i]; // if i = 0, this_edge = 50
           double last_edge = ke_bins[i] - 50; // if i = 0, this_edge = 0
           if(secondary_initial_ke > last_edge && secondary_initial_ke < this_edge) {
             hreco_secondary_matchedHits->AddBinContent(i, hit_isSecondary_array[ss]);
             hreco_secondary_allHits->AddBinContent(i, all_secondaryHits_array[ss]);
-            //hreco_primary_obsvE->AddBinContent(i, obsv_primaryE);
-            //hreco_primary_allE->AddBinContent(i, initial_ke-last_ke);
+            hreco_secondary_obsvE->AddBinContent(i, obsv_secondaryE_array[ss]);
+            hreco_secondary_allE->AddBinContent(i, secondary_initial_ke-secondary_last_ke);
           }//<-- end if we're in the right bin
         }//<-- end loop over initial KE bins
-
-
+        std::cout<<"secondary hit purity: "<<secondary_hit_purity<<std::endl;
+        std::cout<<"secondary hit completeness: "<<secondary_hit_completeness<<std::endl;
+        hreco_2purity_sctr->Fill(secondary_initial_ke, secondary_hit_purity);
+        hreco_2completeness_sctr->Fill(secondary_initial_ke, secondary_hit_completeness);
+        // ## global purity and efficiency reco metrics ##
+        if(secondary_hit_purity > .5 && secondary_hit_completeness > .3) {
+          if(secondary_isDaughter_array[ss]) {
+            hreco_secondary_global_got->Fill(secondary_initial_ke);
+          }//<-- end if this is a daughter track id
+        }//<-- end if we reconstructed this track well
       }//<-- end loop over secondary tracks
     }//<-- end if there are secondary tracks
 
-    // ## global purity and efficiency reco metrics ##
 
 
 
@@ -1132,12 +1151,28 @@ void ProtonAnalyzerMC::AnalyzeFromNtuples() {
     }
 
     // ## secondary ##
-    for(int iBin = 0; iBin < hreco_primary_allHits->GetNbinsX(); iBin++) {
-      if(hreco_primary_allHits->GetBinContent(iBin) == 0) {continue;}
+    for(int iBin = 0; iBin < hreco_secondary_allHits->GetNbinsX(); iBin++) {
+      if(hreco_secondary_allHits->GetBinContent(iBin) == 0) {continue;}
       double num = hreco_secondary_matchedHits->GetBinContent(iBin);
       double dem = hreco_secondary_allHits->GetBinContent(iBin);
       double pur = num / dem;
       hreco_secondary_purity->SetBinContent(iBin, pur);
+    }
+    for(int iBin = 0; iBin < hreco_secondary_allE->GetNbinsX(); iBin++) {
+      if(hreco_secondary_allE->GetBinContent(iBin) == 0) {continue;}
+      double num = hreco_secondary_obsvE->GetBinContent(iBin);
+      double dem = hreco_secondary_allE->GetBinContent(iBin);
+      double com = num / dem;
+      hreco_secondary_completeness->SetBinContent(iBin, com);
+    }
+
+    // ## reconstruction efficiency for secondary particles ##
+    for(int iBin = 0; iBin < hreco_secondary_global_all->GetNbinsX(); iBin++) {
+      if(hreco_secondary_global_all->GetBinContent(iBin) == 0) {continue;}
+      double num = hreco_secondary_global_got->GetBinContent(iBin);
+      double dem = hreco_secondary_global_all->GetBinContent(iBin);
+      double com = num / dem;
+      hreco_secondary_global_eff->SetBinContent(iBin, com);
     }
 
 
@@ -1188,7 +1223,13 @@ void ProtonAnalyzerMC::AnalyzeFromNtuples() {
     hreco_primary_purity->Write();
     hreco_primary_completeness->Write();
     hreco_secondary_purity->Write();
+    hreco_secondary_completeness->Write();
+    hreco_2purity_sctr->Write();
+    hreco_2completeness_sctr->Write();
 
+    hreco_secondary_global_got->Write();
+    hreco_secondary_global_all->Write();
+    hreco_secondary_global_eff->Write();
   }
 
 }// End AnalyzeFromNtuples
