@@ -146,7 +146,7 @@ ProtonXsec::ProtonXsec( char* jobOptionsFile ) : LArIATAnalysis( jobOptionsFile 
 
 void ProtonXsec::AnalyzeFromNtuples(){
 
-  // counters for cuts
+  // counters for beam cuts
 
   double numEventsStart = 0;
   double numZcutoff = 0;
@@ -154,10 +154,7 @@ void ProtonXsec::AnalyzeFromNtuples(){
   double xyDeltaCut = 0;
   double angleCut = 0;
 
-  double numFinderEvents = 0;
-  double numFinderZcutoff = 0;
-  double numFinderTheta = 0;
-  double numFinderPhi = 0;
+
 
 
   // ### some variables that are needed for the xs calc ###
@@ -196,7 +193,7 @@ void ProtonXsec::AnalyzeFromNtuples(){
    
 
   TH1D *BeamMomentum = new TH1D("BeamMomentum","Incoming Particle Momentum",100,300,1000);
-
+  TH1D *BeamToF = new TH1D("BeamToF","Incoming Particle Momentum",100,0,200);
   TH1D *inTracksNumHist = new TH1D("inTracksNumHist","Number of Entering Tracks TPC",100,0,10);
 
   TH1D *wctrkNumHist = new TH1D("wctrkNumHist","Number of Entering Tracks TPC",20,0,5);
@@ -204,6 +201,10 @@ void ProtonXsec::AnalyzeFromNtuples(){
   //TH1D *phicalctest = new TH1D("phicalctest","Number of Entering Tracks TPC",100,-4,4);
 
   TH2D * delXYHist =  new TH2D("delXYHist","tpc to wc delta x",200,-100,100,200,-100,100);
+
+  TH2D *BadTrackHist =  new TH2D("BadTrackHist","non-selected tracks",200,-100,100,200,-100,100);
+
+  TH2D *delBadTrackHist =  new TH2D("delBadTrackHist","non-selected tracks",200,-100,100,200,-100,100);
 
   TH1D * delThetaHist =  new TH1D("delThetaHist","tpc to wc delta Theta",100,-1,1);
 
@@ -213,7 +214,7 @@ void ProtonXsec::AnalyzeFromNtuples(){
 
 
   // ## xs histos ##
-  TH1D *hreco_initialKE = new TH1D("hreco_initialKe", "initial ke", 20, 0, 1000);
+  TH1D *hreco_initialKE = new TH1D("hreco_initialKE", "initial ke", 20, 0, 1000);
   TH1D *hreco_intke = new TH1D("hreco_intke", "int ke", 20, 0, 1000);
   TH1D *hreco_incke = new TH1D("hreco_incke", "inc ke", 20, 0, 1000);
 
@@ -229,11 +230,15 @@ void ProtonXsec::AnalyzeFromNtuples(){
     nb = tuple->GetEntry(jentry);
     int numEnteringTracks = 0;
     int best_candidate = -1;
-    numFinderEvents++;
     wctrkNumHist->Fill(num_wctracks);
 
       if (num_wctracks == 1){
         wctrkPositionXY->Fill(wctrk_XFace[0],wctrk_YFace[0]);
+        BeamMomentum->Fill(wctrk_momentum[0]);
+        BeamToF->Fill(tofObject[0]);
+
+
+
         std::vector <double> wctpc_mvect = BS->wcTPCMatch(wctrk_XFace[0],wctrk_YFace[0], wctrk_theta[0], wctrk_phi[0],track_xpos,
           track_ypos, track_zpos, ntracks_reco, UI->zTPCCutoff,best_candidate, numEnteringTracks);
         inTracksNumHist->Fill(numEnteringTracks);
@@ -253,7 +258,15 @@ void ProtonXsec::AnalyzeFromNtuples(){
             tpcInTracksXY->Fill((*track_xpos)[best_candidate][0],
             (*track_ypos)[best_candidate][0]);
             wctrkSelectedXY->Fill(wctrk_XFace[0],wctrk_YFace[0]);         
-          
+        }
+        // Plotting non-selected tracks
+        for (int inTrack = 0; inTrack < ntracks_reco; inTrack++ ){
+            if((*track_zpos)[inTrack][0] < UI->zTPCCutoff){
+              if (inTrack != best_candidate){
+                BadTrackHist->Fill((*track_xpos)[inTrack][0],(*track_ypos)[inTrack][0]);
+                delBadTrackHist->Fill(wctrk_XFace[0] - (*track_xpos)[inTrack][0],wctrk_YFace[0] - (*track_ypos)[inTrack][0]);
+            }
+          }
         }
       }
     }
@@ -297,9 +310,9 @@ void ProtonXsec::AnalyzeFromNtuples(){
                   continue;}
               else{
                   xyDeltaCut++;
-                  if(abs(MinVector[3]) > 2 or abs(MinVector[4]) > 2){
-                      continue;}
-                  else{angleCut++;}
+                  //if(abs(MinVector[3]) > 2 or abs(MinVector[4]) > 2){
+                  //    continue;}
+                  //else{angleCut++;}
                 }     
             }
           }
@@ -412,7 +425,7 @@ void ProtonXsec::AnalyzeFromNtuples(){
     std::cout << "Events with only one wc track: "<< numWCTrack << std::endl;
     std::cout << "Events with best match TPC track Z < Cutoff: "<< numZcutoff << std::endl;
     std::cout << "Events after XY plane distance cut: "<< xyDeltaCut << std::endl;
-    std::cout << "Events after; angle cut: "<< angleCut << std::endl;
+    //std::cout << "Events after; angle cut: "<< angleCut << std::endl;
   }
 
 
@@ -448,29 +461,17 @@ void ProtonXsec::AnalyzeFromNtuples(){
     wctrkPositionXY->Write();
     wctrkSelectedXY->Write();
     wctrkNumHist->Write();
-
-    
-    //BeamToF->Draw();
-    //BeamToF->Write();
-
-    inTracksNumHist->Draw();
     inTracksNumHist->Write();
-
-
-    BeamMomentum->Draw();
     BeamMomentum->Write();
-
-    delXYHist->Draw("COLZ");
+    BeamToF->Write();
     delXYHist->Write();
-
-    delThetaHist->Draw();
     delThetaHist->Write();
-
-    delPhiHist->Draw();
     delPhiHist->Write();
-
+    BadTrackHist->Write();
+    delBadTrackHist->Write();
 
     // ## xs histos ##
+    hreco_initialKE->Write();
     hreco_incke->Write();
     hreco_intke->Write();
     }

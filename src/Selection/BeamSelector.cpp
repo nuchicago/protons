@@ -209,7 +209,8 @@ double BeamSelector::getDataInitialKE(double initial_ke, double wctrk_momentum) 
   
   double mass = 938.57;
   double wc_ke = sqrt(pow(mass, 2) + pow(wctrk_momentum, 2)) - mass;
-  initial_ke = wc_ke;
+  double ke_loss = 60;
+  initial_ke = wc_ke - ke_loss;
 
 
     return initial_ke; 

@@ -14,8 +14,8 @@ void XsecPlots(){
   
   delXYHist->GetXaxis()->SetTitle("X_{wc} - X_{tpc} [cm]");
   delXYHist->GetYaxis()->SetTitle("Y_{wc} - Y_{tpc} [cm]");
-  delXYHist->GetXaxis()->SetRangeUser(-45,45);
-  delXYHist->GetYaxis()->SetRangeUser(-45,45);
+  delXYHist->GetXaxis()->SetRangeUser(-48,48);
+  delXYHist->GetYaxis()->SetRangeUser(-48,48);
   delXYHist->SetTitle("Wire Chamber - TPC position difference");
   delXYHist->Draw("COLZ");
   XYCut->Draw("same");
@@ -41,7 +41,7 @@ void XsecPlots(){
 
   c1->Print("images/inTracksNumHist.png","png");
 
-    TH1D *wctrkNumHist = (TH1D*)XsecFile->Get("wctrkNumHist");
+  TH1D *wctrkNumHist = (TH1D*)XsecFile->Get("wctrkNumHist");
   
   wctrkNumHist->GetXaxis()->SetTitle("Number of Wire Chamber Tracks");
   wctrkNumHist->GetYaxis()->SetTitle("Number of Events");
@@ -59,6 +59,57 @@ void XsecPlots(){
   delPhiHist->Draw("COLZ");
 
   c1->Print("images/delPhiHist.png","png");
+
+  TH1D *BeamMomentum = (TH1D*)XsecFile->Get("BeamMomentum");
+  
+  BeamMomentum->GetXaxis()->SetTitle("Momentum [MeV/c]");
+  BeamMomentum->GetYaxis()->SetTitle("Number of Tracks");
+  BeamMomentum->SetTitle("Beam Momentum");
+  BeamMomentum->Draw("COLZ");
+
+  c1->Print("images/BeamMomentum.png","png");
+
+  TH1D *BeamToF = (TH1D*)XsecFile->Get("BeamToF");
+  
+  BeamToF->GetXaxis()->SetTitle("ToF [ns]");
+  BeamToF->GetXaxis()->SetRangeUser(0,200);
+  BeamToF->GetYaxis()->SetTitle("Number of Tracks");
+  BeamToF->SetTitle("Time of Flight");
+  BeamToF->Draw("COLZ");
+
+  c1->Print("images/BeamToF.png","png");
+
+  TH1D *hreco_initialKE = (TH1D*)XsecFile->Get("hreco_initialKE");
+  
+  hreco_initialKE->GetXaxis()->SetTitle("KE [MeV]");
+  hreco_initialKE->GetXaxis()->SetRangeUser(0,1000);
+
+  hreco_initialKE->SetTitle("Initial KE");
+  hreco_initialKE->Draw("COLZ");
+
+  c1->Print("images/hreco_initialKE.png","png");
+
+  TH1D *hreco_incke = (TH1D*)XsecFile->Get("hreco_incke");
+  
+  hreco_incke->GetXaxis()->SetTitle("KE [MeV]");
+  hreco_incke->GetXaxis()->SetRangeUser(0,1000);
+
+  hreco_incke->SetTitle("Incident KE");
+  hreco_incke->Draw("COLZ");
+
+  c1->Print("images/hreco_incke.png","png");
+
+  TH1D *hreco_intke = (TH1D*)XsecFile->Get("hreco_intke");
+  
+  hreco_intke->GetXaxis()->SetTitle("KE [MeV]");
+  hreco_intke->GetXaxis()->SetRangeUser(0,1000);
+ 
+  hreco_intke->SetTitle("Interacting KE");
+  hreco_intke->Draw("COLZ");
+
+  c1->Print("images/hreco_intke.png","png");
+
+
 
   TH2D *tpcInTracksXY = (TH2D*)XsecFile->Get("tpcInTracksXY");
   
@@ -83,7 +134,7 @@ void XsecPlots(){
   TH2D *wctrkSelectedXY = (TH2D*)XsecFile->Get("wctrkSelectedXY");
   
   wctrkSelectedXY->GetXaxis()->SetTitle("X [cm]");
-  wctrkSelectedXY->GetYaxis()->SetTitle("Y[cm]");
+  wctrkSelectedXY->GetYaxis()->SetTitle("Y [cm]");
   wctrkSelectedXY->Draw("COLZ");
   wctrkSelectedXY->GetXaxis()->SetRangeUser(0,47.5);
   wctrkSelectedXY->GetYaxis()->SetRangeUser(-20,20);
@@ -91,9 +142,31 @@ void XsecPlots(){
   c1->Print("images/wctrkSelectedXY.png","png");
 
 
+  TH2D *BadTrackHist = (TH2D*)XsecFile->Get("BadTrackHist");
+  
+  BadTrackHist->GetXaxis()->SetTitle("X_{tpc} [cm]");
+  BadTrackHist->GetYaxis()->SetTitle("Y_{tpc} [cm]");
+  BadTrackHist->Draw("COLZ");
+  BadTrackHist->GetXaxis()->SetRangeUser(0,48);
+  BadTrackHist->GetYaxis()->SetRangeUser(-20,20);
+
+  c1->Print("images/BadTrackHist.png","png");
+
+
+  TH2D *delBadTrackHist = (TH2D*)XsecFile->Get("delBadTrackHist");
+  
+  delBadTrackHist->GetXaxis()->SetTitle("X_{wc} - X_{tpc} [cm]");
+  delBadTrackHist->GetYaxis()->SetTitle("Y_{wc} - Y_{tpc} [cm]");
+  delBadTrackHist->Draw("COLZ");
+  delBadTrackHist->GetXaxis()->SetRangeUser(-48,48);
+  delBadTrackHist->GetYaxis()->SetRangeUser(-48,48);
+
+  c1->Print("images/delBadTrackHist.png","png");
+
+
   TH2D *delXYHist_pfX = (TH2D*)delXYHist->ProfileX("delXYHist_pfX");
   delXYHist_pfX->SetTitle("X projection of wc-tpc difference");
-  delXYHist->GetXaxis()->SetTitle("X_{wc} - X_{tpc} [cm]");
+  delXYHist_pfX->GetXaxis()->SetTitle("X_{wc} - X_{tpc} [cm]");
   delXYHist_pfX->Draw("e");
 
   c1->Print("images/delXYHist_pfX.png","png");
