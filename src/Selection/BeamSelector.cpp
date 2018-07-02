@@ -27,8 +27,8 @@ BeamSelector::BeamSelector(){
 //=============================================================================
 // classsifyEvent()
 //=============================================================================
-bool BeamSelector::PrimaryTrack(std::vector<std::vector<double>> *track_zpos,int ntracks_reco, 
-  double zPointCutoff, int& reco_primary, double& first_reco_z){
+bool BeamSelector::PrimaryTrack(std::vector<std::vector<double>> *track_zpos,
+  int ntracks_reco,double zPointCutoff, int& reco_primary, double& first_reco_z){
 
       bool print = true;
 
@@ -58,7 +58,7 @@ bool BeamSelector::PrimaryTrack(std::vector<std::vector<double>> *track_zpos,int
 
 }
 
-int BeamSelector::isTPCPrimary(std::vector<std::vector<double>> *track_zpos,int ntracks_reco,  bool mc_mode, 
+int BeamSelector::isTPCPrimary(std::vector<std::vector<double>> *track_zpos,int ntracks_reco,bool mc_mode, 
   double zPointCutoff, int& reco_primary, double& first_reco_z, int verbose){
 
       bool print = false;
@@ -109,7 +109,8 @@ int BeamSelector::isTPCPrimary(std::vector<std::vector<double>> *track_zpos,int 
 std::vector<std::vector<double>> BeamSelector::wcTPCMatchPlots(double wc_x, double wc_y, double wc_theta, double wc_phi,
                   std::vector< std::vector<double> > *track_xpos,
                   std::vector< std::vector<double> > *track_ypos,
-                  std::vector< std::vector<double> > *track_zpos, int ntracks_reco, double zPointCutoff, int& numEntering){
+                  std::vector< std::vector<double> > *track_zpos, int ntracks_reco,
+                  double zPointCutoff, int& numEntering){
 
 
   std::vector<std::vector<double>> vOut;
@@ -133,7 +134,8 @@ std::vector<std::vector<double>> BeamSelector::wcTPCMatchPlots(double wc_x, doub
 std::vector<double> BeamSelector::wcTPCMatch(double wc_x, double wc_y, double wc_theta, double wc_phi,
                   std::vector< std::vector<double> > *track_xpos,
                   std::vector< std::vector<double> > *track_ypos,
-                  std::vector< std::vector<double> > *track_zpos, int ntracks_reco, double zPointCutoff, int& MatchedTrack, int& numEntering){
+                  std::vector< std::vector<double> > *track_zpos, int ntracks_reco, double zPointCutoff,
+                   int& MatchedTrack, int& numEntering){
 
   
   double rValueMin = 999.;
@@ -214,6 +216,13 @@ double BeamSelector::getDataInitialKE(double initial_ke, double wctrk_momentum) 
 
 
     return initial_ke; 
+}
+
+bool BeamSelector::MassCut(double wctrk_momentum, double tofobject, double BeamLength, double TargetMass){
+  
+
+return true;
+
 }
 
 

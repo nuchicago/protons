@@ -54,6 +54,10 @@ class UserInputs {
   double zBeamCutoff;
   bool zTPCCutoffSet;
   double zTPCCutoff;
+  double zSlabSize;
+  bool zSlabSizeSet;
+  double rCircleCut;
+  bool rCircleCutSet;
 
 
     

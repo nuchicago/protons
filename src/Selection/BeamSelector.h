@@ -1,4 +1,3 @@
-
 #ifndef BEAMSELECTOR_H
 #define BEAMSELECTOR_H
 #include <vector>
@@ -37,6 +36,9 @@ class BeamSelector {
                       std::vector<std::vector<double>> *MidPz); 
 
   double getDataInitialKE(double initial_ke, double wctrk_momentum);
+
+
+  bool MassCut(double wctrk_momentum, double tofobject, double  BeamLength, double TargetMass);
 
  private:
 

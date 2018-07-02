@@ -117,11 +117,11 @@ ProtonXsec::ProtonXsec( char* jobOptionsFile ) : LArIATAnalysis( jobOptionsFile 
   }
 
   //== Open output root file and postscript file
-  if( UI->rootOutputFileSet && UI->psOutputFileSet ){
+  if( UI->rootOutputFileSet ){
     outputFile = new TFile( UI->rootOutputFile, "RECREATE" );
-    ps = new TPostScript( UI->psOutputFile, 112 );
-    ps->Range(26,18); 
-    psPage = 1; 
+    //ps = new TPostScript( UI->psOutputFile, 112 );
+    //ps->Range(26,18); 
+    //psPage = 1; 
   }
   else{
     cout << endl << "#### No output files specified!!!!" << endl << endl;
@@ -158,7 +158,7 @@ void ProtonXsec::AnalyzeFromNtuples(){
 
 
   // ### some variables that are needed for the xs calc ###
-  double z2 = 0.5; //<-- slab size. need to move this to jobOptions
+  double z2 = UI->zSlabSize; //<-- slab size. need to move this to jobOptions
 
 
 
@@ -180,10 +180,11 @@ void ProtonXsec::AnalyzeFromNtuples(){
 
   
 
-  TH2D *tpcInTracksXY =  new TH2D("tpcInTracksXY","Position of TPC track start",
+  TH2D *tpcInTracksXY =  new TH2D("tpcInTracksXY","Position of TPC track start XY",
     200, -100, 100, 200, -100, 100);
-  tpcInTracksXY->GetYaxis()->SetTitle("Y");
-  tpcInTracksXY->GetXaxis()->SetTitle("X");
+
+
+
   TH2D *wctrkPositionXY =  new TH2D("wctrkPositionXY","Position of Wire Chamber Track",
     200,-100 ,100 , 200, -100, 100);
   TH2D *wctrkSelectedXY =  new TH2D("wctrkSelectedXY","Position of Wire Chamber Track",
@@ -191,6 +192,12 @@ void ProtonXsec::AnalyzeFromNtuples(){
 
 
    
+  TH1D *tpcInTracksZ =  new TH1D("tpcInTracksZ","Position of TPC track start Z",10, 0, 4);
+  TH1D *PrimaryStartZ =  new TH1D("PrimaryStartZ","Selected track start in Z",10, 0, 4);
+  TH1D *BadTrackStartZ =  new TH1D("BadTrackStartZ","non-selected track start in Z",10, 0, 4);
+  TH1D *InTrackLength =  new TH1D("InTrackLength","Entering Track Length",250, 0, 100);
+  TH1D *PrimaryLength =  new TH1D("PrimaryLength","Selected Entering Track Length",250, 0, 100);
+  TH1D *BadTrackLength =  new TH1D("BadTrackLength","non-selected Entering Track Length",250, 0, 100);
 
   TH1D *BeamMomentum = new TH1D("BeamMomentum","Incoming Particle Momentum",100,300,1000);
   TH1D *BeamToF = new TH1D("BeamToF","Incoming Particle Momentum",100,0,200);
@@ -198,31 +205,24 @@ void ProtonXsec::AnalyzeFromNtuples(){
 
   TH1D *wctrkNumHist = new TH1D("wctrkNumHist","Number of Entering Tracks TPC",20,0,5);
 
-  //TH1D *phicalctest = new TH1D("phicalctest","Number of Entering Tracks TPC",100,-4,4);
-
   TH2D * delXYHist =  new TH2D("delXYHist","tpc to wc delta x",200,-100,100,200,-100,100);
-
   TH2D *BadTrackHist =  new TH2D("BadTrackHist","non-selected tracks",200,-100,100,200,-100,100);
-
   TH2D *delBadTrackHist =  new TH2D("delBadTrackHist","non-selected tracks",200,-100,100,200,-100,100);
-
   TH1D * delThetaHist =  new TH1D("delThetaHist","tpc to wc delta Theta",100,-1,1);
-
   TH1D * delPhiHist =  new TH1D("delPhiHist","tpc to wc delta Phi",100,-4,4);
-
-
-
 
   // ## xs histos ##
   TH1D *hreco_initialKE = new TH1D("hreco_initialKE", "initial ke", 20, 0, 1000);
   TH1D *hreco_intke = new TH1D("hreco_intke", "int ke", 20, 0, 1000);
   TH1D *hreco_incke = new TH1D("hreco_incke", "inc ke", 20, 0, 1000);
 
-
   // ## looping once to find Beamline center ##
 
   if(!isMC){
   for (Long64_t jentry=0; jentry < numEventsToProcess && jentry < nentries; jentry++) {
+
+
+    //BS->MassCut(wctrk_momentum,tofObject,)
     
     Long64_t ientry = tuple->LoadTree(jentry);
     if (ientry < 0){continue;}
@@ -237,20 +237,15 @@ void ProtonXsec::AnalyzeFromNtuples(){
         BeamMomentum->Fill(wctrk_momentum[0]);
         BeamToF->Fill(tofObject[0]);
 
+        std::vector <double> wctpc_mvect = BS->wcTPCMatch(wctrk_XFace[0],wctrk_YFace[0], wctrk_theta[0],
+          wctrk_phi[0],track_xpos,track_ypos, track_zpos, ntracks_reco, UI->zTPCCutoff,
+          best_candidate, numEnteringTracks);
 
-
-        std::vector <double> wctpc_mvect = BS->wcTPCMatch(wctrk_XFace[0],wctrk_YFace[0], wctrk_theta[0], wctrk_phi[0],track_xpos,
-          track_ypos, track_zpos, ntracks_reco, UI->zTPCCutoff,best_candidate, numEnteringTracks);
         inTracksNumHist->Fill(numEnteringTracks);
 
         //phicalctest->Fill(wctrk_phi[0] - atan2(wctrk_XFace[0]-20,wctrk_YFace[0]));
 
         if(best_candidate != -1){
-          
-            //if(wctpc_mvect[rtrack][2] < 2){
-            //numFinderTheta++;
-            //if(wctptc_mvect[rtrack][3] < 2){
-            //numFinderPhi++;
 
             delXYHist->Fill(wctpc_mvect[1],wctpc_mvect[2]);
             delThetaHist->Fill(wctpc_mvect[3]);
@@ -258,21 +253,11 @@ void ProtonXsec::AnalyzeFromNtuples(){
             tpcInTracksXY->Fill((*track_xpos)[best_candidate][0],
             (*track_ypos)[best_candidate][0]);
             wctrkSelectedXY->Fill(wctrk_XFace[0],wctrk_YFace[0]);         
-        }
-        // Plotting non-selected tracks
-        for (int inTrack = 0; inTrack < ntracks_reco; inTrack++ ){
-            if((*track_zpos)[inTrack][0] < UI->zTPCCutoff){
-              if (inTrack != best_candidate){
-                BadTrackHist->Fill((*track_xpos)[inTrack][0],(*track_ypos)[inTrack][0]);
-                delBadTrackHist->Fill(wctrk_XFace[0] - (*track_xpos)[inTrack][0],wctrk_YFace[0] - (*track_ypos)[inTrack][0]);
-            }
           }
         }
       }
     }
-  }// End of beam centering loop
-
-
+  // End of beam centering loop
 
     // setting beam center values
   
@@ -294,8 +279,6 @@ void ProtonXsec::AnalyzeFromNtuples(){
     bool found_primary = false; //BS->PrimaryTrack( track_zpos, ntracks_reco, UI->zBeamCutoff,
      //reco_primary, first_reco_z,verbose);
 
-
-    
     if(!isMC){
       if (num_wctracks !=1){continue;}
       else{
@@ -303,43 +286,56 @@ void ProtonXsec::AnalyzeFromNtuples(){
           std::vector <double> MinVector = BS->wcTPCMatch(wctrk_XFace[0],wctrk_YFace[0], wctrk_theta[0], wctrk_phi[0],track_xpos,
           track_ypos, track_zpos, ntracks_reco, UI->zTPCCutoff,reco_primary, numEnteringTracks);
           
-          if(reco_primary == -1){continue;}
+          if(reco_primary == -1){
+            if(verbose == 2){std::cout << "No Valid Primary \n" << std::endl;}
+          }
           else{ 
             numZcutoff++;
-              if( (sqrt( pow((MinVector[1] - xMeanTPCentry),2) + pow((MinVector[2] - yMeanTPCentry),2) )) > 5) {
+              if((sqrt(pow((MinVector[1] - xMeanTPCentry),2) + pow((MinVector[2] - yMeanTPCentry),2)))> UI-> rCircleCut) {
                   continue;}
               else{
                   xyDeltaCut++;
-                  //if(abs(MinVector[3]) > 2 or abs(MinVector[4]) > 2){
-                  //    continue;}
-                  //else{angleCut++;}
-                }     
+                  
+                for (int inTrack = 0; inTrack < ntracks_reco; inTrack++ ){
+                  if((*track_zpos)[inTrack][0] < UI->zTPCCutoff){
+                    tpcInTracksZ->Fill((*track_zpos)[inTrack][0]);
+                    InTrackLength->Fill((*track_length)[inTrack]);
+                    
+                    if (inTrack != reco_primary){
+                      BadTrackHist->Fill((*track_xpos)[inTrack][0],(*track_ypos)[inTrack][0]);
+                      delBadTrackHist->Fill(wctrk_XFace[0] - (*track_xpos)[inTrack][0],
+                          wctrk_YFace[0] - (*track_ypos)[inTrack][0]);
+                      BadTrackLength->Fill((*track_length)[inTrack]);
+                      BadTrackStartZ->Fill((*track_zpos)[inTrack][0]);
+
+                    }
+                    if(inTrack == reco_primary){
+                      PrimaryLength->Fill((*track_length)[inTrack]);
+                      PrimaryStartZ->Fill((*track_zpos)[inTrack][0]);
+                    }
+                  }
+                }
+              }
             }
           }
       }
-    
-
-
-
 
     else{
-      if(verbose == 2){std::cout << "No Valid Primary \n" << std::endl;}
       if(isMC){//BeamSelHistMC->Fill(-1);
       }
       else{//BeamSelHistData->Fill(-1);
       }
-
     }
-
-
 
     // ### porting over the work from ProtonAnalyzerMC module -- ryan ###
 
 
     // ## grabbing reco primary ##
     //int reco_primary = -1;
-    //double first_reco_z = 99.;
-    //reco_primary = BS->isTPCPrimary(track_zpos, ntracks_reco, isMC, UI->zBeamCutoff, reco_primary, first_reco_z, verbose);
+    if(isMC){
+      double first_reco_z = 99.;
+      reco_primary = BS->isTPCPrimary(track_zpos, ntracks_reco, isMC, UI->zBeamCutoff, 
+        reco_primary, first_reco_z, verbose);}
     if(reco_primary == -1){continue;}//<- skipping events that didn't pass isTPCPrimary 
     else{ found_primary = true;}
 
@@ -456,8 +452,11 @@ void ProtonXsec::AnalyzeFromNtuples(){
     //BeamSelHistData->Write();
 
     
-    
+    PrimaryLength->Write();
+    PrimaryStartZ->Write();
     tpcInTracksXY->Write();
+    tpcInTracksZ->Write();
+    InTrackLength->Write();
     wctrkPositionXY->Write();
     wctrkSelectedXY->Write();
     wctrkNumHist->Write();
@@ -468,6 +467,8 @@ void ProtonXsec::AnalyzeFromNtuples(){
     delThetaHist->Write();
     delPhiHist->Write();
     BadTrackHist->Write();
+    BadTrackLength->Write();
+    BadTrackStartZ->Write();
     delBadTrackHist->Write();
 
     // ## xs histos ##
@@ -476,8 +477,6 @@ void ProtonXsec::AnalyzeFromNtuples(){
     hreco_intke->Write();
     }
   }
-
-
 }
 
 

@@ -1,7 +1,7 @@
 void XsecPlots(){
 
   TFile* XsecFile = new TFile("../files/XsecOutput.root","READ");
-  gStyle->SetOptStat(1111);
+  gStyle->SetOptStat("emr");
 
   TCanvas *c1 = new TCanvas("c1","c1",1000,1000);
   TH2D *delXYHist = (TH2D*)XsecFile->Get("delXYHist");
@@ -121,6 +121,23 @@ void XsecPlots(){
 
   c1->Print("images/tpcInTracksXY.png","png");
 
+
+  TH1D *tpcInTracksZ = (TH1D*)XsecFile->Get("tpcInTracksZ");
+  
+  tpcInTracksZ->GetXaxis()->SetTitle("Z [cm]");
+  tpcInTracksZ->GetYaxis()->SetTitle("");
+  tpcInTracksZ->Draw("COLZ");
+  c1->Print("images/tpcInTracksZ.png","png");
+
+
+  TH1D *InTrackLength = (TH1D*)XsecFile->Get("InTrackLength");
+  
+  InTrackLength->GetXaxis()->SetTitle("length [cm]");
+  InTrackLength->GetYaxis()->SetTitle("");
+  InTrackLength->Draw("COLZ");
+  c1->Print("images/InTrackLength.png","png");
+
+
   TH2D *wctrkPositionXY = (TH2D*)XsecFile->Get("wctrkPositionXY");
   
   wctrkPositionXY->GetXaxis()->SetTitle("X [cm]");
@@ -174,6 +191,34 @@ void XsecPlots(){
   delXYHist_pfY->SetTitle("Y Projection of wc-tpc Difference");
   delXYHist_pfY->Draw("e");
   c1->Print("images/delXYHist_pfY.png","png");
+
+  TH1D *BadTrackLength = (TH1D*)XsecFile->Get("BadTrackLength");
+  
+  BadTrackLength->GetXaxis()->SetTitle("length [cm]");
+  BadTrackLength->GetYaxis()->SetTitle("");
+  BadTrackLength->Draw("COLZ");
+  c1->Print("images/BadTrackLength.png","png");
+
+  TH1D *BadTrackStartZ = (TH1D*)XsecFile->Get("BadTrackStartZ");
+  
+  BadTrackStartZ->GetXaxis()->SetTitle("length [cm]");
+  BadTrackStartZ->SetTitle("non-selected track start");
+  BadTrackStartZ->Draw("COLZ");
+  c1->Print("images/BadTrackStartZ.png","png");
+
+  TH1D *PrimaryStartZ = (TH1D*)XsecFile->Get("PrimaryStartZ");
+  
+  PrimaryStartZ->GetXaxis()->SetTitle("length [cm]");
+  PrimaryStartZ->GetYaxis()->SetTitle("");
+  PrimaryStartZ->Draw("COLZ");
+  c1->Print("images/PrimaryStartZ.png","png");
+
+  TH1D *PrimaryLength = (TH1D*)XsecFile->Get("PrimaryLength");
+  
+  PrimaryLength->GetXaxis()->SetTitle("length [cm]");
+  PrimaryLength->GetYaxis()->SetTitle("");
+  PrimaryLength->Draw("COLZ");
+  c1->Print("images/PrimaryLength.png","png");
 
 
 }

@@ -9,3 +9,6 @@ lib
 *.png
 *.ps
 *.png
+*.sublime-project
+*.sublime-workspace
+
