@@ -58,6 +58,10 @@ class UserInputs {
   bool zSlabSizeSet;
   double rCircleCut;
   bool rCircleCutSet;
+  double MassCutMin;
+  bool MassCutMinSet;
+  double MassCutMax;
+  bool MassCutMaxSet;
 
 
     

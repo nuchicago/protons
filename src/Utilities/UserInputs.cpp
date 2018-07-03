@@ -110,6 +110,10 @@ void UserInputs::initialize( ){
   zTPCCutoff = 2;
   rCircleCutSet = false;
   rCircleCut = 5;
+  MassCutMinSet = false;
+  MassCutMin = 0;
+  MassCutMaxSet = false;
+  MassCutMax = 10000;
 
 
   verbose = 0;
@@ -478,6 +482,14 @@ void UserInputs::readAnalysisCuts( ifstream *jobOptionsFile ){
   if( paramLookUp( jobOptionsFile, (char*)"rCircleCut" ) ){
     *jobOptionsFile >> rCircleCut;
     rCircleCutSet = true;
+  }
+  if( paramLookUp( jobOptionsFile, (char*)"MassCutMin" ) ){
+    *jobOptionsFile >> MassCutMin;
+    MassCutMinSet = true;
+  }
+  if( paramLookUp( jobOptionsFile, (char*)"MassCutMax" ) ){
+    *jobOptionsFile >> MassCutMax;
+    MassCutMaxSet = true;
   }
   
   //if( paramLookUp( jobOptionsFile, (char*)"chi2Vertex4MatchCut" ) ){

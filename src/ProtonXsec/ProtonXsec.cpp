@@ -61,8 +61,8 @@ int main( int argc, char * argv[] ){
   //gStyle->SetOptFit(0000);
   //gStyle->SetOptTitle(0);
   //gStyle->SetFillColor(0);
-  gStyle->SetPadColor(0);
-  gStyle->SetCanvasColor(0);
+  //gStyle->SetPadColor(0);
+  //gStyle->SetCanvasColor(0);
   //gStyle->SetStatColor(0);
   //gStyle->SetTitleColor(0);
   //gStyle->SetPadBorderMode(0);
@@ -199,8 +199,8 @@ void ProtonXsec::AnalyzeFromNtuples(){
   TH1D *PrimaryLength =  new TH1D("PrimaryLength","Selected Entering Track Length",250, 0, 100);
   TH1D *BadTrackLength =  new TH1D("BadTrackLength","non-selected Entering Track Length",250, 0, 100);
 
-  TH1D *BeamMomentum = new TH1D("BeamMomentum","Incoming Particle Momentum",100,300,1000);
-  TH1D *BeamToF = new TH1D("BeamToF","Incoming Particle Momentum",100,0,200);
+  TH1D *BeamMomentum = new TH1D("BeamMomentum","Incoming Particle Momentum",200,0,2000);
+  TH1D *BeamToF = new TH1D("BeamToF","Incoming Particle Momentum",100,-100000,100000);
   TH1D *inTracksNumHist = new TH1D("inTracksNumHist","Number of Entering Tracks TPC",100,0,10);
 
   TH1D *wctrkNumHist = new TH1D("wctrkNumHist","Number of Entering Tracks TPC",20,0,5);
@@ -211,6 +211,8 @@ void ProtonXsec::AnalyzeFromNtuples(){
   TH1D * delThetaHist =  new TH1D("delThetaHist","tpc to wc delta Theta",100,-1,1);
   TH1D * delPhiHist =  new TH1D("delPhiHist","tpc to wc delta Phi",100,-4,4);
 
+  TH2D *tofMomentHist = new TH2D("tofMomentHist","Momentum vs TOF",100,0,2000, 100 , 0, 200);
+  TH1D *BeamMassHist = new TH1D("BeamMassHist","Beamline particle Mass", 300, 0 ,3000);
   // ## xs histos ##
   TH1D *hreco_initialKE = new TH1D("hreco_initialKE", "initial ke", 20, 0, 1000);
   TH1D *hreco_intke = new TH1D("hreco_intke", "int ke", 20, 0, 1000);
@@ -221,8 +223,6 @@ void ProtonXsec::AnalyzeFromNtuples(){
   if(!isMC){
   for (Long64_t jentry=0; jentry < numEventsToProcess && jentry < nentries; jentry++) {
 
-
-    //BS->MassCut(wctrk_momentum,tofObject,)
     
     Long64_t ientry = tuple->LoadTree(jentry);
     if (ientry < 0){continue;}
@@ -283,6 +283,15 @@ void ProtonXsec::AnalyzeFromNtuples(){
       if (num_wctracks !=1){continue;}
       else{
           numWCTrack++;
+
+          double ParticleMass = -999. ;
+          tofMomentHist->Fill(wctrk_momentum[0], tofObject[0]);
+          bool isProton = BS->MassCut(wctrk_momentum[0], tofObject[0], ParticleMass, UI->MassCutMin, UI->MassCutMax);
+          BeamMassHist->Fill(ParticleMass);
+
+          if(!isProton){continue;}
+          
+
           std::vector <double> MinVector = BS->wcTPCMatch(wctrk_XFace[0],wctrk_YFace[0], wctrk_theta[0], wctrk_phi[0],track_xpos,
           track_ypos, track_zpos, ntracks_reco, UI->zTPCCutoff,reco_primary, numEnteringTracks);
           
@@ -441,7 +450,7 @@ void ProtonXsec::AnalyzeFromNtuples(){
 
   }
 
-  
+
 
 
 
@@ -470,6 +479,8 @@ void ProtonXsec::AnalyzeFromNtuples(){
     BadTrackLength->Write();
     BadTrackStartZ->Write();
     delBadTrackHist->Write();
+    BeamMassHist->Write();
+    tofMomentHist->Write();
 
     // ## xs histos ##
     hreco_initialKE->Write();

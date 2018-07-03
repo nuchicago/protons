@@ -1,5 +1,7 @@
 void XsecPlots(){
 
+  gROOT->SetBatch(true);
+
   TFile* XsecFile = new TFile("../files/XsecOutput.root","READ");
   gStyle->SetOptStat("emr");
 
@@ -72,7 +74,7 @@ void XsecPlots(){
   TH1D *BeamToF = (TH1D*)XsecFile->Get("BeamToF");
   
   BeamToF->GetXaxis()->SetTitle("ToF [ns]");
-  BeamToF->GetXaxis()->SetRangeUser(0,200);
+  //BeamToF->GetXaxis()->SetRangeUser(0,200);
   BeamToF->GetYaxis()->SetTitle("Number of Tracks");
   BeamToF->SetTitle("Time of Flight");
   BeamToF->Draw("COLZ");
@@ -116,8 +118,8 @@ void XsecPlots(){
   tpcInTracksXY->GetXaxis()->SetTitle("X [cm]");
   tpcInTracksXY->GetYaxis()->SetTitle("Y[cm]");
   tpcInTracksXY->Draw("COLZ");
-  tpcInTracksXY->GetXaxis()->SetRangeUser(0,47.5);
-  tpcInTracksXY->GetYaxis()->SetRangeUser(-20,20);
+  tpcInTracksXY->GetXaxis()->SetRangeUser(-10,60);
+  tpcInTracksXY->GetYaxis()->SetRangeUser(-25,25);
 
   c1->Print("images/tpcInTracksXY.png","png");
 
@@ -219,6 +221,21 @@ void XsecPlots(){
   PrimaryLength->GetYaxis()->SetTitle("");
   PrimaryLength->Draw("COLZ");
   c1->Print("images/PrimaryLength.png","png");
+
+
+  TH1D *BeamMassHist = (TH1D*)XsecFile->Get("BeamMassHist");
+  
+  BeamMassHist->GetXaxis()->SetTitle("Mass [MeV/c^{2}]");
+  BeamMassHist->GetYaxis()->SetTitle("");
+  BeamMassHist->Draw("COLZ");
+  c1->Print("images/BeamMassHist.png","png");
+
+  TH2D *tofMomentHist = (TH2D*)XsecFile->Get("tofMomentHist");
+  
+  tofMomentHist->GetXaxis()->SetTitle("Momentum [MeV/c]");
+  tofMomentHist->GetYaxis()->SetTitle("");
+  tofMomentHist->Draw("COLZ");
+  c1->Print("images/tofMomentHist.png","png");
 
 
 }

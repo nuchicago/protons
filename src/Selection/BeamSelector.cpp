@@ -11,7 +11,13 @@
 
 #include "BeamSelector.h"
 
-
+const double BeamSelector::pi = 3.14159;                // the beloved constant  
+const double BeamSelector::massProton = 0.938;          // proton mass GeV
+const double BeamSelector::massPion = 0.140;            // piplus/minus mass GeV
+const double BeamSelector::massElectron = 0.000511;     // electron mass GeV
+const double BeamSelector::massKaon = 0.494;            // kplus/kminus mass GeV
+const double BeamSelector::c_light = 29.9792458;        // cm/ns - speed of light in vacuum
+const double BeamSelector::tofLength = 665.2;           // cm
 
 
 //=============================================================================
@@ -19,7 +25,6 @@
 //=============================================================================
 
 BeamSelector::BeamSelector(){  
-
   
 }
 
@@ -218,10 +223,12 @@ double BeamSelector::getDataInitialKE(double initial_ke, double wctrk_momentum) 
     return initial_ke; 
 }
 
-bool BeamSelector::MassCut(double wctrk_momentum, double tofobject, double BeamLength, double TargetMass){
+bool BeamSelector::MassCut(double wctrk_momentum, double tofObject, double& ParticleMass,
+  double MassCutMin, double MassCutMax){
   
-
-return true;
+  ParticleMass  = wctrk_momentum * sqrt((pow(tofObject * c_light,2))/pow( tofLength ,2) - 1);
+  if (ParticleMass < MassCutMax && ParticleMass > MassCutMin){return true;}
+  else{return false;}
 
 }
 
