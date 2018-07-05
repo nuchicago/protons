@@ -149,6 +149,8 @@ void ProtonXsec::AnalyzeFromNtuples(){
   // counters for beam cuts
 
   double numEventsStart = 0;
+  double numMassCut = 0;
+  double numtofvalid = 0;
   double numZcutoff = 0;
   double numWCTrack = 0;
   double xyDeltaCut = 0;
@@ -174,45 +176,42 @@ void ProtonXsec::AnalyzeFromNtuples(){
   Long64_t nentries = tuple->GetEntriesFast();
   TCanvas *c = new TCanvas("c","c",1000, 1000);
 
-
-
-
-
-  
-
+// ## Histograms for entering tracks
   TH2D *tpcInTracksXY =  new TH2D("tpcInTracksXY","Position of TPC track start XY",
     200, -100, 100, 200, -100, 100);
-
-
-
   TH2D *wctrkPositionXY =  new TH2D("wctrkPositionXY","Position of Wire Chamber Track",
     200,-100 ,100 , 200, -100, 100);
   TH2D *wctrkSelectedXY =  new TH2D("wctrkSelectedXY","Position of Wire Chamber Track",
   200, -100, 100, 200, -100, 100);
-
-
-   
   TH1D *tpcInTracksZ =  new TH1D("tpcInTracksZ","Position of TPC track start Z",10, 0, 4);
   TH1D *PrimaryStartZ =  new TH1D("PrimaryStartZ","Selected track start in Z",10, 0, 4);
   TH1D *BadTrackStartZ =  new TH1D("BadTrackStartZ","non-selected track start in Z",10, 0, 4);
   TH1D *InTrackLength =  new TH1D("InTrackLength","Entering Track Length",250, 0, 100);
   TH1D *PrimaryLength =  new TH1D("PrimaryLength","Selected Entering Track Length",250, 0, 100);
   TH1D *BadTrackLength =  new TH1D("BadTrackLength","non-selected Entering Track Length",250, 0, 100);
-
-  TH1D *BeamMomentum = new TH1D("BeamMomentum","Incoming Particle Momentum",200,0,2000);
-  TH1D *BeamToF = new TH1D("BeamToF","Incoming Particle Momentum",100,-100000,100000);
   TH1D *inTracksNumHist = new TH1D("inTracksNumHist","Number of Entering Tracks TPC",100,0,10);
-
+  TH1D *BeamMomentum = new TH1D("BeamMomentum","Incoming Particle Momentum",200,0,2000);
   TH1D *wctrkNumHist = new TH1D("wctrkNumHist","Number of Entering Tracks TPC",20,0,5);
+  TH1D *BeamToF = new TH1D("BeamToF","Incoming Particle Momentum",100,0,100);
 
   TH2D * delXYHist =  new TH2D("delXYHist","tpc to wc delta x",200,-100,100,200,-100,100);
   TH2D *BadTrackHist =  new TH2D("BadTrackHist","non-selected tracks",200,-100,100,200,-100,100);
   TH2D *delBadTrackHist =  new TH2D("delBadTrackHist","non-selected tracks",200,-100,100,200,-100,100);
+  TH2D *delPileupHist =  new TH2D("delPileupHist","Pileup Track difference",200,-100,100,200,-100,100);
+  TH2D *PileupHist =  new TH2D("PileupHist","Pileup Track Position",200,-100,100,200,-100,100);
   TH1D * delThetaHist =  new TH1D("delThetaHist","tpc to wc delta Theta",100,-1,1);
   TH1D * delPhiHist =  new TH1D("delPhiHist","tpc to wc delta Phi",100,-4,4);
 
-  TH2D *tofMomentHist = new TH2D("tofMomentHist","Momentum vs TOF",100,0,2000, 100 , 0, 200);
-  TH1D *BeamMassHist = new TH1D("BeamMassHist","Beamline particle Mass", 300, 0 ,3000);
+  TH2D *tofMomentHist = new TH2D("tofMomentHist","Momentum vs TOF",100,0,2000, 100 , 0,100);
+  TH1D *BeamMassHist = new TH1D("BeamMassHist","Beamline particle Mass", 500, 0,3000);
+  TH1D *BeamMassCutHist = new TH1D("BeamMassCutHist","Beamline particle Mass - after Cut", 500, 0,3000);
+
+
+  // ## plot markers for cuts
+
+  TLine  *MassMinLine =  new TLine(0,UI->MassCutMin, 100, UI->MassCutMin);
+  TLine  *MassMaxLine =  new TLine(0,UI->MassCutMax, 100, UI->MassCutMax);
+
   // ## xs histos ##
   TH1D *hreco_initialKE = new TH1D("hreco_initialKE", "initial ke", 20, 0, 1000);
   TH1D *hreco_intke = new TH1D("hreco_intke", "int ke", 20, 0, 1000);
@@ -233,6 +232,14 @@ void ProtonXsec::AnalyzeFromNtuples(){
     wctrkNumHist->Fill(num_wctracks);
 
       if (num_wctracks == 1){
+          double ParticleMass = -9999999. ;
+          
+          bool isProton = BS->MassCut(wctrk_momentum[0], tofObject[0], ParticleMass, UI->MassCutMin, UI->MassCutMax);
+          
+
+
+          if(!isProton){continue;}
+
         wctrkPositionXY->Fill(wctrk_XFace[0],wctrk_YFace[0]);
         BeamMomentum->Fill(wctrk_momentum[0]);
         BeamToF->Fill(tofObject[0]);
@@ -240,8 +247,6 @@ void ProtonXsec::AnalyzeFromNtuples(){
         std::vector <double> wctpc_mvect = BS->wcTPCMatch(wctrk_XFace[0],wctrk_YFace[0], wctrk_theta[0],
           wctrk_phi[0],track_xpos,track_ypos, track_zpos, ntracks_reco, UI->zTPCCutoff,
           best_candidate, numEnteringTracks);
-
-        inTracksNumHist->Fill(numEnteringTracks);
 
         //phicalctest->Fill(wctrk_phi[0] - atan2(wctrk_XFace[0]-20,wctrk_YFace[0]));
 
@@ -283,17 +288,32 @@ void ProtonXsec::AnalyzeFromNtuples(){
       if (num_wctracks !=1){continue;}
       else{
           numWCTrack++;
+          if(tofObject[0] < 0){continue;}
+          numtofvalid++;
 
-          double ParticleMass = -999. ;
+          double ParticleMass = -9999999. ;
           tofMomentHist->Fill(wctrk_momentum[0], tofObject[0]);
           bool isProton = BS->MassCut(wctrk_momentum[0], tofObject[0], ParticleMass, UI->MassCutMin, UI->MassCutMax);
           BeamMassHist->Fill(ParticleMass);
 
-          if(!isProton){continue;}
-          
 
+          if(!isProton){
+              for(int inTrack = 0; inTrack < ntracks_reco; inTrack++ ){
+              delPileupHist->Fill(wctrk_XFace[0] - (*track_xpos)[inTrack][0],
+                          wctrk_YFace[0] - (*track_ypos)[inTrack][0]);
+            PileupHist->Fill((*track_xpos)[inTrack][0],
+                          (*track_ypos)[inTrack][0]);
+          }
+            continue;}
+
+
+
+          BeamMassCutHist->Fill(ParticleMass);
+          numMassCut++;
           std::vector <double> MinVector = BS->wcTPCMatch(wctrk_XFace[0],wctrk_YFace[0], wctrk_theta[0], wctrk_phi[0],track_xpos,
           track_ypos, track_zpos, ntracks_reco, UI->zTPCCutoff,reco_primary, numEnteringTracks);
+
+          inTracksNumHist->Fill(numEnteringTracks);
           
           if(reco_primary == -1){
             if(verbose == 2){std::cout << "No Valid Primary \n" << std::endl;}
@@ -311,6 +331,10 @@ void ProtonXsec::AnalyzeFromNtuples(){
                     InTrackLength->Fill((*track_length)[inTrack]);
                     
                     if (inTrack != reco_primary){
+                      delPileupHist->Fill(wctrk_XFace[0] - (*track_xpos)[inTrack][0],
+                          wctrk_YFace[0] - (*track_ypos)[inTrack][0]);
+                      PileupHist->Fill((*track_xpos)[inTrack][0],
+                          (*track_ypos)[inTrack][0]);
                       BadTrackHist->Fill((*track_xpos)[inTrack][0],(*track_ypos)[inTrack][0]);
                       delBadTrackHist->Fill(wctrk_XFace[0] - (*track_xpos)[inTrack][0],
                           wctrk_YFace[0] - (*track_ypos)[inTrack][0]);
@@ -428,6 +452,8 @@ void ProtonXsec::AnalyzeFromNtuples(){
   if(verbose > 0){
     std::cout << "Total events processed: "<< numEventsStart << std::endl;
     std::cout << "Events with only one wc track: "<< numWCTrack << std::endl;
+    std::cout << "Events with valid ToF value: "<< numtofvalid << std::endl;
+    std::cout << "Events passing mass cut: "<< numMassCut << std::endl;   
     std::cout << "Events with best match TPC track Z < Cutoff: "<< numZcutoff << std::endl;
     std::cout << "Events after XY plane distance cut: "<< xyDeltaCut << std::endl;
     //std::cout << "Events after; angle cut: "<< angleCut << std::endl;
@@ -480,7 +506,11 @@ void ProtonXsec::AnalyzeFromNtuples(){
     BadTrackStartZ->Write();
     delBadTrackHist->Write();
     BeamMassHist->Write();
+    BeamMassCutHist->Write();
     tofMomentHist->Write();
+    delPileupHist->Write();
+    PileupHist->Write();
+
 
     // ## xs histos ##
     hreco_initialKE->Write();

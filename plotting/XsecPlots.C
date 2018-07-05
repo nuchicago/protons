@@ -27,7 +27,6 @@ void XsecPlots(){
   TH1D *delThetaHist = (TH1D*)XsecFile->Get("delThetaHist");
   
   delThetaHist->GetXaxis()->SetTitle("#theta_{wc} = #theta_{tpc} [rad]");
-  delThetaHist->GetYaxis()->SetTitle("Number of Events");
   delThetaHist->SetTitle("Wire Chamber - TPC #theta difference");
   delThetaHist->Draw("COLZ");
 
@@ -36,7 +35,7 @@ void XsecPlots(){
   TH1D *inTracksNumHist = (TH1D*)XsecFile->Get("inTracksNumHist");
   
   inTracksNumHist->GetXaxis()->SetTitle("Number of Tracks");
-  inTracksNumHist->GetYaxis()->SetTitle("Number of Events");
+  
   inTracksNumHist->GetXaxis()->SetRangeUser(0,8);
   inTracksNumHist->SetTitle("Number of Tracks starting at Z < 4cm");
   inTracksNumHist->Draw("COLZ");
@@ -46,7 +45,6 @@ void XsecPlots(){
   TH1D *wctrkNumHist = (TH1D*)XsecFile->Get("wctrkNumHist");
   
   wctrkNumHist->GetXaxis()->SetTitle("Number of Wire Chamber Tracks");
-  wctrkNumHist->GetYaxis()->SetTitle("Number of Events");
   wctrkNumHist->GetXaxis()->SetRangeUser(0,8);
   wctrkNumHist->SetTitle("Number of Wire Chamber Tracks per Event");
   wctrkNumHist->Draw("COLZ");
@@ -118,8 +116,8 @@ void XsecPlots(){
   tpcInTracksXY->GetXaxis()->SetTitle("X [cm]");
   tpcInTracksXY->GetYaxis()->SetTitle("Y[cm]");
   tpcInTracksXY->Draw("COLZ");
-  tpcInTracksXY->GetXaxis()->SetRangeUser(-10,60);
-  tpcInTracksXY->GetYaxis()->SetRangeUser(-25,25);
+  tpcInTracksXY->GetXaxis()->SetRangeUser(-0,47.5);
+  tpcInTracksXY->GetYaxis()->SetRangeUser(-20,20);
 
   c1->Print("images/tpcInTracksXY.png","png");
 
@@ -182,6 +180,26 @@ void XsecPlots(){
 
   c1->Print("images/delBadTrackHist.png","png");
 
+  TH2D *PileupHist = (TH2D*)XsecFile->Get("PileupHist");
+  
+  PileupHist->GetXaxis()->SetTitle("X_{tpc} [cm]");
+  PileupHist->GetYaxis()->SetTitle("Y_{tpc} [cm]");
+  PileupHist->Draw("COLZ");
+  PileupHist->GetXaxis()->SetRangeUser(0,47.5);
+  PileupHist->GetYaxis()->SetRangeUser(-20,20);
+
+  c1->Print("images/PileupHist.png","png");
+
+  TH2D *delPileupHist = (TH2D*)XsecFile->Get("delPileupHist");
+  
+  delPileupHist->GetXaxis()->SetTitle("X_{wc} - X_{tpc} [cm]");
+  delPileupHist->GetYaxis()->SetTitle("Y_{wc} - Y_{tpc} [cm]");
+  delPileupHist->Draw("COLZ");
+  delPileupHist->GetXaxis()->SetRangeUser(-48,48);
+  delPileupHist->GetYaxis()->SetRangeUser(-48,48);
+
+  c1->Print("images/delPileupHist.png","png");
+
 
   TH2D *delXYHist_pfX = (TH2D*)delXYHist->ProfileX("delXYHist_pfX");
   delXYHist_pfX->SetTitle("X projection of wc-tpc difference");
@@ -222,20 +240,36 @@ void XsecPlots(){
   PrimaryLength->Draw("COLZ");
   c1->Print("images/PrimaryLength.png","png");
 
-
   TH1D *BeamMassHist = (TH1D*)XsecFile->Get("BeamMassHist");
   
   BeamMassHist->GetXaxis()->SetTitle("Mass [MeV/c^{2}]");
   BeamMassHist->GetYaxis()->SetTitle("");
   BeamMassHist->Draw("COLZ");
+  BeamMassHist->GetXaxis()->SetRangeUser(-0,3000);
+
+  TLine *MassMaxLine = new TLine(0,1200,100,1200);
+  MassMaxLine->SetLineColor(1);
+  MassMaxLine->Draw("lsame");
+
+  TLine *MassMinLine = new TLine(0,700, 100, 700);
+  MassMinLine->SetLineColor(1);
+  MassMinLine->Draw("lsame");
+
   c1->Print("images/BeamMassHist.png","png");
+
+  TH1D *BeamMassCutHist = (TH1D*)XsecFile->Get("BeamMassCutHist");
+  
+  BeamMassCutHist->GetXaxis()->SetTitle("Mass [MeV/c^{2}]");
+  BeamMassCutHist->GetYaxis()->SetTitle("");
+  BeamMassCutHist->Draw("COLZ");
+  BeamMassCutHist->GetXaxis()->SetRangeUser(-0,3000);
+  c1->Print("images/BeamMassCutHist.png","png");
 
   TH2D *tofMomentHist = (TH2D*)XsecFile->Get("tofMomentHist");
   
   tofMomentHist->GetXaxis()->SetTitle("Momentum [MeV/c]");
-  tofMomentHist->GetYaxis()->SetTitle("");
+  tofMomentHist->GetYaxis()->SetTitle("Time of Flight");
   tofMomentHist->Draw("COLZ");
   c1->Print("images/tofMomentHist.png","png");
-
 
 }

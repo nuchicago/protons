@@ -226,7 +226,7 @@ double BeamSelector::getDataInitialKE(double initial_ke, double wctrk_momentum) 
 bool BeamSelector::MassCut(double wctrk_momentum, double tofObject, double& ParticleMass,
   double MassCutMin, double MassCutMax){
   
-  ParticleMass  = wctrk_momentum * sqrt((pow(tofObject * c_light,2))/pow( tofLength ,2) - 1);
+  ParticleMass  = wctrk_momentum * sqrt(abs((pow(tofObject * c_light,2))/pow( tofLength ,2) - 1));
   if (ParticleMass < MassCutMax && ParticleMass > MassCutMin){return true;}
   else{return false;}
 

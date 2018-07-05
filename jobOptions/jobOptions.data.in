@@ -37,8 +37,8 @@ zBeamCutoff 2
 zTPCCutoff 4
 rCircleCut 5
 ZSlabSize 0.5
-MassCutMin 0
-MassCutMax 10000
+MassCutMin 700
+MassCutMax 1200 
 
 
 
