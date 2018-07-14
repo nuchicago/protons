@@ -765,7 +765,7 @@ void ProtonAnalyzerMC::AnalyzeFromNtuples() {
 
 
     // ~~~~~~~~~~~~~~~~~~~~~ track purity and completeness study ~~~~~~~~~~~~~~~~~~~~~~~~
-    //std::cout<<"number of reconstructed tracks: "<<ntracks_reco<<std::endl;
+    std::cout<<"number of reconstructed tracks: "<<ntracks_reco<<std::endl;
     int hit_isPrimary = 0;
     int all_primaryHits = 0;
     double obsv_primaryE = 0;
@@ -1096,6 +1096,8 @@ void ProtonAnalyzerMC::AnalyzeFromNtuples() {
     // ## putting the pieces together ##
     for(int iBin = 0; iBin < hreco_unfolded_intke_signal->GetNbinsX(); iBin++){
       if(hreco_unfolded_incke_signal->GetBinContent(iBin) == 0){continue;}
+      if(hreco_intke_eff->GetBinContent(iBin) == 0){continue;}
+      if(hreco_incke_eff->GetBinContent(iBin) == 0){continue;}
       // num:   (N_int - Background_int)*U_ij * 1/eps
       double num = hreco_unfolded_intke_signal->GetBinContent(iBin) / hreco_intke_eff->GetBinContent(iBin);
       if(num == 0){num = 1;}
@@ -1115,7 +1117,12 @@ void ProtonAnalyzerMC::AnalyzeFromNtuples() {
       double term2 = dem_err/dem;
       double totalError = temp_xs*pow(pow(term1,2) + pow(term2,2), 0.5)/barn;//*recip_num_density*barn;
 
-      //std::cout <<"xs: " << xs << " +- " << totalError << std::endl;
+      std::cout<<"iBin: "<<iBin<<std::endl;
+      std::cout<<"\tnum: "<<num<<std::endl;
+      std::cout<<"\tdem: "<<dem<<std::endl;
+      std::cout<<"\tratio: "<<ratio<<std::endl;
+      std::cout<<"\txs: "<<xs<<" +- "<<totalError<<std::endl;
+
       hreco_xs->SetBinContent(iBin, xs); 
       hreco_xs->SetBinError(iBin,totalError);
     }
