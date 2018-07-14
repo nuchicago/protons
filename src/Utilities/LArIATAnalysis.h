@@ -4,6 +4,7 @@
 
 #include <vector>
 #include <iostream>
+#include <fstream>
 #include "ROOTinclude.h"
 #include "UserInputs.h"
 
@@ -61,6 +62,7 @@ class LArIATAnalysis {
   static const double massElectron;        // electron mass GeV
   static const double massKaon;            // kplus/kminus mass GeV
   static const double c_light;             // cm/ns - speed of light in vacuum
+  static const double tofLength;           // cm
 
 
   //---------------------------------------------

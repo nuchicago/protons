@@ -17,6 +17,7 @@ const double LArIATAnalysis::massPion = 0.140;            // piplus/minus mass G
 const double LArIATAnalysis::massElectron = 0.000511;     // electron mass GeV
 const double LArIATAnalysis::massKaon = 0.494;            // kplus/kminus mass GeV
 const double LArIATAnalysis::c_light = 29.9792458;        // cm/ns - speed of light in vacuum
+const double LArIATAnalysis::tofLength = 665.2;           // cm
 
 
 //#############################################################################

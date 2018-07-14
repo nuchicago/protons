@@ -24,7 +24,7 @@ const double BeamSelector::tofLength = 665.2;           // cm
 // Constructor
 //=============================================================================
 
-BeamSelector::BeamSelector(){  
+BeamSelector::BeamSelector(){
   
 }
 
@@ -32,36 +32,7 @@ BeamSelector::BeamSelector(){
 //=============================================================================
 // classsifyEvent()
 //=============================================================================
-bool BeamSelector::PrimaryTrack(std::vector<std::vector<double>> *track_zpos,
-  int ntracks_reco,double zPointCutoff, int& reco_primary, double& first_reco_z){
 
-      bool print = true;
-
-
-      
-
-        if(print){
-          std::cout<<"Primary Track Lookup"<<std::endl;
-          std::cout<<">>>>>>>>>>>>>>>>reco<<<<<<<<<<<<<<<<"<<std::endl;
-        }
-
-        for(int rtrack = 0; rtrack < ntracks_reco; rtrack++){
-          double z1 = (*track_zpos)[rtrack][0];
-          if(print){ 
-            std::cout << "first z point: " << z1 << std::endl;
-          }
-          if(z1 < first_reco_z && z1 < zPointCutoff){
-            first_reco_z = z1;
-            reco_primary = rtrack;
-          }
-        }//<---End loop reco tracks
-        if(reco_primary == -1){return false;}
-        else{
-          if(print){std::cout << "earliest primary: " << reco_primary << std::endl;} 
-        return true;}
-      
-
-}
 
 int BeamSelector::isTPCPrimary(std::vector<std::vector<double>> *track_zpos,int ntracks_reco,bool mc_mode, 
   double zPointCutoff, int& reco_primary, double& first_reco_z, int verbose){
@@ -136,7 +107,7 @@ std::vector<std::vector<double>> BeamSelector::wcTPCMatchPlots(double wc_x, doub
   return vOut;
 }
 
-std::vector<double> BeamSelector::wcTPCMatch(double wc_x, double wc_y, double wc_theta, double wc_phi,
+std::vector<double> BeamSelector::dataTPCPrimary(double wc_x, double wc_y, double wc_theta, double wc_phi,
                   std::vector< std::vector<double> > *track_xpos,
                   std::vector< std::vector<double> > *track_ypos,
                   std::vector< std::vector<double> > *track_zpos, int ntracks_reco, double zPointCutoff,
@@ -156,7 +127,14 @@ std::vector<double> BeamSelector::wcTPCMatch(double wc_x, double wc_y, double wc
       double delX = wc_x - (*track_xpos)[mtrack][0];
       double delY = wc_y - (*track_ypos)[mtrack][0];
       double delTheta = wc_theta - UtilityFunctions::getTrackTheta(mtrack, track_xpos,track_ypos,track_zpos);
-      double delPhi = wc_phi - UtilityFunctions::getTrackPhi(mtrack, track_xpos,track_ypos);
+      double delPhi;
+      if (wc_phi < 0){
+        delPhi = (wc_phi + 8* atan(1)) - UtilityFunctions::getTrackPhi(mtrack, track_xpos,track_ypos);
+      }
+      else{
+        delPhi = wc_phi  - UtilityFunctions::getTrackPhi(mtrack, track_xpos,track_ypos);
+
+      }
 
 
       double rValue = sqrt(pow(delX,2) + pow(delY,2));

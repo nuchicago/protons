@@ -11,6 +11,7 @@ Output File Lists - .root and PostScript
 
 rootOutputFile files/XsecOutput.root
 psOutputFile files/XSecOutput.ps
+PrimaryIDList files/PrimaryID.txt
 
 -----------------------------------------------------
  verbosity

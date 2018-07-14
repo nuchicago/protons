@@ -272,4 +272,34 @@ void XsecPlots(){
   tofMomentHist->Draw("COLZ");
   c1->Print("images/tofMomentHist.png","png");
 
+  TH1D *numTracksSelHist = (TH1D*)XsecFile->Get("numTracksSelHist");
+
+  numTracksSelHist->GetXaxis()->SetTitle("Number of Tracks");
+  numTracksSelHist->Draw("");
+  c1->Print("images/numTracksSelHist.png","png");
+
+  TH1D *tpcPhiHist = (TH1D*)XsecFile->Get("tpcPhiHist");
+
+  tpcPhiHist->GetXaxis()->SetTitle("#phi_{tpc}");
+  tpcPhiHist->Draw("");
+  c1->Print("images/tpcPhiHist.png","png");
+
+  TH1D *wcPhiHist = (TH1D*)XsecFile->Get("wcPhiHist");
+
+  wcPhiHist->GetXaxis()->SetTitle("#phi_{wc}");
+  wcPhiHist->Draw("");
+  c1->Print("images/wcPhiHist.png","png");
+
+  TH1D *tpcThetaHist = (TH1D*)XsecFile->Get("tpcThetaHist");
+
+  tpcThetaHist->GetXaxis()->SetTitle("#theta_{tpc}");
+  tpcThetaHist->Draw("");
+  c1->Print("images/tpcThetaHist.png","png");
+
+  TH1D *wcThetaHist = (TH1D*)XsecFile->Get("wcThetaHist");
+
+  wcThetaHist->GetXaxis()->SetTitle("#theta_{wc}");
+  wcThetaHist->Draw("");
+  c1->Print("images/wcThetaHist.png","png");
+
 }

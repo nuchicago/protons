@@ -19,6 +19,8 @@ class UserInputs {
   //== input files
   char *inputFiles;
   bool inputFilesSet;
+  char *correctionFiles;
+  bool correctionFilesSet;
   bool isData;
   bool isMC;
 
@@ -29,6 +31,8 @@ class UserInputs {
   bool psOutputFileSet;
   char *outputFileName;
   bool outputFileNameSet;
+  char *SelEventList;
+  bool SelEventListSet;
 
   int printMod;
 
@@ -62,6 +66,10 @@ class UserInputs {
   bool MassCutMinSet;
   double MassCutMax;
   bool MassCutMaxSet;
+  double ThetaCut;
+  bool ThetaCutSet;
+  double PhiCut;
+  bool PhiCutSet;
 
 
     

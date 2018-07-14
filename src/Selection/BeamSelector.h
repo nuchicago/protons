@@ -11,9 +11,6 @@ class BeamSelector {
 
   BeamSelector();
  
-  bool PrimaryTrack(std::vector< std::vector<double> > *track_zpos, int ntracks_reco,
-  					 double zPointCutoff, int& reco_primary, double& first_reco_z);
-
   int  isTPCPrimary(std::vector< std::vector<double> > *track_zpos, int ntracks_reco,
   				 bool mc_mode, double zPointCutoff, int& reco_primary, double& first_reco_z, int verbose);
   
@@ -22,7 +19,7 @@ class BeamSelector {
                   std::vector< std::vector<double> > *track_ypos,
                   std::vector< std::vector<double> > *track_zpos, int ntracks_reco, double zPointCutoff,int& numEntering);
 
-  std::vector<double> wcTPCMatch(double wc_x, double wc_y, double wc_theta, double wc_phi,
+  std::vector<double> dataTPCPrimary(double wc_x, double wc_y, double wc_theta, double wc_phi,
                   std::vector< std::vector<double> > *track_xpos,
                   std::vector< std::vector<double> > *track_ypos,
                   std::vector< std::vector<double> > *track_zpos, 

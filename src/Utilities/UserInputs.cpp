@@ -91,9 +91,11 @@ UserInputs::UserInputs( ){
 void UserInputs::initialize( ){
 
   inputFilesSet = false;
+  correctionFilesSet = false;
   rootOutputFileSet = false;
   psOutputFileSet = false;
   outputFileNameSet = false;
+  SelEventListSet = false;
 
   printMod = 50000;
 
@@ -114,6 +116,14 @@ void UserInputs::initialize( ){
   MassCutMin = 0;
   MassCutMaxSet = false;
   MassCutMax = 10000;
+  PhiCut = 10;
+  PhiCutSet = false;
+  ThetaCut = 10;
+  ThetaCutSet = false;
+
+
+
+  
 
 
   verbose = 0;
@@ -148,11 +158,23 @@ void UserInputs::readIoFiles( ifstream *jobOptionsFile ){
     *jobOptionsFile >> inputFiles;
     inputFilesSet = true;
   } 
+
+  if( paramLookUp( jobOptionsFile, (char*)"correctionFiles" ) ){
+    correctionFiles = new char[1000];
+    *jobOptionsFile >> correctionFiles;
+    correctionFilesSet = true;
+  } 
  
   if( paramLookUp( jobOptionsFile, (char*)"rootOutputFile" ) ){
     rootOutputFile = new char[1000];
     *jobOptionsFile >> rootOutputFile;
     rootOutputFileSet = true;
+  } 
+
+  if( paramLookUp( jobOptionsFile, (char*)"SelEventList" ) ){
+    SelEventList = new char[1000];
+    *jobOptionsFile >> SelEventList;
+    SelEventListSet = true;
   } 
 
   if( paramLookUp( jobOptionsFile, (char*)"psOutputFile" ) ){
@@ -490,6 +512,14 @@ void UserInputs::readAnalysisCuts( ifstream *jobOptionsFile ){
   if( paramLookUp( jobOptionsFile, (char*)"MassCutMax" ) ){
     *jobOptionsFile >> MassCutMax;
     MassCutMaxSet = true;
+  }
+  if( paramLookUp( jobOptionsFile, (char*)"PhiCut" ) ){
+    *jobOptionsFile >> PhiCut;
+    PhiCutSet = true;
+  }
+  if( paramLookUp( jobOptionsFile, (char*)"ThetaCut" ) ){
+    *jobOptionsFile >> ThetaCut;
+    ThetaCutSet = true;
   }
   
   //if( paramLookUp( jobOptionsFile, (char*)"chi2Vertex4MatchCut" ) ){
@@ -910,6 +940,7 @@ void UserInputs::printUserInputs( ){
   cout << endl << endl;
   cout << "------------- Output Files -----------" << endl;
   if( rootOutputFileSet ) cout << "  Root output file = " << rootOutputFile << endl;
+  if( SelEventListSet ) cout << "  Selected Event list file = " << SelEventList << endl;
   if( psOutputFileSet)    cout << "  PostScript output file = " << psOutputFile << endl;
   if( outputFileNameSet ) cout << "  Output files name = " << outputFileName << endl;  
   //cout << endl << endl;
@@ -922,12 +953,14 @@ void UserInputs::printUserInputs( ){
   cout << "-------- Beam Particle Selection -----" << endl;
   cout << "  Entering track Z cut = " << zTPCCutoff << " cm" <<  endl;
   cout << "  Entering track circular cut = " << rCircleCut << " cm" <<  endl;
+  cout << "  Mass cut range = (" << MassCutMin<< "," << MassCutMax<<") MeV" <<  endl;
+  cout <<"  Angle cuts: Theta = " << ThetaCut << " rad ; Phi = " << PhiCut <<" rad" << endl;
   //cout << "  Beam particle radius cut = " << mwpcTargRadiusCut << " cm." << endl;
   //cout << "  Beam particle angle cut = " << mwpcTargAngleCut << " mrad" << endl;
   //cout << "  t0 cut = " << t0Cut << " ns" << endl;
   //cout << endl;
 
-  cout << "------- XS slab settings -------" << endl;
+  cout << "------- XS Event Selection -------" << endl;
   cout << "  Slab Size Z = " << zSlabSize << " cm" << endl;
   //if( trackTypeSet ) cout << "  Reconstructing tracks using : " << trackType << endl;
   //else cout << "  Track reconstruction method not set" << endl; 
