@@ -11,7 +11,13 @@
 
 #include "BeamSelector.h"
 
-
+const double BeamSelector::pi = 3.14159;                // the beloved constant  
+const double BeamSelector::massProton = 0.938;          // proton mass GeV
+const double BeamSelector::massPion = 0.140;            // piplus/minus mass GeV
+const double BeamSelector::massElectron = 0.000511;     // electron mass GeV
+const double BeamSelector::massKaon = 0.494;            // kplus/kminus mass GeV
+const double BeamSelector::c_light = 29.9792458;        // cm/ns - speed of light in vacuum
+const double BeamSelector::tofLength = 665.2;           // cm
 
 
 //=============================================================================
@@ -19,7 +25,6 @@
 //=============================================================================
 
 BeamSelector::BeamSelector(){  
-
   
 }
 
@@ -27,8 +32,8 @@ BeamSelector::BeamSelector(){
 //=============================================================================
 // classsifyEvent()
 //=============================================================================
-bool BeamSelector::PrimaryTrack(std::vector<std::vector<double>> *track_zpos,int ntracks_reco, 
-  double zPointCutoff, int& reco_primary, double& first_reco_z){
+bool BeamSelector::PrimaryTrack(std::vector<std::vector<double>> *track_zpos,
+  int ntracks_reco,double zPointCutoff, int& reco_primary, double& first_reco_z){
 
       bool print = true;
 
@@ -58,7 +63,7 @@ bool BeamSelector::PrimaryTrack(std::vector<std::vector<double>> *track_zpos,int
 
 }
 
-int BeamSelector::isTPCPrimary(std::vector<std::vector<double>> *track_zpos,int ntracks_reco,  bool mc_mode, 
+int BeamSelector::isTPCPrimary(std::vector<std::vector<double>> *track_zpos,int ntracks_reco,bool mc_mode, 
   double zPointCutoff, int& reco_primary, double& first_reco_z, int verbose){
 
       bool print = false;
@@ -109,7 +114,8 @@ int BeamSelector::isTPCPrimary(std::vector<std::vector<double>> *track_zpos,int 
 std::vector<std::vector<double>> BeamSelector::wcTPCMatchPlots(double wc_x, double wc_y, double wc_theta, double wc_phi,
                   std::vector< std::vector<double> > *track_xpos,
                   std::vector< std::vector<double> > *track_ypos,
-                  std::vector< std::vector<double> > *track_zpos, int ntracks_reco, double zPointCutoff, int& numEntering){
+                  std::vector< std::vector<double> > *track_zpos, int ntracks_reco,
+                  double zPointCutoff, int& numEntering){
 
 
   std::vector<std::vector<double>> vOut;
@@ -133,7 +139,8 @@ std::vector<std::vector<double>> BeamSelector::wcTPCMatchPlots(double wc_x, doub
 std::vector<double> BeamSelector::wcTPCMatch(double wc_x, double wc_y, double wc_theta, double wc_phi,
                   std::vector< std::vector<double> > *track_xpos,
                   std::vector< std::vector<double> > *track_ypos,
-                  std::vector< std::vector<double> > *track_zpos, int ntracks_reco, double zPointCutoff, int& MatchedTrack, int& numEntering){
+                  std::vector< std::vector<double> > *track_zpos, int ntracks_reco, double zPointCutoff,
+                   int& MatchedTrack, int& numEntering){
 
   
   double rValueMin = 999.;
@@ -209,10 +216,20 @@ double BeamSelector::getDataInitialKE(double initial_ke, double wctrk_momentum) 
   
   double mass = 938.57;
   double wc_ke = sqrt(pow(mass, 2) + pow(wctrk_momentum, 2)) - mass;
-  initial_ke = wc_ke;
+  double ke_loss = 60;
+  initial_ke = wc_ke - ke_loss;
 
 
     return initial_ke; 
+}
+
+bool BeamSelector::MassCut(double wctrk_momentum, double tofObject, double& ParticleMass,
+  double MassCutMin, double MassCutMax){
+  
+  ParticleMass  = wctrk_momentum * sqrt(abs((pow(tofObject * c_light,2))/pow( tofLength ,2) - 1));
+  if (ParticleMass < MassCutMax && ParticleMass > MassCutMin){return true;}
+  else{return false;}
+
 }
 
 

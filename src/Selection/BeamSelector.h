@@ -1,4 +1,3 @@
-
 #ifndef BEAMSELECTOR_H
 #define BEAMSELECTOR_H
 #include <vector>
@@ -37,6 +36,19 @@ class BeamSelector {
                       std::vector<std::vector<double>> *MidPz); 
 
   double getDataInitialKE(double initial_ke, double wctrk_momentum);
+
+
+  bool MassCut(double wctrk_momentum, double tofObject, double& ParticleMass,
+  double MassCutMin, double MassCutMax);
+ protected:
+
+  static const double pi;                  // the beloved constant  
+  static const double massProton;          // proton mass GeV
+  static const double massPion;            // piplus/minus mass GeV
+  static const double massElectron;        // electron mass GeV
+  static const double massKaon;            // kplus/kminus mass GeV
+  static const double c_light;             // cm/ns - speed of light in vacuum
+  static const double tofLength;            // cm distance between wc
 
  private:
 

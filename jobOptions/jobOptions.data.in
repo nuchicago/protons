@@ -20,7 +20,7 @@ verbose 1
 -----------------------------------------------------
  number of event to process
 -----------------------------------------------------
-events 1000
+events 4000
 
 -----------------------------------------------------
  Data Set description
@@ -32,43 +32,13 @@ DataMC Data
  Particle ID and PDF files
 ------------------------------------------------------
 
-pdfReadFormat parameterization
-
-pionNumGaus 1
-protonNumGaus 1
-kaonNumGaus 1
 
 zBeamCutoff 2
 zTPCCutoff 4
-
-pidMethod probCut
-
-pionProbCut 0.6
-protonProbCut 0.6
-
-includeKaons 0
-
-correctionMethod trackWeight
-
-multiplePass 0
+rCircleCut 5
+ZSlabSize 0.5
+MassCutMin 700
+MassCutMax 1200 
 
 
-------------------------------------------------------
- Yield correction files
-------------------------------------------------------
 
-reconEffFile            ../../dataFiles/reconEfficiency/all_settings/reconstruction_efficiency_all_settings_positives_totalRecon_VERTEX2.txt
-
-absorptionFilePions     ../../dataFiles/absorption/all_settings/absorption_all_settings_total_loss_piplus.txt
-absorptionFileProtons   ../../dataFiles/absorption/all_settings/absorption_all_settings_absorption_protons.txt
-absorptionFileKaons     ../../dataFiles/absorption/all_settings/absorption_all_settings_total_loss_kplus.txt
-
-tertiariesFilePions     ../../dataFiles/tertiaries/Be5_pos8.9GeV/forced_Binary/tertiary_Be5_pos8.9GeV_forced_Binary_piplus.txt
-tertiariesFileMuons     ../../dataFiles/tertiaries/Be5_pos8.9GeV/forced_Binary/tertiary_Be5_pos8.9GeV_forced_Binary_muplus.txt
-tertiariesFileProtons   ../../dataFiles/tertiaries/Be5_pos8.9GeV/forced_Binary/tertiary_Be5_pos8.9GeV_forced_Binary_protons.txt
-
-unfoldingFile2          ../../dataFiles/migration/Be5_pos8.9GeV/forced_Binary/momentum_migration_Be5_pos8.9GeV_forced_Binary_positives_mc_p2-ptrue.txt
-
-pidMatrixFile           ../../dataFiles/pid/eff_mig_matrix/Be5_pos8.9GeV/pid_eff_mig_Be5_pos8.9GeV_forced_Binary_tofData_ckovMCTruth.dat
-electronVetoFilePions   ../../dataFiles/pid/eveto/all_settings/pions_eff_ptrue.txt
-electronVetoFileProtons ../../dataFiles/pid/eveto/all_settings/protons_eff_ptrue.txt

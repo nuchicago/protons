@@ -97,188 +97,27 @@ void UserInputs::initialize( ){
 
   printMod = 50000;
 
-  //potTarget = 1;
-  //potEmpty = 1;
-
   isData = false;
   isMC = false;
   numEventsToProcessSet = false;
   numEventsToProcess = 10;
-  //targetThicknessSet = false;
-  //targetThickness = 2.0;         // cm
-  //targetDensitySet = false;
-  //targetDensity = 1.0; 
-  //targetStartZSet = false;
-  //targetStartZ = -10.0;          // mm
-  //targetStopZSet = false;
-  //targetStopZ = 10.0;            // mm
-  //targetRadiusSet = false;
-  //targetRadius = 15.0;           // mm
 
-  //beamidCutSet = false;
-  //beamidCut = 1;                 // protons
-  //mwpcTargRadiusCutSet = false;  
-  //mwpcTargRadiusCut = 1.0;       // cm
-  //mwpcTargAngleCutSet = false;
-  //mwpcTargAngleCut = 0.005;      // mrad
-  //t0CutSet = false;
-  //t0Cut = -50.0;                 // ns
+  zSlabSize = 0.5;
 
-  //thxMinCutSet = false;
-  //thxMinCut = 0;
-  //thxMaxCutSet = false;
-  //thxMaxCut = 0;
-  //thyMinCutSet = false;
-  //thyMinCut = 0;
-  //thyMaxCutSet = false;
-  //thyMaxCut = 0;
-  //trackTypeSet = false;
-  //momScaleShift = false;
-  //hitsRoadNdc1CutSet = false;
-  //hitsRoadNdc1Cut = 4;
-  //hitsRoadNdc2CutSet = false;
-  //hitsRoadNdc2Cut = 6;
-  //ndc1_c1dCutSet = false;
-  //ndc1_c1dCut = 30;
-  //tofSelect = false;
-  //betaCorrect = false;
-  //betaCutSet = false;
-  //betaCut = 0;
-  //ltofCutSet = false;
-  //ltofCut = 0;
-  //tofChi2CutSet = false;
-  //tofChi2Cut = 100000;
-  //tofPulseHeightCutSet = false;
-  //tofPulseHeightCut = -1;
-  //chargeCutSet = false;
-  //chargeCut = 0;
-
-  //pidMethodSet = false;
-  //pionProbCutSet = false;
-  //pionProbCut = 1;
-  //protonProbCutSet = false;
-  //protonProbCut = 1;
-  //includeKaons = false;
-  //kaonProbCutSet = false;
-  //kaonProbCut = 1;
-  //kaonMinPSet = false;
-  //kaonMinP = 0;
-  //kaonMaxPSet = false;
-  //kaonMaxP = 20;
-  //pionPriorFileSet = false;
-  //protonPriorFileSet = false;
-  //kaonPriorFileSet = false;
-  //useCkovThresholdSet = false;
-  //useCkovThreshold = 3.0;
-  //NpeCutSet = false;
-  //NpeCut = 3.0;
-  //pdfReadFormatSet = false;
-  //pionNumGausSet = false;
-  //pionNumGaus = 1;
-  //protonNumGausSet = false;
-  //protonNumGaus = 1;
-  //kaonNumGausSet = false;
-  //kaonNumGaus = 1;
   zBeamCutoffSet = false;
   zBeamCutoff = 2;
   zTPCCutoffSet = false;
   zTPCCutoff = 2;
+  rCircleCutSet = false;
+  rCircleCut = 5;
+  MassCutMinSet = false;
+  MassCutMin = 0;
+  MassCutMaxSet = false;
+  MassCutMax = 10000;
 
-  //useElectronVeto = true;
-  //electronVetoThresholdSet = false;
-  //electronVetoThreshold = 2.5;
-  //electronCkovCutSet = false;
-  //electronCkovCut = 15;
-
-  //chi2Vertex2MatchCutSet = false;
-  //chi2Vertex2MatchCut = 5;
-  //chi2Vertex4MatchCutSet = false;
-  //chi2Vertex4MatchCut = 10;
-  //vertex4RadiusCutSet = false;
-  //vertex4RadiusCut = 15.0;   // mm
-  //vertex1RadiusCutSet = false;
-  //vertex1RadiusCut = 200.0;  // mm
-  //hitsRoadNdc5CutSet = false;
-  //hitsRoadNdc5Cut = 4;
-  //ndc_c1dCutSet = false;
-  //ndc_c1dCut = 15;
-
-  //addNonGaussianTailsToMC = false;
-  //addNonGaussianTailsToMCSet = false;
-  //fractionToTails = 0.0;
-  //fractionToTailsSet = false;
-  //increasePrecPtrueDiffScaleFactor = 1.0;
-  //increasePrecPtrueDiffScaleFactorSet = false;
-
-  //fractionCoincidencesCutSet = false;
-  //fractionCoincidencesCut = 0.6;
-  //mndc1nCutSet = false;
-  //mndc1nCut = 6;
-  //mndc2nCutSet = false;
-  //mndc2nCut = 6;
-  //mpCutSet = false;
-  //mpCut = 14.0;
-  //mthxCutSet = false;
-  //mthxCut = 0.290;
-  //mthyCutSet = false;
-  //mthyCut = 0.09;
-  //pDiffCutSet = false;
-  //pDiffCut = 0.5;
-  //thDiffCutSet = false;
-  //thDiffCut = 0.02;
-  
-// ### might actually use this part ###
-  //reconEffFileSet = false;
-  //absorptionFilePionsSet = false;
-  //absorptionFileProtonsSet = false;
-  //absorptionFileKaonsSet = false;
-  //tertiariesFilePionsSet = false;
-  //tertiariesFileMuonsSet = false;
-  //tertiariesFileProtonsSet = false;
-  //unfoldingFile1Set = false;
-  //unfoldingFile2Set = false;
-  //unfoldingAngleFileSet = false;
-  //pidMatrixFileSet = false;
-  //electronVetoFilePionsSet = false;
-  //electronVetoFileProtonsSet = false;
-  //kaonMatrixFileSet = false;
-  //tofPdfFileSet = false;
-  //tofPdfFileBinsSet = false;
-  //ckovPdfFileSet = false;
-  //piOutFileSet = false;
-  //prOutFileSet = false;
-  //piOutInPrFileSet = false;
-  //prOutInPiFileSet = false;
-
-  //reconUniSim = false;
-  //absorbUniSimStat = false;
-  //absorbUniSimSyst = false;
-  //tertiariesUniSimStat = false;
-  //tertiariesUniSimSyst = false;
-  //momShiftUniSim = false;
-  //momShiftSet = false;
-  //momShift = 1.0;
-  //migrationUniSimStat = false;
-  //absorptionSystErrorSet = false;
-  //absorptionSystError = 0.0;
-  //tertiariesSystErrorSet = false;
-  //tertiariesSystError = 0.0;
-  //electronVetoUniSim = false;
-  //pidMatrixUniSim = false;
 
   verbose = 0;
-  //numberIterations = 1;
-  //multiplePass = false;
-  //correctionMethodSet = false;
-  //unsmearingMethodSet = false;
 
-  //centralValueXsecFileSet = false;
-  //analysis_p_min  = 0.75;
-  //analysis_p_max  = 6.50;
-  //analysis_th_min = 0.03;
-  //analysis_th_max = 0.21;
-  //errorsAboutMean = false;
-  //emptySubtractionError = 0.0;
 
 }
 
@@ -634,6 +473,23 @@ void UserInputs::readAnalysisCuts( ifstream *jobOptionsFile ){
   if( paramLookUp( jobOptionsFile, (char*)"zTPCCutoff" ) ){
     *jobOptionsFile >> zTPCCutoff;
     zTPCCutoffSet = true;
+  }
+
+  if( paramLookUp( jobOptionsFile, (char*)"zSlabSize" ) ){
+    *jobOptionsFile >> zSlabSize;
+    zSlabSizeSet = true;
+  }
+  if( paramLookUp( jobOptionsFile, (char*)"rCircleCut" ) ){
+    *jobOptionsFile >> rCircleCut;
+    rCircleCutSet = true;
+  }
+  if( paramLookUp( jobOptionsFile, (char*)"MassCutMin" ) ){
+    *jobOptionsFile >> MassCutMin;
+    MassCutMinSet = true;
+  }
+  if( paramLookUp( jobOptionsFile, (char*)"MassCutMax" ) ){
+    *jobOptionsFile >> MassCutMax;
+    MassCutMaxSet = true;
   }
   
   //if( paramLookUp( jobOptionsFile, (char*)"chi2Vertex4MatchCut" ) ){
@@ -1063,13 +919,16 @@ void UserInputs::printUserInputs( ){
   //if( unsmearingMethodSet ) cout << "  Unsmearing will be applied according to : " << unsmearingMethod << endl;
   //else cout << "  Correction application method not set" << endl; 
   //cout << endl << endl;
-  //cout << "-------- Beam Particle Selection -----" << endl;
-  //cout << "  Beam particle ID cut = " << beamidCut << endl;
+  cout << "-------- Beam Particle Selection -----" << endl;
+  cout << "  Entering track Z cut = " << zTPCCutoff << " cm" <<  endl;
+  cout << "  Entering track circular cut = " << rCircleCut << " cm" <<  endl;
   //cout << "  Beam particle radius cut = " << mwpcTargRadiusCut << " cm." << endl;
   //cout << "  Beam particle angle cut = " << mwpcTargAngleCut << " mrad" << endl;
   //cout << "  t0 cut = " << t0Cut << " ns" << endl;
   //cout << endl;
-  //cout << "------- Secondary Track Selection ----" << endl;
+
+  cout << "------- XS slab settings -------" << endl;
+  cout << "  Slab Size Z = " << zSlabSize << " cm" << endl;
   //if( trackTypeSet ) cout << "  Reconstructing tracks using : " << trackType << endl;
   //else cout << "  Track reconstruction method not set" << endl; 
   //cout << "  Perform momentum scale shift for data: " << momScaleShift << endl;
