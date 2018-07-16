@@ -171,6 +171,19 @@ void ProtonXsec::AnalyzeFromNtuples(){
   // ### some variables that are needed for the xs calc ###
   double z2 = UI->zSlabSize; //<-- slab size. need to move this to jobOptions
 
+  
+  // globals move later...
+  double mass = 938.57;
+  //double z = 0.03;
+  //double z2 = 0.5;
+
+  double rho = 1.3954;                   // ## g/cm3
+  double molar_mass = 39.95;                    // ## g/mol
+  double N_A = 6.022 * pow(10, 23);      // ## num/mol
+  
+  double sparse_recip_num_density = molar_mass / (rho * z2 * N_A); // ## cm2/num
+  double barn = pow(10, -24);
+
 
 
   std::cout << "I calculate the p-Ar cross section! \n";
@@ -231,6 +244,14 @@ void ProtonXsec::AnalyzeFromNtuples(){
   TH1D *hreco_initialKE = new TH1D("hreco_initialKE", "initial ke", 20, 0, 1000);
   TH1D *hreco_intke = new TH1D("hreco_intke", "int ke", 20, 0, 1000);
   TH1D *hreco_incke = new TH1D("hreco_incke", "inc ke", 20, 0, 1000);
+  TH1D *hreco_xs = new TH1D("hreco_xs", "P-Ar Inelastic XS", 20, 0, 1000);
+
+  // ## to read in from corrections file
+  TH1D *hreco_intke_background = new TH1D("hreco_intke_background", "int ke background", 20, 0, 1000);
+  TH1D *hreco_incke_background = new TH1D("hreco_incke_background", "inc ke background", 20, 0, 1000);
+  TH2D *hreco_unfolding_matrix_normalized = new TH2D("hreco_unfolding_matrix_normalized", "energy unfolding matrix", 20, 0, 1000, 20, 0, 1000);
+  TH1D *hreco_intke_eff = new TH1D("hreco_intke_eff", "interaction selection efficiency", 20, 0, 1000);
+  TH1D *hreco_incke_eff = new TH1D("hreco_incke_eff", "incident selection efficiency", 20, 0, 1000);
 
   // ## looping once to find Beamline center ##
 
@@ -454,6 +475,106 @@ void ProtonXsec::AnalyzeFromNtuples(){
   
   }//end of event Loop
 
+
+  // #####################################################################################
+  // #####################################################################################
+  // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- 
+  // ################################### xs calculation ################################## 
+  // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- 
+  // #####################################################################################
+  // #####################################################################################
+
+  // ### Taking raw uncorrected histograms and applying (1) background subtraction
+  // ### (2) energy unfolding and (3) efficiency corrections. These corrections are applied
+  // ### to both the numerator and denominator. Eventually we should probably use 
+  // ### switches for which we apply. For now I'm applying all of them in the order
+  // ### described. The default will be to use Bertini model on data, for MC comparisons
+  // ### we'll try all of them. -- ryan
+
+  // --- just realized that for now we can only use the background subtraction on MC
+  // --- it's a raw number and needs to be scaled for the size of the sample
+  // --- for now I'm putting the whole thing in if( isMC ) and we can deal with it later
+  if(UI->isMC) {
+
+    // ## should probably incorp this into the joboptions in a clever way -- ryan
+    TFile *mc_corrections = new TFile("files/corrections/xsCorrectionBertini.root"); 
+
+    hreco_intke_background = (TH1D*)mc_corrections->Get("hreco_intke_background");
+    hreco_incke_background = (TH1D*)mc_corrections->Get("hreco_incke_background");
+    hreco_unfolding_matrix_normalized = (TH2D*)mc_corrections->Get("hreco_unfolding_matrix_normalized");
+    hreco_intke_eff = (TH1D*)mc_corrections->Get("hreco_int_eff");
+    hreco_incke_eff = (TH1D*)mc_corrections->Get("hreco_inc_eff");
+
+    // ## temporary histograms ##
+    TH1D *hreco_folded_intke_signal = new TH1D("hreco_folded_intke_signal", "total-back", 20, 0, 1000);
+    TH1D *hreco_folded_incke_signal = new TH1D("hreco_folded_incke_signal", "total-back", 20, 0, 1000);
+    TH1D *hreco_unfolded_intke_signal = new TH1D("hreco_unfolded_intke_signal", "U(total-back)", 20, 0, 1000);
+    TH1D *hreco_unfolded_incke_signal = new TH1D("hreco_unfolded_incke_signal", "U(total-back)", 20, 0, 1000);
+
+    // ## folded signal distributions ##
+    for(int iBin = 0; iBin < hreco_intke->GetNbinsX(); iBin++){
+      double total = hreco_intke->GetBinContent(iBin);
+      double background = hreco_intke_background->GetBinContent(iBin);
+      hreco_folded_intke_signal->SetBinContent(iBin, total-background); 
+    }
+    for(int iBin = 0; iBin < hreco_incke->GetNbinsX(); iBin++){
+      double total = hreco_incke->GetBinContent(iBin);
+      double background = hreco_incke_background->GetBinContent(iBin);
+      hreco_folded_incke_signal->SetBinContent(iBin, total-background); 
+    }
+
+    // ## unfolding signal distributions ##
+    for(int iBin = 0; iBin < hreco_unfolding_matrix_normalized->GetNbinsX(); iBin++){
+      int n_int_entries = hreco_folded_intke_signal->GetBinContent(iBin);
+      int n_inc_entries = hreco_folded_incke_signal->GetBinContent(iBin);
+      for(int jBin = 0; jBin < hreco_unfolding_matrix_normalized->GetNbinsY(); jBin++){
+        double weight = hreco_unfolding_matrix_normalized->GetBinContent(iBin, jBin);
+        double int_value = n_int_entries * weight;
+        double inc_value = n_inc_entries * weight;
+        hreco_unfolded_intke_signal->AddBinContent(jBin, int_value);
+        hreco_unfolded_incke_signal->AddBinContent(jBin, inc_value);
+      }
+    }
+
+    // ## putting the pieces together ##
+    for(int iBin = 0; iBin < hreco_unfolded_intke_signal->GetNbinsX(); iBin++){
+      if(hreco_unfolded_incke_signal->GetBinContent(iBin) == 0){continue;}
+      if(hreco_intke_eff->GetBinContent(iBin) == 0){continue;}
+      if(hreco_incke_eff->GetBinContent(iBin) == 0){continue;}
+      // num:   (N_int - Background_int)*U_ij * 1/eps
+      double num = hreco_unfolded_intke_signal->GetBinContent(iBin) / hreco_intke_eff->GetBinContent(iBin);
+      if(num == 0){num = 1;}
+      // denom: (N_inc - Background_inc)*U_ij * 1/eps
+      double dem = hreco_unfolded_incke_signal->GetBinContent(iBin) / hreco_incke_eff->GetBinContent(iBin);
+      if(dem == 0){dem =1;}
+
+      // # ratio #
+      double ratio = num / dem;
+      double temp_xs = ratio * sparse_recip_num_density;
+      double xs = temp_xs / barn;
+    
+      // # error #
+      double num_err = pow(num, .5);
+      double term1 = num_err/num;
+      //double dem_err = pow(sincke->GetBinContent(iBin), .5);
+      double dem_err = pow(dem, .5);
+      double term2 = dem_err/dem;
+      double totalError = temp_xs*pow(pow(term1,2) + pow(term2,2), 0.5)/barn;//*recip_num_density*barn;
+
+      std::cout<<"iBin: "<<iBin<<std::endl;
+      std::cout<<"\tnum: "<<num<<std::endl;
+      std::cout<<"\tdem: "<<dem<<std::endl;
+      std::cout<<"\tratio: "<<ratio<<std::endl;
+      std::cout<<"\txs: "<<xs<<" +- "<<totalError<<std::endl;
+
+      hreco_xs->SetBinContent(iBin, xs); 
+      hreco_xs->SetBinError(iBin,totalError);
+    }
+
+  }//<--End if is MC for xs calculation
+  
+
+
   if (!isMC){
     if(verbose > 0){
     std::cout << "\n------- Beam Selection Results -------\n"<< std::endl;
@@ -475,11 +596,13 @@ void ProtonXsec::AnalyzeFromNtuples(){
   if(isMC){
 
     if(UI->rootOutputFileSet){
+      outputFile->cd();
        
       // ## xs histos ##
       hreco_initialKE->Write();
       hreco_incke->Write();
       hreco_intke->Write();
+      hreco_xs->Write();
   }
 
 
@@ -492,41 +615,42 @@ void ProtonXsec::AnalyzeFromNtuples(){
   else if (!(isMC)){
     
     if(UI->rootOutputFileSet){
+      outputFile->cd();
     
-    PrimaryLength->Write();
-    PrimaryStartZ->Write();
-    tpcInTracksXY->Write();
-    tpcInTracksZ->Write();
-    InTrackLength->Write();
-    wctrkPositionXY->Write();
-    wctrkSelectedXY->Write();
-    wctrkNumHist->Write();
-    inTracksNumHist->Write();
-    BeamMomentum->Write();
-    BeamToF->Write();
-    delXYHist->Write();
-    delThetaHist->Write();
-    delPhiHist->Write();
-    BadTrackHist->Write();
-    BadTrackLength->Write();
-    BadTrackStartZ->Write();
-    delBadTrackHist->Write();
-    BeamMassHist->Write();
-    BeamMassCutHist->Write();
-    tofMomentHist->Write();
-    delPileupHist->Write();
-    PileupHist->Write();
-    numTracksSelHist->Write();
-    tpcPhiHist->Write();
-    wcPhiHist->Write();
-    tpcThetaHist->Write();
-    wcThetaHist->Write();
+      PrimaryLength->Write();
+      PrimaryStartZ->Write();
+      tpcInTracksXY->Write();
+      tpcInTracksZ->Write();
+      InTrackLength->Write();
+      wctrkPositionXY->Write();
+      wctrkSelectedXY->Write();
+      wctrkNumHist->Write();
+      inTracksNumHist->Write();
+      BeamMomentum->Write();
+      BeamToF->Write();
+      delXYHist->Write();
+      delThetaHist->Write();
+      delPhiHist->Write();
+      BadTrackHist->Write();
+      BadTrackLength->Write();
+      BadTrackStartZ->Write();
+      delBadTrackHist->Write();
+      BeamMassHist->Write();
+      BeamMassCutHist->Write();
+      tofMomentHist->Write();
+      delPileupHist->Write();
+      PileupHist->Write();
+      numTracksSelHist->Write();
+      tpcPhiHist->Write();
+      wcPhiHist->Write();
+      tpcThetaHist->Write();
+      wcThetaHist->Write();
 
 
-    // ## xs histos ##
-    hreco_initialKE->Write();
-    hreco_incke->Write();
-    hreco_intke->Write();
+      // ## xs histos ##
+      hreco_initialKE->Write();
+      hreco_incke->Write();
+      hreco_intke->Write();
     }
   }
   //if(UI->SelEventListSet){IDfile.close;}

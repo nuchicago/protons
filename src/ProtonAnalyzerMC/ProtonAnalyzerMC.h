@@ -4,6 +4,7 @@
 
 
 #include "../Utilities/LArIATAnalysis.h"
+#include <regex> 
 
 
 class ProtonAnalyzerMC : public LArIATAnalysis {
@@ -26,6 +27,7 @@ class ProtonAnalyzerMC : public LArIATAnalysis {
 
   TChain *tuple;
   TFile *outputFile;
+  TFile *correctFile;
   TPostScript *ps;
   int psPage;
 

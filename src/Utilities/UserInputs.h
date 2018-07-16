@@ -19,8 +19,8 @@ class UserInputs {
   //== input files
   char *inputFiles;
   bool inputFilesSet;
-  char *correctionFiles;
-  bool correctionFilesSet;
+  char *correctionFile;
+  bool correctionFileSet;
   bool isData;
   bool isMC;
 
@@ -45,6 +45,8 @@ class UserInputs {
   bool unsmearingMethodSet;
 
   //== data set description
+  char *Model;
+  bool modelSet;
   long numEventsToProcess;
   bool numEventsToProcessSet;
   int  potTarget;

@@ -116,6 +116,19 @@ ProtonAnalyzerMC::ProtonAnalyzerMC( char* jobOptionsFile ) : LArIATAnalysis( job
   //== Open output root file and postscript file
   if( UI->rootOutputFileSet && UI->psOutputFileSet ){
     outputFile = new TFile( UI->rootOutputFile, "RECREATE" );
+    
+    if( UI->correctionFileSet && UI->modelSet ) {
+
+      char modelRoot[80];
+      strcpy (modelRoot, UI->Model);
+      strcat (modelRoot, ".root");
+
+      std::string corrections (UI->correctionFile);
+      std::regex insert ("\\b(.root)([^]*)");
+      TString correctionFileString ( std::regex_replace (corrections, insert, modelRoot) ); 
+      correctFile = new TFile( correctionFileString, "RECREATE");
+
+    }
 
     ps = new TPostScript( UI->psOutputFile, 112 );
     ps->Range(26,18); 
@@ -253,6 +266,7 @@ void ProtonAnalyzerMC::AnalyzeFromNtuples() {
 
   Long64_t nentries = tuple->GetEntriesFast();
   TCanvas *c = new TCanvas("c","c",1000, 1000);
+  TCanvas *d = new TCanvas("d","d",1000, 1000);
    
   // ## event loop ##
   for(Long64_t jentry=0; jentry < numEventsToProcess && jentry < nentries; jentry++) {
@@ -1185,7 +1199,7 @@ void ProtonAnalyzerMC::AnalyzeFromNtuples() {
 
   // ## write histos ##
   if(UI->rootOutputFileSet) {
-    c->cd();
+    outputFile->cd();
     //hdedx->Draw();
     hdedx->Write();
     hintke->Write();
@@ -1237,6 +1251,16 @@ void ProtonAnalyzerMC::AnalyzeFromNtuples() {
     hreco_secondary_global_got->Write();
     hreco_secondary_global_all->Write();
     hreco_secondary_global_eff->Write();
+  }
+
+
+  if(UI->correctionFileSet) {
+    correctFile->cd();
+    hreco_intke_background->Write();
+    hreco_incke_background->Write();
+    hreco_unfolding_matrix_normalized->Write();
+    hreco_intke_eff->Write();
+    hreco_incke_eff->Write();
   }
 
 }// End AnalyzeFromNtuples

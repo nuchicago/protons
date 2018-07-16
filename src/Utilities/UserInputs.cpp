@@ -91,11 +91,12 @@ UserInputs::UserInputs( ){
 void UserInputs::initialize( ){
 
   inputFilesSet = false;
-  correctionFilesSet = false;
+  correctionFileSet = false;
   rootOutputFileSet = false;
   psOutputFileSet = false;
   outputFileNameSet = false;
   SelEventListSet = false;
+  modelSet = false;
 
   printMod = 50000;
 
@@ -159,10 +160,10 @@ void UserInputs::readIoFiles( ifstream *jobOptionsFile ){
     inputFilesSet = true;
   } 
 
-  if( paramLookUp( jobOptionsFile, (char*)"correctionFiles" ) ){
-    correctionFiles = new char[1000];
-    *jobOptionsFile >> correctionFiles;
-    correctionFilesSet = true;
+  if( paramLookUp( jobOptionsFile, (char*)"correctionFile" ) ){
+    correctionFile = new char[1000];
+    *jobOptionsFile >> correctionFile;
+    correctionFileSet = true;
   } 
  
   if( paramLookUp( jobOptionsFile, (char*)"rootOutputFile" ) ){
@@ -215,6 +216,13 @@ void UserInputs::readDataSetParams( ifstream *jobOptionsFile ){
     *jobOptionsFile >> numEventsToProcess;
     numEventsToProcessSet = true;
   }
+
+  if( paramLookUp( jobOptionsFile, (char*)"Model" ) ){
+    Model = new char[1000];
+    *jobOptionsFile >> Model;
+    modelSet = true;
+  } 
+
 
   //if( paramLookUp( jobOptionsFile, (char*)"target" ) ){
   //  target = new char[20];
@@ -910,7 +918,10 @@ void UserInputs::printUserInputs( ){
   cout << "Options input summary : " << endl << endl; 
   cout << " Process a maximum of " << numEventsToProcess;
   if( isData ) cout << " data";
-  else if( isMC ) cout << " monte carlo";
+  else if( isMC ) { 
+    cout << " monte carlo";
+    if( modelSet ) cout << " using " << Model << " model ";
+  }
   cout << " events." << endl << endl;
 
   //if( targetSet ){

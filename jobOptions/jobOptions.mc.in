@@ -10,6 +10,7 @@ Output File Lists - .root and PostScript
 ----------------------------------------------------- 
 
 rootOutputFile files/MCOutput.root
+correctionFile files/corrections/xsCorrection.root
 psOutputFile files/MCOutput.ps
 
 -----------------------------------------------------
@@ -26,6 +27,15 @@ events 100000
  Data Set description
 -----------------------------------------------------
 DataMC MC
+
+-----------------------------------------------------
+Geant 4 model choice (Bertini/Binary/INCLXX)
+-----------------------------------------------------
+Model Bertini 
+
+-----------------------------------------------------
+Which xs corrections to use (Bertini/Binary/INCLXX)
+-----------------------------------------------------
 
 
 zTPCCutOff 2
