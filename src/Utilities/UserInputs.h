@@ -33,6 +33,8 @@ class UserInputs {
   bool outputFileNameSet;
   char *SelEventList;
   bool SelEventListSet;
+  char *plotIndividual;
+  bool plotIndividualSet;
 
   int printMod;
 

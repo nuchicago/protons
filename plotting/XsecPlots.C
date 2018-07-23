@@ -3,7 +3,7 @@ void XsecPlots(){
   gROOT->SetBatch(true);
 
   TFile* XsecFile = new TFile("../files/XsecOutput.root","READ");
-  gStyle->SetOptStat("emr");
+  gStyle->SetOptStat("emrou");
 
   TCanvas *c1 = new TCanvas("c1","c1",1000,1000);
   TH2D *delXYHist = (TH2D*)XsecFile->Get("delXYHist");
@@ -302,4 +302,9 @@ void XsecPlots(){
   wcThetaHist->Draw("");
   c1->Print("images/wcThetaHist.png","png");
 
+  TH1D *primary_dedx = (TH1D*)XsecFile->Get("primary_dedx");
+
+  primary_dedx->GetXaxis()->SetTitle("dE/dx");
+  primary_dedx->Draw("");
+  c1->Print("images/primary_dedx.png","png");
 }

@@ -6,6 +6,8 @@
 #include "../Utilities/LArIATAnalysis.h"
 #include "../Utilities/UtilityFunctions.h"
 #include "math.h"
+#include <stdio.h>
+#include <string.h>
 
 
 
@@ -30,6 +32,7 @@ class ProtonXsec : public LArIATAnalysis {
   TChain *tuple;
   TFile *outputFile;
   TPostScript *ps;
+  ofstream IDfile;
   int psPage;
 
   long numEventsToProcess;

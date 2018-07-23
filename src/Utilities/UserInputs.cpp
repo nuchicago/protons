@@ -97,6 +97,7 @@ void UserInputs::initialize( ){
   outputFileNameSet = false;
   SelEventListSet = false;
   modelSet = false;
+  plotIndividualSet = false;
 
   printMod = 50000;
 
@@ -188,6 +189,12 @@ void UserInputs::readIoFiles( ifstream *jobOptionsFile ){
     outputFileName = new char[1000];
     *jobOptionsFile >> outputFileName;
     outputFileNameSet = true;
+  }
+
+    if( paramLookUp( jobOptionsFile, (char*)"plotIndividual" ) ){
+    plotIndividual = new char[1000];
+    *jobOptionsFile >> plotIndividual;
+    plotIndividualSet = true;
   }
 
   if( paramLookUp( jobOptionsFile, (char*)"printMod" ) ){
@@ -954,6 +961,8 @@ void UserInputs::printUserInputs( ){
   if( SelEventListSet ) cout << "  Selected Event list file = " << SelEventList << endl;
   if( psOutputFileSet)    cout << "  PostScript output file = " << psOutputFile << endl;
   if( outputFileNameSet ) cout << "  Output files name = " << outputFileName << endl;  
+  if( plotIndividualSet ) cout << "  Printing individual event plots to = " << plotIndividual << endl;  
+
   //cout << endl << endl;
   //cout << "------------- Analysis Methods -------" << endl;
   //cout << "  Pass over the data " << (int)multiplePass + 1 << " times" << endl;

@@ -70,6 +70,7 @@ int main( int argc, char * argv[] ){
   //gStyle->SetCanvasBorderMode(0);
   //gStyle->SetPalette(18,0);
   //gStyle->SetPaperSize(20,26);
+  gStyle->SetOptStat("emrou");
 
   //gRandom->SetSeed(0);
 
@@ -130,7 +131,7 @@ ProtonXsec::ProtonXsec( char* jobOptionsFile ) : LArIATAnalysis( jobOptionsFile 
   //output list of selected primary particle IDs
 
   if (UI->SelEventListSet){
-    ofstream IDfile;
+    
     IDfile.open(UI->SelEventList, ios::trunc);
   }
 
@@ -139,6 +140,8 @@ ProtonXsec::ProtonXsec( char* jobOptionsFile ) : LArIATAnalysis( jobOptionsFile 
     numEventsToProcess = UI->numEventsToProcess;
   else
     numEventsToProcess = 100000000;
+
+
   
   
   verbose = UI->verbose;
@@ -165,6 +168,18 @@ void ProtonXsec::AnalyzeFromNtuples(){
   double numPhiCut = 0;
 
 
+  const double wc_zpos_val = 0.1;
+  const double *wc_zpos;
+  wc_zpos = &wc_zpos_val;
+
+
+
+  // For individual event plotting mode (plotIndividual)
+
+  std::vector<double> total_dedx_v;
+  std::vector<double> total_res_v;
+  TGraph gtotal_res_dedx_item;
+  TGraph * gtotal_res_dedx;
 
 
 
@@ -197,6 +212,8 @@ void ProtonXsec::AnalyzeFromNtuples(){
 
   Long64_t nentries = tuple->GetEntriesFast();
   TCanvas *c = new TCanvas("c","c",1000, 1000);
+  TCanvas *csplit = new TCanvas("csplit","csplit",1000, 1000);
+  csplit->Divide(1,2);
 
 // ## Histograms for entering tracks
   TH2D *tpcInTracksXY =  new TH2D("tpcInTracksXY","Position of TPC track start XY",
@@ -233,6 +250,8 @@ void ProtonXsec::AnalyzeFromNtuples(){
   TH2D *tofMomentHist = new TH2D("tofMomentHist","Momentum vs TOF",100,0,2000, 100 , 0,100);
   TH1D *BeamMassHist = new TH1D("BeamMassHist","Beamline particle Mass", 500, 0,3000);
   TH1D *BeamMassCutHist = new TH1D("BeamMassCutHist","Beamline particle Mass - after Cut", 500, 0,3000);
+  TH1D *primary_dedx = new TH1D("primary_dedx","primary track dE/dx", 400, 0,40);
+  
 
 
   // ## plot markers for cuts
@@ -253,6 +272,9 @@ void ProtonXsec::AnalyzeFromNtuples(){
   TH1D *hreco_intke_eff = new TH1D("hreco_intke_eff", "interaction selection efficiency", 20, 0, 1000);
   TH1D *hreco_incke_eff = new TH1D("hreco_incke_eff", "incident selection efficiency", 20, 0, 1000);
 
+  if(UI->plotIndividualSet){
+
+  }
   // ## looping once to find Beamline center ##
 
   if(!isMC){
@@ -377,7 +399,7 @@ void ProtonXsec::AnalyzeFromNtuples(){
                 numTracksSelHist->Fill(numTracksSel);
                 tpcPhiHist->Fill(UtilityFunctions::getTrackPhi(reco_primary,track_xpos,track_ypos));
                 if (wctrk_phi[0] < 0){
-                wcPhiHist->Fill((wctrk_phi[0]+ 8*atan(1)));
+                wcPhiHist->Fill((wctrk_phi[0]+ 8 * atan(1)));
                 }
                 else{wcPhiHist->Fill(wctrk_phi[0]);}
                 tpcThetaHist->Fill(UtilityFunctions::getTrackTheta(reco_primary,track_xpos,track_ypos,track_zpos));
@@ -388,7 +410,10 @@ void ProtonXsec::AnalyzeFromNtuples(){
                 if(MinVector[3] > UI->ThetaCut){continue;}
                 else{numThetaCut++;
                   if(MinVector[4] > UI->PhiCut){continue;}
-                  else{numPhiCut++;}
+                  else{numPhiCut++;
+                    //if(UI->SelEventListSet){IDfile << jentry << "," << reco_primary << std::endl;}
+
+                  }
                 }
 
 
@@ -397,6 +422,9 @@ void ProtonXsec::AnalyzeFromNtuples(){
             }
           }
       }
+
+
+
     // ### porting over the work from ProtonAnalyzerMC module -- ryan ###
     // ## grabbing reco primary ##
     //int reco_primary = -1;
@@ -406,6 +434,175 @@ void ProtonXsec::AnalyzeFromNtuples(){
         reco_primary, first_reco_z, verbose);}
     if(reco_primary == -1){continue;}//<- skipping events that didn't pass isTPCPrimary 
     else{ found_primary = true;}
+
+
+
+    if(found_primary){                    
+      if(UI->plotIndividualSet){
+        int primary_pts = (*col_track_hits)[reco_primary];
+        double_t dedx_graphpts[primary_pts], res_graphpts[primary_pts];
+        if (primary_pts > 0){
+          for(int ipos = primary_pts - 1; ipos >= 0  ; ipos--){
+
+            //std::cout << ipos << " , "<< (*col_track_dedx)[reco_primary][ipos]<< std::endl;
+            primary_dedx->Fill((*col_track_dedx)[reco_primary][ipos]);
+
+            double res_range =  UtilityFunctions::pointDistance(
+              (*col_track_x)[reco_primary][ipos],
+              (*col_track_y)[reco_primary][ipos],
+              (*col_track_z)[reco_primary][ipos],
+              (*col_track_x)[reco_primary][primary_pts - 1],
+              (*col_track_y)[reco_primary][primary_pts - 1],
+              (*col_track_z)[reco_primary][primary_pts - 1]);
+
+            res_graphpts[ipos] = res_range;
+            dedx_graphpts[ipos] = (*col_track_dedx)[reco_primary][ipos];
+            total_res_v.push_back(res_range);
+            total_dedx_v.push_back((*col_track_dedx)[reco_primary][ipos]);
+
+          }
+          int primary_size = (*ntrack_hits)[reco_primary];
+
+          std::vector<double> ptracks_vx;
+          ptracks_vx.reserve(primary_size);
+          std::vector<double> ptracks_vy;
+          ptracks_vy.reserve(primary_size);
+          std::vector<double> ptracks_vz;
+          ptracks_vz.reserve(primary_size);
+
+            ptracks_vx.insert(ptracks_vx.end(), (*track_xpos)[reco_primary].begin(), (*track_xpos)[reco_primary].end());
+            ptracks_vy.insert(ptracks_vy.end(), (*track_ypos)[reco_primary].begin(), (*track_ypos)[reco_primary].end());
+            ptracks_vz.insert(ptracks_vz.end(), (*track_zpos)[reco_primary].begin(), (*track_zpos)[reco_primary].end());
+
+
+          //std::cout << "making primary track TGraph" << std::endl;
+          TGraph *EventXZprimary = new TGraph(primary_size,
+            &ptracks_vz[0], &ptracks_vx[0]);
+
+          TGraph *EventYZprimary = new TGraph(primary_size,
+            &ptracks_vz[0], &ptracks_vy[0]);
+
+
+          int secondaries_size = 0;
+          for (int itrack = 0; itrack < ntracks_reco && itrack !=reco_primary; itrack++ ){
+            
+            int ctrack_size = (*ntrack_hits)[itrack];
+            secondaries_size += ctrack_size ;
+          }
+
+          std::vector<double> otracks_vx;
+          otracks_vx.reserve(secondaries_size);
+          std::vector<double> otracks_vy;
+          otracks_vy.reserve(secondaries_size);
+          std::vector<double> otracks_vz;
+          otracks_vz.reserve(secondaries_size);
+
+          for (int itrack = 0; itrack < ntracks_reco && itrack !=reco_primary; itrack++ ){
+            otracks_vx.insert(otracks_vx.end(), (*track_xpos)[itrack].begin(), (*track_xpos)[itrack].end());
+            otracks_vy.insert(otracks_vy.end(), (*track_ypos)[itrack].begin(), (*track_ypos)[itrack].end());
+            otracks_vz.insert(otracks_vz.end(), (*track_zpos)[itrack].begin(), (*track_zpos)[itrack].end());
+          }
+
+          //std::cout << "making Other track TGraph" << std::endl;
+          TGraph *EventXZother = new TGraph( secondaries_size, &otracks_vz[0], &otracks_vx[0]);
+          TGraph *EventYZother = new TGraph( secondaries_size, &otracks_vz[0], &otracks_vy[0]);
+
+          //std::cout << "making wc TGraph" << std::endl;
+          TGraph *EventXZwc = new TGraph(1,wc_zpos,wctrk_XFace);
+          TGraph *EventYZwc = new TGraph(1,wc_zpos,wctrk_YFace);
+
+          
+
+          EventXZprimary->SetMarkerStyle(7);
+          //EventXZprimary->SetMarkerSize(1);
+          EventXZprimary->SetMarkerColor(2);
+          EventYZprimary->SetMarkerStyle(7);
+          //EventYZprimary->SetMarkerSize(1);
+          EventYZprimary->SetMarkerColor(2);
+
+          EventXZother->SetMarkerStyle(7);
+          //EventXZother->SetMarkerSize(1);
+          EventXZother->SetMarkerColor(4);
+          EventYZother->SetMarkerStyle(7);
+          //EventYZother->SetMarkerSize(1);
+          EventYZother->SetMarkerColor(4);
+
+          EventXZwc->SetMarkerStyle(9);
+          EventXZwc->SetMarkerColor(3);
+          EventYZwc->SetMarkerStyle(9);
+          EventYZwc->SetMarkerColor(3);
+
+
+          EventYZprimary->GetXaxis()->SetLimits(-5,90);                 // along X
+          EventYZprimary->GetHistogram()->SetMaximum(25.);   // along          
+          EventYZprimary->GetHistogram()->SetMinimum(-25.);  //   Y     
+          EventYZother->GetXaxis()->SetLimits(-5.,90);                 // along X
+          EventYZother->GetHistogram()->SetMaximum(25.);   // along          
+          EventYZother->GetHistogram()->SetMinimum(-25.);  //   Y     
+
+          EventXZprimary->GetXaxis()->SetLimits(-5.,90);                 // along X
+          EventXZprimary->GetHistogram()->SetMaximum(55);   // along          
+          EventXZprimary->GetHistogram()->SetMinimum(-5);  //   Y     
+          EventXZother->GetXaxis()->SetLimits(-5.,90);                 // along X
+          EventXZother->GetHistogram()->SetMaximum(55);   // along          
+          EventXZother->GetHistogram()->SetMinimum(-5);  //   Y     
+
+
+          std:cout << "Drawing to Canvas" << std::endl;
+          csplit->cd(1);
+          EventXZprimary->SetTitle("");
+          EventXZprimary->GetXaxis()->SetTitle("Z [cm]");
+          EventXZprimary->GetYaxis()->SetTitle("X [cm]");
+          EventXZprimary->Draw("AP");
+          EventXZother->Draw("psame");
+          EventXZwc->Draw("psame");
+
+          csplit->cd(2);
+          EventYZprimary->SetTitle("");
+          EventYZprimary->GetXaxis()->SetTitle("Z [cm]");
+          EventYZprimary->GetYaxis()->SetTitle("Y [cm]");
+          EventYZprimary->Draw("AP");
+          EventYZother->Draw("psame");
+          EventYZwc->Draw("psame");
+
+
+          
+          char eventdisp_title[100];
+          sprintf(eventdisp_title,"%s/EventDisplays/EventDisplay%d.png",UI->plotIndividual,event);
+          csplit->Print(eventdisp_title,"png");
+
+          c->cd();
+          TGraph *gres_dedx = new TGraph(primary_pts,res_graphpts,dedx_graphpts);
+          gres_dedx->GetXaxis()->SetTitle("Residual Range [cm]");
+          gres_dedx->GetYaxis()->SetTitle("dE/dx [MeV/cm]");
+          gres_dedx->SetTitle("");
+          gres_dedx->SetMarkerStyle(20);
+          gres_dedx->SetMarkerSize(1.5);
+          gres_dedx->SetMarkerColor(4);
+
+          gres_dedx->Draw("AP");
+          char gres_dedx_title[100];
+          sprintf(gres_dedx_title,"%s/dedx_Residuals/gres_dedx%d.png",UI->plotIndividual,event);
+          //~gres_dedx;
+          c->Print(gres_dedx_title,"png");
+          delete gres_dedx;
+          delete EventXZprimary;
+          delete EventYZprimary;
+          delete EventXZother;
+          delete EventYZother;
+
+
+
+          
+        }
+      gtotal_res_dedx_item = TGraph(total_res_v.size(),&total_res_v[0],&total_dedx_v[0]);
+      gtotal_res_dedx_item.SetName("gtotal_res_dedx");
+      gtotal_res_dedx = &gtotal_res_dedx_item;
+
+
+      }
+
+    }
 
     // ## grabbing interaction point ##
     double temp[4];
@@ -468,7 +665,7 @@ void ProtonXsec::AnalyzeFromNtuples(){
       hreco_incke->Fill(calo_slab_KE[calo_slab]);
       if(calo_slab == calo_int_slab){
         hreco_intke->Fill(calo_slab_KE[calo_slab]);
-      }//<-- End if this is the interacting slab
+      }//<-- End if this is the \ slab
     }//<--End calo slab loop
 
     // ### end of port work -- ryan ###
@@ -645,6 +842,8 @@ void ProtonXsec::AnalyzeFromNtuples(){
       wcPhiHist->Write();
       tpcThetaHist->Write();
       wcThetaHist->Write();
+      primary_dedx->Write();
+      if(UI->plotIndividualSet){gtotal_res_dedx->Write();}
 
 
       // ## xs histos ##
@@ -653,7 +852,7 @@ void ProtonXsec::AnalyzeFromNtuples(){
       hreco_intke->Write();
     }
   }
-  //if(UI->SelEventListSet){IDfile.close;}
+  if(UI->SelEventListSet){IDfile.close();}
 
 }
 

@@ -334,7 +334,7 @@ void LArIATAnalysis::printEvent(){
 
 
   
-  cout << "run = " << run << ", subrun = " << subrun << ", event = " << event << ", Ntracks = " << ntracks_reco << ", wctrk_momentum = " << wctrk_momentum[0] << endl;
+  cout << "event = " << event << ", Ntracks = " << ntracks_reco << ", wctrk_momentum = " << wctrk_momentum[0] << endl;
 
   
 
