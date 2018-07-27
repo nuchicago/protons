@@ -211,9 +211,11 @@ void ProtonXsec::AnalyzeFromNtuples(){
   if (tuple == 0) return;
 
   Long64_t nentries = tuple->GetEntriesFast();
-  TCanvas *c = new TCanvas("c","c",1000, 1000);
-  TCanvas *csplit = new TCanvas("csplit","csplit",1000, 1000);
-  csplit->Divide(1,2);
+  TCanvas *c = new TCanvas("c","c",1500, 750);
+  c->Divide(1,2);
+
+  TCanvas *csplit = new TCanvas("csplit","csplit",1500, 750);
+  csplit->Divide(2,2);
 
 // ## Histograms for entering tracks
   TH2D *tpcInTracksXY =  new TH2D("tpcInTracksXY","Position of TPC track start XY",
@@ -225,8 +227,8 @@ void ProtonXsec::AnalyzeFromNtuples(){
   TH1D *tpcInTracksZ =  new TH1D("tpcInTracksZ","Position of TPC track start Z",10, 0, 4);
   TH1D *PrimaryStartZ =  new TH1D("PrimaryStartZ","Selected track start in Z",10, 0, 4);
   TH1D *BadTrackStartZ =  new TH1D("BadTrackStartZ","non-selected track start in Z",10, 0, 4);
-  TH1D *InTrackLength =  new TH1D("InTrackLength","Entering Track Length",250, 0, 100);
-  TH1D *PrimaryLength =  new TH1D("PrimaryLength","Selected Entering Track Length",250, 0, 100);
+  TH1D *InTrackLength =  new TH1D("InTrackLength","Entering Track Length",100, 0, 100);
+  TH1D *PrimaryLength =  new TH1D("PrimaryLength","Selected Entering Track Length",100, 0, 100);
   TH1D *BadTrackLength =  new TH1D("BadTrackLength","non-selected Entering Track Length",250, 0, 100);
   TH1D *inTracksNumHist = new TH1D("inTracksNumHist","Number of Entering Tracks TPC",100,0,10);
   TH1D *BeamMomentum = new TH1D("BeamMomentum","Incoming Particle Momentum",200,0,2000);
@@ -238,9 +240,9 @@ void ProtonXsec::AnalyzeFromNtuples(){
   TH2D *delBadTrackHist =  new TH2D("delBadTrackHist","non-selected tracks",200,-100,100,200,-100,100);
   TH2D *delPileupHist =  new TH2D("delPileupHist","Pileup Track difference",200,-100,100,200,-100,100);
   TH2D *PileupHist =  new TH2D("PileupHist","Pileup Track Position",200,-100,100,200,-100,100);
-  TH1D * delThetaHist =  new TH1D("delThetaHist","tpc to wc delta Theta",100,-4,4);
-  TH1D * tpcThetaHist =  new TH1D("tpcThetaHist","Tpc #theta",100,-4,4);
-  TH1D * wcThetaHist =  new TH1D("wcThetaHist","Wire chamber #theta",100,-4,4);
+  TH1D * delThetaHist =  new TH1D("delThetaHist","tpc to wc delta Theta",100,-1,1);
+  TH1D * tpcThetaHist =  new TH1D("tpcThetaHist","Tpc #theta",100,-1,1);
+  TH1D * wcThetaHist =  new TH1D("wcThetaHist","Wire chamber #theta",100,-1,1);
   TH1D * delPhiHist =  new TH1D("delPhiHist"," Tpc to WC #Delta #phi",100,-4,4);
   TH1D * tpcPhiHist =  new TH1D("tpcPhiHist","Tpc #phi",100,0,7);
   TH1D * wcPhiHist =  new TH1D("wcPhiHist","Wire chamber #phi",100,0,7);
@@ -248,8 +250,8 @@ void ProtonXsec::AnalyzeFromNtuples(){
   TH1D * numTracksSelHist =  new TH1D("numTracksSelHist","number of Entering Tracks - Selected Events", 10, 0, 5);
 
   TH2D *tofMomentHist = new TH2D("tofMomentHist","Momentum vs TOF",100,0,2000, 100 , 0,100);
-  TH1D *BeamMassHist = new TH1D("BeamMassHist","Beamline particle Mass", 500, 0,3000);
-  TH1D *BeamMassCutHist = new TH1D("BeamMassCutHist","Beamline particle Mass - after Cut", 500, 0,3000);
+  TH1D *BeamMassHist = new TH1D("BeamMassHist","Beamline particle Mass", 100, 0,3000);
+  TH1D *BeamMassCutHist = new TH1D("BeamMassCutHist","Beamline particle Mass - after Cut", 100, 0,3000);
   TH1D *primary_dedx = new TH1D("primary_dedx","primary track dE/dx", 400, 0,40);
   
 
@@ -325,7 +327,7 @@ void ProtonXsec::AnalyzeFromNtuples(){
   // ## event loop ##
   for (Long64_t jentry=0; jentry < numEventsToProcess && jentry < nentries; jentry++){
     
-    Long64_t ientry = tuple->LoadTree(jentry);
+    Long64_t ientry = tuple->LoadTree(jentry); 
     if (ientry < 0){continue;}
     Long64_t nb = 0;
     nb = tuple->GetEntry(jentry);
@@ -411,19 +413,13 @@ void ProtonXsec::AnalyzeFromNtuples(){
                 else{numThetaCut++;
                   if(MinVector[4] > UI->PhiCut){continue;}
                   else{numPhiCut++;
-                    //if(UI->SelEventListSet){IDfile << jentry << "," << reco_primary << std::endl;}
-
+                    if(UI->SelEventListSet){IDfile << jentry << "," << reco_primary << std::endl;}
                   }
                 }
-
-
-
               }
             }
           }
       }
-
-
 
     // ### porting over the work from ProtonAnalyzerMC module -- ryan ###
     // ## grabbing reco primary ##
@@ -439,6 +435,7 @@ void ProtonXsec::AnalyzeFromNtuples(){
 
     if(found_primary){                    
       if(UI->plotIndividualSet){
+        double res_buffer = 0;
         int primary_pts = (*col_track_hits)[reco_primary];
         double_t dedx_graphpts[primary_pts], res_graphpts[primary_pts];
         if (primary_pts > 0){
@@ -446,18 +443,21 @@ void ProtonXsec::AnalyzeFromNtuples(){
 
             //std::cout << ipos << " , "<< (*col_track_dedx)[reco_primary][ipos]<< std::endl;
             primary_dedx->Fill((*col_track_dedx)[reco_primary][ipos]);
-
-            double res_range =  UtilityFunctions::pointDistance(
+            double res_range;
+            if (ipos == primary_pts -1){res_range = 0;}
+            else{
+             res_range =  UtilityFunctions::pointDistance(
               (*col_track_x)[reco_primary][ipos],
               (*col_track_y)[reco_primary][ipos],
               (*col_track_z)[reco_primary][ipos],
-              (*col_track_x)[reco_primary][primary_pts - 1],
-              (*col_track_y)[reco_primary][primary_pts - 1],
-              (*col_track_z)[reco_primary][primary_pts - 1]);
+              (*col_track_x)[reco_primary][ipos + 1],
+              (*col_track_y)[reco_primary][ipos + 1],
+              (*col_track_z)[reco_primary][ipos + 1]);}
 
-            res_graphpts[ipos] = res_range;
+            res_buffer += res_range;
+            res_graphpts[ipos] = res_buffer;
             dedx_graphpts[ipos] = (*col_track_dedx)[reco_primary][ipos];
-            total_res_v.push_back(res_range);
+            total_res_v.push_back(res_buffer);
             total_dedx_v.push_back((*col_track_dedx)[reco_primary][ipos]);
 
           }
@@ -475,19 +475,26 @@ void ProtonXsec::AnalyzeFromNtuples(){
             ptracks_vz.insert(ptracks_vz.end(), (*track_zpos)[reco_primary].begin(), (*track_zpos)[reco_primary].end());
 
 
-          //std::cout << "making primary track TGraph" << std::endl;
+
           TGraph *EventXZprimary = new TGraph(primary_size,
             &ptracks_vz[0], &ptracks_vx[0]);
+          EventXZprimary->SetName("EventXZprimary");
 
           TGraph *EventYZprimary = new TGraph(primary_size,
             &ptracks_vz[0], &ptracks_vy[0]);
+          EventYZprimary->SetName("EventYZprimary");
+
+
+          TGraph2D *Event3dPrimary =  new TGraph2D(primary_size,&ptracks_vz[0],&ptracks_vx[0],&ptracks_vy[0]);
+          Event3dPrimary->SetName("Event3dPrimary");
+
 
 
           int secondaries_size = 0;
           for (int itrack = 0; itrack < ntracks_reco && itrack !=reco_primary; itrack++ ){
             
             int ctrack_size = (*ntrack_hits)[itrack];
-            secondaries_size += ctrack_size ;
+            secondaries_size += ctrack_size;
           }
 
           std::vector<double> otracks_vx;
@@ -497,35 +504,52 @@ void ProtonXsec::AnalyzeFromNtuples(){
           std::vector<double> otracks_vz;
           otracks_vz.reserve(secondaries_size);
 
-          for (int itrack = 0; itrack < ntracks_reco && itrack !=reco_primary; itrack++ ){
-            otracks_vx.insert(otracks_vx.end(), (*track_xpos)[itrack].begin(), (*track_xpos)[itrack].end());
-            otracks_vy.insert(otracks_vy.end(), (*track_ypos)[itrack].begin(), (*track_ypos)[itrack].end());
-            otracks_vz.insert(otracks_vz.end(), (*track_zpos)[itrack].begin(), (*track_zpos)[itrack].end());
+
+          TGraph2D *Event3dOther = new TGraph2D();
+          Event3dOther->SetName("Event3dOther");
+          if (secondaries_size > 0){
+            int graphPtBuffer = 0;
+            for (int itrack = 0; itrack < ntracks_reco && itrack !=reco_primary; itrack++ ){
+              otracks_vx.insert(otracks_vx.end(), (*track_xpos)[itrack].begin(), (*track_xpos)[itrack].end());
+              otracks_vy.insert(otracks_vy.end(), (*track_ypos)[itrack].begin(), (*track_ypos)[itrack].end());
+              otracks_vz.insert(otracks_vz.end(), (*track_zpos)[itrack].begin(), (*track_zpos)[itrack].end());
+              
+              for(int ipoint = 0; ipoint < (*ntrack_hits)[itrack]; ipoint++){
+                //std::cout << ipoint <<"point filled" << std::endl;
+                Event3dOther->SetPoint(graphPtBuffer,(*track_zpos)[itrack][ipoint],
+                  (*track_xpos)[itrack][ipoint],(*track_ypos)[itrack][ipoint]);
+                graphPtBuffer++;
+              }
+            }
           }
 
-          //std::cout << "making Other track TGraph" << std::endl;
           TGraph *EventXZother = new TGraph( secondaries_size, &otracks_vz[0], &otracks_vx[0]);
+          EventXZother->SetName("EventXZother");
           TGraph *EventYZother = new TGraph( secondaries_size, &otracks_vz[0], &otracks_vy[0]);
+          EventYZother->SetName("EventYZother");
+          TGraph *EventXZwc = new TGraph(1);
+          EventXZwc->SetName("EventXZwc");
+          TGraph *EventYZwc = new TGraph(1);
+          EventYZwc->SetName("EventYZwc");
+          TGraph2D *Event3dWC = new TGraph2D(1);  
+          Event3dWC->SetName("Event3dWC");
 
-          //std::cout << "making wc TGraph" << std::endl;
-          TGraph *EventXZwc = new TGraph(1,wc_zpos,wctrk_XFace);
-          TGraph *EventYZwc = new TGraph(1,wc_zpos,wctrk_YFace);
-
-          
+          if(!isMC){
+            EventXZwc->SetPoint(0,0,wctrk_XFace[0]);
+            EventYZwc->SetPoint(0,0,wctrk_YFace[0]);
+            Event3dWC->SetPoint(0,0,wctrk_XFace[0],wctrk_YFace[0]);
+          }
 
           EventXZprimary->SetMarkerStyle(7);
-          //EventXZprimary->SetMarkerSize(1);
           EventXZprimary->SetMarkerColor(2);
           EventYZprimary->SetMarkerStyle(7);
-          //EventYZprimary->SetMarkerSize(1);
           EventYZprimary->SetMarkerColor(2);
 
           EventXZother->SetMarkerStyle(7);
-          //EventXZother->SetMarkerSize(1);
           EventXZother->SetMarkerColor(4);
           EventYZother->SetMarkerStyle(7);
-          //EventYZother->SetMarkerSize(1);
           EventYZother->SetMarkerColor(4);
+          
 
           EventXZwc->SetMarkerStyle(9);
           EventXZwc->SetMarkerColor(3);
@@ -533,45 +557,23 @@ void ProtonXsec::AnalyzeFromNtuples(){
           EventYZwc->SetMarkerColor(3);
 
 
-          EventYZprimary->GetXaxis()->SetLimits(-5,90);                 // along X
-          EventYZprimary->GetHistogram()->SetMaximum(25.);   // along          
-          EventYZprimary->GetHistogram()->SetMinimum(-25.);  //   Y     
-          EventYZother->GetXaxis()->SetLimits(-5.,90);                 // along X
-          EventYZother->GetHistogram()->SetMaximum(25.);   // along          
-          EventYZother->GetHistogram()->SetMinimum(-25.);  //   Y     
-
-          EventXZprimary->GetXaxis()->SetLimits(-5.,90);                 // along X
-          EventXZprimary->GetHistogram()->SetMaximum(55);   // along          
-          EventXZprimary->GetHistogram()->SetMinimum(-5);  //   Y     
-          EventXZother->GetXaxis()->SetLimits(-5.,90);                 // along X
-          EventXZother->GetHistogram()->SetMaximum(55);   // along          
-          EventXZother->GetHistogram()->SetMinimum(-5);  //   Y     
-
-
-          std:cout << "Drawing to Canvas" << std::endl;
           csplit->cd(1);
           EventXZprimary->SetTitle("");
           EventXZprimary->GetXaxis()->SetTitle("Z [cm]");
           EventXZprimary->GetYaxis()->SetTitle("X [cm]");
-          EventXZprimary->Draw("AP");
-          EventXZother->Draw("psame");
-          EventXZwc->Draw("psame");
+          if (primary_size > 0){EventXZprimary->Draw("AP");}
+          if (secondaries_size > 0){EventXZother->Draw("psame");}
+          if (!isMC){EventXZwc->Draw("psame");}
 
-          csplit->cd(2);
+          csplit->cd(3);
           EventYZprimary->SetTitle("");
           EventYZprimary->GetXaxis()->SetTitle("Z [cm]");
           EventYZprimary->GetYaxis()->SetTitle("Y [cm]");
-          EventYZprimary->Draw("AP");
-          EventYZother->Draw("psame");
-          EventYZwc->Draw("psame");
+          if (primary_size > 0){EventYZprimary->Draw("AP");}
+          if (secondaries_size > 0){EventYZother->Draw("psame");}
+          if (!isMC){EventYZwc->Draw("psame");}
 
-
-          
-          char eventdisp_title[100];
-          sprintf(eventdisp_title,"%s/EventDisplays/EventDisplay%d.png",UI->plotIndividual,event);
-          csplit->Print(eventdisp_title,"png");
-
-          c->cd();
+          csplit->cd(2);
           TGraph *gres_dedx = new TGraph(primary_pts,res_graphpts,dedx_graphpts);
           gres_dedx->GetXaxis()->SetTitle("Residual Range [cm]");
           gres_dedx->GetYaxis()->SetTitle("dE/dx [MeV/cm]");
@@ -581,23 +583,63 @@ void ProtonXsec::AnalyzeFromNtuples(){
           gres_dedx->SetMarkerColor(4);
 
           gres_dedx->Draw("AP");
-          char gres_dedx_title[100];
-          sprintf(gres_dedx_title,"%s/dedx_Residuals/gres_dedx%d.png",UI->plotIndividual,event);
+          csplit->cd(4);
+          
+          TGraph2D *Event3dTPC = new TGraph2D();
+          Event3dTPC->SetName("Event3dTPC");
+          Event3dTPC->SetPoint(0,0,0,-20);
+          Event3dTPC->SetPoint(1,90,48,20);
+          Event3dTPC->SetTitle("3D Event Display");
+          Event3dTPC->GetXaxis()->SetTitle("Z [cm]");
+          Event3dTPC->GetYaxis()->SetTitle("X [cm]");
+          Event3dTPC->GetZaxis()->SetTitle("Y [cm]");
+          Event3dTPC->Draw("p");
+          Event3dPrimary->Draw("P SAME");
+          
+          if(secondaries_size > 0){
+            Event3dOther->SetMarkerStyle(7);
+            Event3dOther->SetMarkerColor(4);
+
+            Event3dOther->Draw("P SAME");}
+          if (!isMC){
+
+            Event3dWC->Draw("P SAME");}
+
+          Event3dPrimary->SetMarkerStyle(7);
+          Event3dPrimary->SetMarkerColor(2);
+          Event3dWC->SetMarkerStyle(9);
+          Event3dWC->SetMarkerColor(3);
+
+          // gPad->Modified(); 
+          gPad->Update();
+
+          char eventdisp_title[100];
+          sprintf(eventdisp_title,"%s/EventDisplay%d.png",UI->plotIndividual,event);
+          
+          //char gres_dedx_title[100];
+          //sprintf(gres_dedx_title,"%s/dedx_Residuals/gres_dedx%d.png",UI->plotIndividual,event);
+
+
           //~gres_dedx;
-          c->Print(gres_dedx_title,"png");
+          csplit->Print(eventdisp_title,"png");
           delete gres_dedx;
           delete EventXZprimary;
           delete EventYZprimary;
           delete EventXZother;
           delete EventYZother;
+          delete EventYZwc;
+          delete EventXZwc;
+          delete Event3dPrimary;
+          delete Event3dOther;
+          delete Event3dWC;
+          delete Event3dTPC;
+
 
 
 
           
         }
-      gtotal_res_dedx_item = TGraph(total_res_v.size(),&total_res_v[0],&total_dedx_v[0]);
-      gtotal_res_dedx_item.SetName("gtotal_res_dedx");
-      gtotal_res_dedx = &gtotal_res_dedx_item;
+      
 
 
       }
@@ -787,7 +829,11 @@ void ProtonXsec::AnalyzeFromNtuples(){
   }
 
 
-  
+  if(UI->plotIndividualSet){
+    gtotal_res_dedx_item = TGraph(total_res_v.size(),&total_res_v[0],&total_dedx_v[0]);
+    gtotal_res_dedx_item.SetName("gtotal_res_dedx");
+    gtotal_res_dedx = &gtotal_res_dedx_item;
+  }
   
   
   if(isMC){
@@ -859,3 +905,4 @@ void ProtonXsec::AnalyzeFromNtuples(){
 
 
 
+//
