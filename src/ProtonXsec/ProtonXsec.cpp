@@ -166,6 +166,7 @@ void ProtonXsec::AnalyzeFromNtuples(){
   double xyDeltaCut = 0;
   double numThetaCut = 0;
   double numPhiCut = 0;
+  double numInteractions = 0; 
 
 
   const double wc_zpos_val = 0.1;
@@ -433,6 +434,75 @@ void ProtonXsec::AnalyzeFromNtuples(){
 
 
 
+    // ## grabbing interaction point ##
+    double temp[4];
+    double* candidate_info = ES->findInt(temp, reco_primary, ntracks_reco, 
+                                            ntrack_hits, track_xpos, track_ypos, track_zpos,
+                                            track_end_x, track_end_y, track_end_z,
+                                            col_track_hits, col_track_dedx, col_track_pitch_hit,
+                                            col_track_x, col_track_y, col_track_z);
+
+    // ## grabbing what will be histogram entries ##
+    double initial_ke = 99999; //<-- setting to a constant to do dev. needs to be WC info
+    std::vector<double> calo_slab_xpos;
+    std::vector<double> calo_slab_ypos;
+    std::vector<double> calo_slab_zpos;
+    std::vector<double> calo_slab_KE;
+
+    if(isMC) {
+      initial_ke = BS->getMCInitialKE(initial_ke, geant_list_size, process_primary, 
+                                      NTrTrajPts, MidPosX, MidPosY,  MidPosZ, MidPx, MidPy, MidPz); 
+    }
+    if(!isMC) {
+      initial_ke = BS->getDataInitialKE(initial_ke, wctrk_momentum[0]);
+    }
+    hreco_initialKE->Fill(initial_ke);
+    
+    int slabPass = ES->getSlabInfo(calo_slab_xpos, calo_slab_ypos, calo_slab_zpos, calo_slab_KE,
+                                    reco_primary, z2, initial_ke,
+                                    col_track_hits, col_track_dedx, col_track_pitch_hit,
+                                    col_track_x, col_track_y, col_track_z);
+
+    // ## actually filling histograms ##
+    // ## getting which slab will be used for interactions ##
+    int calo_int_slab = 999;
+    if(candidate_info[0]){
+      numInteractions++;
+      double int_candidate_x = candidate_info[1];
+      double int_candidate_y = candidate_info[2];
+      double int_candidate_z = candidate_info[3];
+      // loop over slabs to find slab closest to interaction candidate
+      double min_dist_int = 99;
+      for(unsigned int calo_slab = 0; calo_slab < calo_slab_KE.size(); calo_slab++){
+        double calo_slab_x = calo_slab_xpos[calo_slab];  
+        double calo_slab_y = calo_slab_ypos[calo_slab];  
+        double calo_slab_z = calo_slab_zpos[calo_slab];  
+        double dist_int_slab = sqrt( pow(int_candidate_x - calo_slab_x, 2) 
+                                   + pow(int_candidate_y - calo_slab_y, 2) 
+                                   + pow(int_candidate_z - calo_slab_z, 2));
+        if(calo_slab_z < int_candidate_z){
+          if(dist_int_slab < min_dist_int){
+            min_dist_int = dist_int_slab;
+            calo_int_slab = calo_slab;
+          }
+        }//<--End if this slab is upstream of int
+      }//<--End calo slab loop
+    }//<---End if interaction candidate
+
+    bool intHistFilled = false;
+    // ## incident slabs ## 
+    for(unsigned int calo_slab = 1; calo_slab < calo_slab_KE.size(); calo_slab++){
+      if(calo_slab > calo_int_slab){continue;}//<--stop after interaction slab 
+      hreco_incke->Fill(calo_slab_KE[calo_slab]);
+      if(calo_slab == calo_int_slab){
+        hreco_intke->Fill(calo_slab_KE[calo_slab]);
+        intHistFilled = true;
+      }//<-- End if this is the \ slab
+    }//<--End calo slab loop
+
+    // ### end of port work -- ryan ###
+
+
     if(found_primary){                    
       if(UI->plotIndividualSet){
         double res_buffer = 0;
@@ -531,19 +601,24 @@ void ProtonXsec::AnalyzeFromNtuples(){
           EventXZwc->SetName("EventXZwc");
           TGraph *EventYZwc = new TGraph(1);
           EventYZwc->SetName("EventYZwc");
-          TGraph2D *Event3dWC = new TGraph2D(1);  
-          Event3dWC->SetName("Event3dWC");
+          
 
           if(!isMC){
             EventXZwc->SetPoint(0,0,wctrk_XFace[0]);
             EventYZwc->SetPoint(0,0,wctrk_YFace[0]);
-            Event3dWC->SetPoint(0,0,wctrk_XFace[0],wctrk_YFace[0]);
+            
           }
 
           EventXZprimary->SetMarkerStyle(7);
-          EventXZprimary->SetMarkerColor(2);
           EventYZprimary->SetMarkerStyle(7);
-          EventYZprimary->SetMarkerColor(2);
+          if(intHistFilled){
+            EventXZprimary->SetMarkerColor(3);
+            EventYZprimary->SetMarkerColor(3);
+          }
+          else{
+            EventXZprimary->SetMarkerColor(2);
+            EventYZprimary->SetMarkerColor(2);
+          }
 
           EventXZother->SetMarkerStyle(7);
           EventXZother->SetMarkerColor(4);
@@ -552,9 +627,23 @@ void ProtonXsec::AnalyzeFromNtuples(){
           
 
           EventXZwc->SetMarkerStyle(9);
-          EventXZwc->SetMarkerColor(3);
+          EventXZwc->SetMarkerColor(44);
           EventYZwc->SetMarkerStyle(9);
-          EventYZwc->SetMarkerColor(3);
+          EventYZwc->SetMarkerColor(44);
+
+          EventYZprimary->GetXaxis()->SetLimits(-5,90);                 // along X
+          EventYZprimary->GetHistogram()->SetMaximum(25.);   // along          
+          EventYZprimary->GetHistogram()->SetMinimum(-25.);  //   Y     
+          EventYZother->GetXaxis()->SetLimits(-5.,90);                 // along X
+          EventYZother->GetHistogram()->SetMaximum(25.);   // along          
+          EventYZother->GetHistogram()->SetMinimum(-25.);  //   Y     
+
+          EventXZprimary->GetXaxis()->SetLimits(-5.,90);                 // along X
+          EventXZprimary->GetHistogram()->SetMaximum(55);   // along          
+          EventXZprimary->GetHistogram()->SetMinimum(-5);  //   Y     
+          EventXZother->GetXaxis()->SetLimits(-5.,90);                 // along X
+          EventXZother->GetHistogram()->SetMaximum(55);   // along          
+          EventXZother->GetHistogram()->SetMinimum(-5);  //   Y     
 
 
           csplit->cd(1);
@@ -580,14 +669,14 @@ void ProtonXsec::AnalyzeFromNtuples(){
           gres_dedx->SetTitle("");
           gres_dedx->SetMarkerStyle(20);
           gres_dedx->SetMarkerSize(1.5);
-          gres_dedx->SetMarkerColor(4);
+          gres_dedx->SetMarkerColor(38);
 
           gres_dedx->Draw("AP");
           csplit->cd(4);
           
           TGraph2D *Event3dTPC = new TGraph2D();
           Event3dTPC->SetName("Event3dTPC");
-          Event3dTPC->SetPoint(0,0,0,-20);
+          Event3dTPC->SetPoint(0,-1,0,-20);
           Event3dTPC->SetPoint(1,90,48,20);
           Event3dTPC->SetTitle("3D Event Display");
           Event3dTPC->GetXaxis()->SetTitle("Z [cm]");
@@ -601,14 +690,13 @@ void ProtonXsec::AnalyzeFromNtuples(){
             Event3dOther->SetMarkerColor(4);
 
             Event3dOther->Draw("P SAME");}
-          if (!isMC){
 
-            Event3dWC->Draw("P SAME");}
 
           Event3dPrimary->SetMarkerStyle(7);
-          Event3dPrimary->SetMarkerColor(2);
-          Event3dWC->SetMarkerStyle(9);
-          Event3dWC->SetMarkerColor(3);
+          if(intHistFilled){Event3dPrimary->SetMarkerColor(3);
+          }
+          else{Event3dPrimary->SetMarkerColor(2);}
+          
 
           // gPad->Modified(); 
           gPad->Update();
@@ -631,86 +719,16 @@ void ProtonXsec::AnalyzeFromNtuples(){
           delete EventXZwc;
           delete Event3dPrimary;
           delete Event3dOther;
-          delete Event3dWC;
-          delete Event3dTPC;
-
-
-
-
           
+          delete Event3dTPC;
         }
-      
-
-
       }
-
     }
 
-    // ## grabbing interaction point ##
-    double temp[4];
-    double* candidate_info = ES->findInt(temp, reco_primary, ntracks_reco, 
-                                            ntrack_hits, track_xpos, track_ypos, track_zpos,
-                                            track_end_x, track_end_y, track_end_z,
-                                            col_track_hits, col_track_dedx, col_track_pitch_hit,
-                                            col_track_x, col_track_y, col_track_z);
-
-    // ## grabbing what will be histogram entries ##
-    double initial_ke = 99999; //<-- setting to a constant to do dev. needs to be WC info
-    std::vector<double> calo_slab_xpos;
-    std::vector<double> calo_slab_ypos;
-    std::vector<double> calo_slab_zpos;
-    std::vector<double> calo_slab_KE;
-
-    if(isMC) {
-      initial_ke = BS->getMCInitialKE(initial_ke, geant_list_size, process_primary, 
-                                      NTrTrajPts, MidPosX, MidPosY,  MidPosZ, MidPx, MidPy, MidPz); 
-    }
-    if(!isMC) {
-      initial_ke = BS->getDataInitialKE(initial_ke, wctrk_momentum[0]);
-    }
-    hreco_initialKE->Fill(initial_ke);
-    
-    int slabPass = ES->getSlabInfo(calo_slab_xpos, calo_slab_ypos, calo_slab_zpos, calo_slab_KE,
-                                    reco_primary, z2, initial_ke,
-                                    col_track_hits, col_track_dedx, col_track_pitch_hit,
-                                    col_track_x, col_track_y, col_track_z);
-
-    // ## actually filling histograms ##
-    // ## getting which slab will be used for interactions ##
-    int calo_int_slab = 999;
-    if(candidate_info[0]){
-      double int_candidate_x = candidate_info[1];
-      double int_candidate_y = candidate_info[2];
-      double int_candidate_z = candidate_info[3];
-      // loop over slabs to find slab closest to interaction candidate
-      double min_dist_int = 99;
-      for(unsigned int calo_slab = 0; calo_slab < calo_slab_KE.size(); calo_slab++){
-        double calo_slab_x = calo_slab_xpos[calo_slab];  
-        double calo_slab_y = calo_slab_ypos[calo_slab];  
-        double calo_slab_z = calo_slab_zpos[calo_slab];  
-        double dist_int_slab = sqrt( pow(int_candidate_x - calo_slab_x, 2) 
-                                   + pow(int_candidate_y - calo_slab_y, 2) 
-                                   + pow(int_candidate_z - calo_slab_z, 2));
-        if(calo_slab_z < int_candidate_z){
-          if(dist_int_slab < min_dist_int){
-            min_dist_int = dist_int_slab;
-            calo_int_slab = calo_slab;
-          }
-        }//<--End if this slab is upstream of int
-      }//<--End calo slab loop
-    }//<---End if interaction candidate
 
 
-    // ## incident slabs ## 
-    for(unsigned int calo_slab = 1; calo_slab < calo_slab_KE.size(); calo_slab++){
-      if(calo_slab > calo_int_slab){continue;}//<--stop after interaction slab 
-      hreco_incke->Fill(calo_slab_KE[calo_slab]);
-      if(calo_slab == calo_int_slab){
-        hreco_intke->Fill(calo_slab_KE[calo_slab]);
-      }//<-- End if this is the \ slab
-    }//<--End calo slab loop
 
-    // ### end of port work -- ryan ###
+
   
   }//end of event Loop
 
@@ -825,6 +843,11 @@ void ProtonXsec::AnalyzeFromNtuples(){
     std::cout << "Events after XY plane distance cut: "<< xyDeltaCut << std::endl;
     std::cout << "Events after Phi cut: " << numPhiCut << std::endl;
     std::cout << "Events after Theta cut: " << numThetaCut << std::endl;
+
+    //std::cout << "\n------- Event Selection Results -------\n"<< std::endl;
+    //std::cout << "Inelastic interactions selected: "<< numInteractions << std::endl;
+    
+
     }
   }
 
