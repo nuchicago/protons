@@ -3,7 +3,7 @@
  Input File Lists - these are ASCII files that 
   contain lists of ntuple files to be processed.
 -----------------------------------------------------
-inputFiles files/Data_ntuples.dat
+inputFiles files/Data_wire_ntuples.dat
 
 -----------------------------------------------------
 Output File Lists - .root and PostScript
@@ -12,25 +12,25 @@ Output File Lists - .root and PostScript
 rootOutputFile files/XsecOutput.root
 psOutputFile files/XSecOutput.ps
 SelEventList files/PrimaryID.txt
-plotIndividual plotting/images/plotIndividual/Data
+plotIndividual plotting
+
 
 
 -----------------------------------------------------
  verbosity
 -----------------------------------------------------
-verbose 1
+verbose 0
 
 -----------------------------------------------------
  number of event to process
 -----------------------------------------------------
-events 4200
+events 1000
 
 -----------------------------------------------------
  Data Set description
 -----------------------------------------------------
 DataMC Data
-RawWireVar 0
-
+RawWireVar 1
 
 ------------------------------------------------------
  Particle ID and PDF files

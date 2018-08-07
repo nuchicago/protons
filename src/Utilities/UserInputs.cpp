@@ -98,6 +98,7 @@ void UserInputs::initialize( ){
   SelEventListSet = false;
   modelSet = false;
   plotIndividualSet = false;
+  RawWireVar = 0;
 
   printMod = 50000;
 
@@ -229,6 +230,10 @@ void UserInputs::readDataSetParams( ifstream *jobOptionsFile ){
     *jobOptionsFile >> Model;
     modelSet = true;
   } 
+
+  if( paramLookUp( jobOptionsFile, (char*)"RawWireVar" ) )
+    *jobOptionsFile >> RawWireVar;
+
 
 
   //if( paramLookUp( jobOptionsFile, (char*)"target" ) ){

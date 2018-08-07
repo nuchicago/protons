@@ -55,6 +55,7 @@ class UserInputs {
   bool potTargetSet;
   int  potEmpty;
   bool potEmptySet;
+  int RawWireVar;
   
 
   //== BeamSelect Values

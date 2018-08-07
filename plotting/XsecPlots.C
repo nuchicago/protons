@@ -3,7 +3,7 @@ void XsecPlots(){
   gROOT->SetBatch(true);
 
   TFile* XsecFile = new TFile("../files/XsecOutput.root","READ");
-  gStyle->SetOptStat("emrou");
+  gStyle->SetOptStat("emr");
 
   TCanvas *c1 = new TCanvas("c1","c1",1000,1000);
   TH2D *delXYHist = (TH2D*)XsecFile->Get("delXYHist");
