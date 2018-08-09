@@ -1,5 +1,5 @@
-#define EventSummary_cxx
-#include "EventSummary.h"
+#define EventSummaryMC_cxx
+#include "EventSummaryMC.h"
 #include <TH2.h>
 #include <TGraph2D.h>
 #include <TGraph.h>
@@ -16,11 +16,11 @@
 
 
 
-void EventSummary::Loop()
+void EventSummaryMC::Loop()
 {
 //   In a ROOT session, you can do:
-//      root> .L EventSummary.C
-//      root> EventSummary t
+//      root> .L EventSummaryMC.C
+//      root> EventSummaryMC t
 //      root> t.GetEntry(12); // Fill t data members with entry number 12
 //      root> t.Show();       // Show values of entry 12
 //      root> t.Show(16);     // Read and show values of entry 16
@@ -45,21 +45,21 @@ void EventSummary::Loop()
    gROOT->SetBatch(true);
    gStyle->SetPalette(53);
 
-		  TGraph2D *wirePlotLims1 = new TGraph2D(2);
-		  wirePlotLims1->SetName("wirePlotLims1");
-		  wirePlotLims1->SetTitle("");
-		  wirePlotLims1->SetPoint(0,0,0,0);
-		  wirePlotLims1->SetPoint(1,240,3100,200);
-		  wirePlotLims1->SetMarkerStyle(1);
+      TGraph2D *wirePlotLims1 = new TGraph2D(2);
+      wirePlotLims1->SetName("wirePlotLims1");
+      wirePlotLims1->SetTitle("");
+      wirePlotLims1->SetPoint(0,0,0,0);
+      wirePlotLims1->SetPoint(1,240,3100,200);
+      wirePlotLims1->SetMarkerStyle(1);
 
-		  TGraph2D *wirePlotLims2 = new TGraph2D(2);
-		  wirePlotLims2->SetName("wirePlotLims2");
-		  wirePlotLims2->SetTitle("");
-		  wirePlotLims2->SetPoint(0,240,0,0);
-		  wirePlotLims2->SetPoint(1,480,3100,200);
-		  wirePlotLims2->SetMarkerStyle(1);
+      TGraph2D *wirePlotLims2 = new TGraph2D(2);
+      wirePlotLims2->SetName("wirePlotLims2");
+      wirePlotLims2->SetTitle("");
+      wirePlotLims2->SetPoint(0,240,0,0);
+      wirePlotLims2->SetPoint(1,480,3100,200);
+      wirePlotLims2->SetMarkerStyle(1);
 
-  TCanvas *c1 = new TCanvas("c1","Canvas",1280,720);
+  TCanvas *c1 = new TCanvas("c1","Canvas",1920,1080);
   
 
 
@@ -75,7 +75,7 @@ void EventSummary::Loop()
   pad4->Draw();
   pad5->Draw();
 
-   bool isMC = false;
+   bool isMC = true ;
 
   // stuff for the summary residual plot
   std::vector<double> total_dedx_v;
@@ -85,9 +85,9 @@ void EventSummary::Loop()
 
   //Opening primaryID file
 
-   std::ifstream idfile("../files/PrimaryID.txt");
+   std::ifstream idfile("../files/PrimaryID_MC.txt");
    Long64_t fileEntry;
-   int reco_primary, isInelastic, topologyID;
+   int reco_primary, isInelastic;
    double Int_x, Int_y, Int_z;
 
    // looping over event ids in file
@@ -112,21 +112,21 @@ void EventSummary::Loop()
         double max_dedx = -1;
         //calculating residual range
         for(int ipos = primary_pts - 1; ipos >= 0  ; ipos--){
-          //double res_range;
-          //if (ipos == primary_pts -1){res_range = 0;}
-          /*else{
+          double res_range;
+          if (ipos == primary_pts -1){res_range = 0;}
+          else{
            res_range =  pointDistance(
             (*col_track_x)[reco_primary][ipos],
             (*col_track_y)[reco_primary][ipos],
             (*col_track_z)[reco_primary][ipos],
             (*col_track_x)[reco_primary][ipos + 1],
             (*col_track_y)[reco_primary][ipos + 1],
-            (*col_track_z)[reco_primary][ipos + 1]);}*/
+            (*col_track_z)[reco_primary][ipos + 1]);}
 
-          //res_buffer += res_range;
-          res_graphpts[ipos] = (*col_track_rr)[reco_primary][ipos];
+          res_buffer += res_range;
+          res_graphpts[ipos] = res_buffer;
           dedx_graphpts[ipos] = (*col_track_dedx)[reco_primary][ipos];
-          total_res_v.push_back(res_buffer);
+          total_res_v.push_back(res_range);
           if (dedx_graphpts[ipos] > max_dedx){ max_dedx = dedx_graphpts[ipos];}
           total_dedx_v.push_back(dedx_graphpts[ipos]);}//end of loop for residual range
 
@@ -151,7 +151,7 @@ void EventSummary::Loop()
           }
         }
 
-					//####### creating a TGraph2d for reconstructed track
+          //####### creating a TGraph2d for reconstructed track
 
         int primary_size = (*ntrack_hits)[reco_primary];
         std::vector<double> ptracks_vx;
@@ -330,25 +330,23 @@ void EventSummary::Loop()
         }
         else{Event3dPrimary->SetMarkerColor(2);
           Event3dPrimary->SetLineColor(2);}
-        
+
+
         pad3->cd();
 
         TPaveText *pt = new TPaveText(.05,.1,.95,.8);
 
-        char beamPtext[50];
-        sprintf(beamPtext,"Beam Momentum : %.02f MeV/c", (*wctrk_momentum));
         char efieldtext[50];
         sprintf(efieldtext,"E field: %.03f kV/cm", (*efield));
         char eventtext[50];
-        sprintf(eventtext,"Data event: %d ", event);
-        char topologytext[50];
-        //sprintf(topologytext, "Inelastic topology # %d", topologyID)
+        sprintf(eventtext,"MC event: %d ", event);
+        //char topologytext[50];
+        //sprintf(topologytext, "Inelastic topology type %d", topologyID)
 
 
         
         pt->AddText(eventtext);
         pt->AddText(efieldtext);
-        pt->AddText(beamPtext);
         //pt->AddText(topologytext);
         pt->Draw();
 
@@ -357,7 +355,7 @@ void EventSummary::Loop()
         c1->Update();
 
         char eventdisp_title[100];
-        sprintf(eventdisp_title,"../plotting/images/EventSummary/EventSummary%d.png",event);
+        sprintf(eventdisp_title,"../plotting/images/EventSummary/EventSummaryMC%d.png",event);
         
         //char gres_dedx_title[100];
         //sprintf(gres_dedx_title,"%s/dedx_Residuals/gres_dedx%d.png",UI->plotIndividual,event);

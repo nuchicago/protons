@@ -1,0 +1,54 @@
+
+-----------------------------------------------------
+ Input File Lists - these are ASCII files that 
+  contain lists of ntuple files to be processed.
+-----------------------------------------------------
+inputFiles files/MC_wire_ntuples.dat
+
+-----------------------------------------------------
+Output File Lists - .root and PostScript
+----------------------------------------------------- 
+
+rootOutputFile files/XsecOutput.root
+psOutputFile files/XSecOutput.ps
+correctionFile files/corrections/xsCorrection.root
+SelEventList files/PrimaryID_MC.txt
+
+
+
+
+-----------------------------------------------------
+ verbosity
+-----------------------------------------------------
+verbose 0
+
+-----------------------------------------------------
+ number of event to process
+-----------------------------------------------------
+events 1000
+
+-----------------------------------------------------
+ Data Set description
+-----------------------------------------------------
+DataMC MC
+RawWireVar 1
+
+-----------------------------------------------------
+Geant 4 model choice (Bertini/Binary/INCLXX)
+-----------------------------------------------------
+Model Bertini 
+
+------------------------------------------------------
+ Particle ID and PDF files
+------------------------------------------------------
+
+
+zBeamCutoff 2
+zTPCCutoff 4
+rCircleCut 5
+ZSlabSize 0.5
+MassCutMin 700
+MassCutMax 1200 
+
+
+
