@@ -566,7 +566,7 @@ void ProtonAnalyzerMC::AnalyzeFromNtuples() {
 
 
     // ## grabbing interaction point ##
-    double temp[4];
+    double temp[5];
     double* candidate_info = ES->findInt(temp, reco_primary, ntracks_reco, 
                                             ntrack_hits, track_xpos, track_ypos, track_zpos,
                                             track_end_x, track_end_y, track_end_z,

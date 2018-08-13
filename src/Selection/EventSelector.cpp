@@ -170,6 +170,7 @@ double* EventSelector::findInt(double* candidate_array, int reco_primary, Int_t 
     double candidate_ypos = 999;
     double candidate_zpos = 999;
     std::vector<int> potential_interaction_pts;
+    std::vector<double> potential_interaction_type;
     // # topology 3, 4
     if(branches.size()){
       int earliest_branch_spt = 9999;
@@ -179,6 +180,7 @@ double* EventSelector::findInt(double* candidate_array, int reco_primary, Int_t 
         }
       }
       potential_interaction_pts.push_back((int)earliest_branch_spt);
+      potential_interaction_type.push_back(3.);
       std::cout<<"earliest branch pt: "<<earliest_branch_spt<<std::endl;
     }//<--End if there were branches
     // # topology 1
@@ -190,6 +192,7 @@ double* EventSelector::findInt(double* candidate_array, int reco_primary, Int_t 
         }
       }
       potential_interaction_pts.push_back((int)earliest_kink_spt);
+      potential_interaction_type.push_back(1.);
       std::cout<<"earliest kink pt: "<<earliest_kink_spt<<std::endl;
     }//<--End if there was a kink
     // # getting earliest of topology 1,3,4
@@ -204,6 +207,7 @@ double* EventSelector::findInt(double* candidate_array, int reco_primary, Int_t 
         candidate_array[1] = candidate_xpos;
         candidate_array[2] = candidate_ypos;
         candidate_array[3] = candidate_zpos;
+        candidate_array[4] = potential_interaction_type[i];
       }
     }
     // # topology 2
@@ -217,12 +221,14 @@ double* EventSelector::findInt(double* candidate_array, int reco_primary, Int_t 
         candidate_array[1] = candidate_xpos;
         candidate_array[2] = candidate_ypos;
         candidate_array[3] = candidate_zpos;
+        candidate_array[4] = 2.;
       }
       else{
         candidate_array[0] = 0;
         candidate_array[1] = -1;
         candidate_array[2] = -1;
         candidate_array[3] = -1;
+        candidate_array[4] = -1;
       }
     }//<-End if no branches or kinks
 
