@@ -41,6 +41,7 @@ class LArIATAnalysis {
   UserInputs *UI;
   int verbose;
   bool isMC;
+  int bypassMassCut;
 
 
   //---------------------------------------------

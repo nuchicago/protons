@@ -35,7 +35,8 @@ double* EventSelector::findInt(double* candidate_array, int reco_primary, Int_t 
                             std::vector<int>* col_track_hits, std::vector<std::vector<double>>* col_track_dedx,
                             std::vector<std::vector<double>>* col_track_pitch_hit,
                             std::vector<std::vector<double>>* col_track_x, std::vector<std::vector<double>>* col_track_y,
-                            std::vector<std::vector<double>>* col_track_z) {
+                            std::vector<std::vector<double>>* col_track_z,
+                            std::vector<double> UIoptions) {
 
 
   //std::cout<<"\t\tFINDINT: \n";
@@ -57,9 +58,18 @@ double* EventSelector::findInt(double* candidate_array, int reco_primary, Int_t 
     // # return this #
     //double candidate_array[4];
 
+    //unpacking UI options
+    double verbose = UIoptions[0];
+    double dedxNoBraggMax = UIoptions[1];
+    double branchMaxDist =  UIoptions[2];
+    double clusterMaxDist = UIoptions[3];
+
+
     // ### Inelastic Event Selection ###
     std::vector<std::vector<double>> branches;
     std::vector<std::vector<double>> kinks;
+    std::vector<std::vector<double>> kink_angles;
+    double no_bragg_dedx_mean;
     int missing_bragg = 0;
     //double prim_endx = (*track_end_x)[reco_primary];
     //double prim_endy = (*track_end_y)[reco_primary];
@@ -121,8 +131,11 @@ double* EventSelector::findInt(double* candidate_array, int reco_primary, Int_t 
           end_track_counter++;
         }
         double end_track_dedx_mean = end_track_dedx_sum / end_track_counter;
-        if(end_track_dedx_mean < 13){ // need to make this number a variable at some point
+        //dedxNoBraggVector.push_back(end_track_dedx_mean);
+        if(end_track_dedx_mean < dedxNoBraggMax){ // need to make this number a variable at some point
+          no_bragg_dedx_mean = end_track_dedx_mean;
           missing_bragg++;
+
         }//<--End if this track had no bragg peak
 
       }//<---End if primary  
@@ -156,9 +169,10 @@ double* EventSelector::findInt(double* candidate_array, int reco_primary, Int_t 
             closest_prim_spt = prim_spt;
           }
         }//<-End primary spt loop
-
-        std::vector<double> branch_tuple = {1.*rtrack, closest_prim_spt, min_dist_prim_spt};
-        branches.push_back(branch_tuple);
+        BranchDistVect.push_back(min_dist_prim_spt);
+        if(min_dist_prim_spt < branchMaxDist){
+          std::vector<double> branch_tuple = {1.*rtrack, closest_prim_spt, min_dist_prim_spt};
+          branches.push_back(branch_tuple);}
       }//<--End if not primary
     }//<---End reco track loop for finding interaction candidates
 
@@ -171,6 +185,8 @@ double* EventSelector::findInt(double* candidate_array, int reco_primary, Int_t 
     double candidate_zpos = 999;
     std::vector<int> potential_interaction_pts;
     std::vector<double> potential_interaction_type;
+    std::vector<double> potential_interaction_info1;
+
     // # topology 3, 4
     if(branches.size()){
       int earliest_branch_spt = 9999;
@@ -181,19 +197,23 @@ double* EventSelector::findInt(double* candidate_array, int reco_primary, Int_t 
       }
       potential_interaction_pts.push_back((int)earliest_branch_spt);
       potential_interaction_type.push_back(3.);
-      std::cout<<"earliest branch pt: "<<earliest_branch_spt<<std::endl;
+      potential_interaction_info1.push_back(-1.);
+      if(verbose){std::cout<<"earliest branch pt: "<<earliest_branch_spt<<std::endl;}
     }//<--End if there were branches
     // # topology 1
     if(kinks.size()){
       int earliest_kink_spt = 9999;
+      double angleValue = -9999;
       for(int kink_pt = 0; kink_pt < kinks.size(); kink_pt++){
         if(kinks[kink_pt][0] < earliest_kink_spt){
           earliest_kink_spt = kinks[kink_pt][0];
+          angleValue = kinks[kink_pt][1];
         }
       }
       potential_interaction_pts.push_back((int)earliest_kink_spt);
       potential_interaction_type.push_back(1.);
-      std::cout<<"earliest kink pt: "<<earliest_kink_spt<<std::endl;
+      potential_interaction_info1.push_back(angleValue);
+      if(verbose){std::cout<<"earliest kink pt: "<<earliest_kink_spt<<std::endl;}
     }//<--End if there was a kink
     // # getting earliest of topology 1,3,4
     for(int i = 0; i < potential_interaction_pts.size(); i++){
@@ -208,8 +228,35 @@ double* EventSelector::findInt(double* candidate_array, int reco_primary, Int_t 
         candidate_array[2] = candidate_ypos;
         candidate_array[3] = candidate_zpos;
         candidate_array[4] = potential_interaction_type[i];
+        //if (potential_interaction_type[i] == 1){}
+        candidate_array[5] = potential_interaction_info1[i];
+        
+        //else{candidate_array[5] = potential_interaction_info1}
       }
     }
+
+
+    if(candidate_array[4] == 3.){
+        double num_branches_t4 = 0.;
+
+        for (int ibranch = 0 ;  ibranch <  branches.size(); ibranch++){
+          std::cout << "branches " << ibranch << std::endl;
+          int branch_track  =  branches[ibranch][0];
+          std::cout << "branch_track ID " << branch_track << std::endl;
+
+          double dist  =  sqrt(pow((*track_xpos)[branch_track][0] - candidate_array[1],2)
+            + pow((*track_ypos)[branch_track][0] - candidate_array[2],2)
+            + pow((*track_zpos)[branch_track][0] - candidate_array[3],2));
+          ClusterDistVect.push_back(dist);
+          if(dist < clusterMaxDist){num_branches_t4 += 1.;}
+        }
+        std::cout << "num_branches_t4 = " << num_branches_t4 << std::endl;
+        candidate_array[5] = num_branches_t4;
+        if (num_branches_t4 > 1){
+          candidate_array[4] = 4.;
+        }
+      }
+
     // # topology 2
     if(!(branches.size() || kinks.size())){
       if(missing_bragg && prim_endz < 88){
@@ -222,6 +269,7 @@ double* EventSelector::findInt(double* candidate_array, int reco_primary, Int_t 
         candidate_array[2] = candidate_ypos;
         candidate_array[3] = candidate_zpos;
         candidate_array[4] = 2.;
+        candidate_array[5] = no_bragg_dedx_mean;
       }
       else{
         candidate_array[0] = 0;
@@ -229,8 +277,15 @@ double* EventSelector::findInt(double* candidate_array, int reco_primary, Int_t 
         candidate_array[2] = -1;
         candidate_array[3] = -1;
         candidate_array[4] = -1;
+        candidate_array[5] = -1;
       }
+
+
     }//<-End if no branches or kinks
+
+    /**/
+
+
 
     return candidate_array;
 

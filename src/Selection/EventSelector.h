@@ -12,6 +12,13 @@ class EventSelector {
 
  public:
 
+  std::vector<double> BranchDistVect;
+  std::vector<double> ClusterDistVect;
+  std::vector<double> dedxNoBraggVect;
+
+
+
+
   EventSelector( );
  
   int classifyEvent( int type );
@@ -23,7 +30,8 @@ class EventSelector {
                     std::vector<int>* col_track_hits, std::vector<std::vector<double>>* col_track_dedx,
                     std::vector<std::vector<double>>* col_track_pitch_hit,
                     std::vector<std::vector<double>>* col_track_x, std::vector<std::vector<double>>* col_track_y,
-                    std::vector<std::vector<double>>* col_track_z );
+                    std::vector<std::vector<double>>* col_track_z ,
+                    std::vector<double> UIoptions);
 
   //void getSlabInfo( std::vector<double> &calo_slab_xpos, std::vector<double> &calo_slab_ypos, 
   //                  std::vector<double> &calo_slab_ypos, std::vector<double> &calo_slab_zpos);

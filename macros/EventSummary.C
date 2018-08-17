@@ -93,10 +93,10 @@ void EventSummary::Loop()
    std::ifstream idfile("../files/PrimaryID.txt");
    Long64_t fileEntry;
    int reco_primary, isInelastic, Int_type;
-   double Int_x, Int_y, Int_z, InitialKE, IntKE;
+   double Int_x, Int_y, Int_z, selCrit,  InitialKE, IntKE;
 
    // looping over event ids in file
-   while(idfile >> fileEntry >> reco_primary >> isInelastic >> Int_x >> Int_y >> Int_z >> Int_type >> InitialKE >> IntKE){
+   while(idfile >> fileEntry >> reco_primary >> isInelastic >> Int_x >> Int_y >> Int_z >> Int_type >> selCrit>> InitialKE >> IntKE){
 
    Long64_t nentries = fChain->GetEntriesFast();
 
@@ -159,24 +159,38 @@ void EventSummary::Loop()
 					//####### creating a TGraph2d for reconstructed track
 
         int primary_size = (*ntrack_hits)[reco_primary];
-        std::vector<double> ptracks_vx;
+
+        /*std::vector<double> ptracks_vx;
         ptracks_vx.reserve(primary_size);
         std::vector<double> ptracks_vy;
         ptracks_vy.reserve(primary_size);
         std::vector<double> ptracks_vz;
         ptracks_vz.reserve(primary_size);
+
           ptracks_vx.insert(ptracks_vx.end(), (*track_xpos)[reco_primary].begin(), (*track_xpos)[reco_primary].end());
           ptracks_vy.insert(ptracks_vy.end(), (*track_ypos)[reco_primary].begin(), (*track_ypos)[reco_primary].end());
           ptracks_vz.insert(ptracks_vz.end(), (*track_zpos)[reco_primary].begin(), (*track_zpos)[reco_primary].end());
 
         //std::cout << "ntracks_reco : "<< ntracks_reco << std::endl;
-        TGraph2D *Event3dPrimary =  new TGraph2D(primary_size,&ptracks_vz[0],&ptracks_vx[0],&ptracks_vy[0]);
 
-        TGraph *EventYZprimary  = new TGraph(primary_size, &ptracks_vz[0], &ptracks_vy[0]);
-        TGraph *EventXZprimary = new TGraph(primary_size, &ptracks_vz[0], &ptracks_vx[0]);
+        */
+
+        TGraph2D *Event3dPrimary =  new TGraph2D(primary_size);
+
+        TGraph *EventYZprimary  = new TGraph(primary_size);
+        TGraph *EventXZprimary = new TGraph(primary_size);
         Event3dPrimary->SetName("Event3dPrimary");
         EventYZprimary->SetName("EventYZprimary");
         EventXZprimary->SetName("EventXZprimary");
+
+        for (int ipoint = 0 ; ipoint < primary_size;  ipoint++){
+          Event3dPrimary->SetPoint(ipoint, (*track_zpos)[reco_primary][ipoint],
+            (*track_xpos)[reco_primary][ipoint],(*track_ypos)[reco_primary][ipoint]);
+          EventXZprimary->SetPoint(ipoint, (*track_zpos)[reco_primary][ipoint],
+            (*track_xpos)[reco_primary][ipoint]);
+          EventYZprimary->SetPoint(ipoint, (*track_zpos)[reco_primary][ipoint],
+            (*track_ypos)[reco_primary][ipoint]);
+        }
 
 
         //std::cout << "primary : " << reco_primary << std::endl;
@@ -266,7 +280,7 @@ void EventSummary::Loop()
           LegendXZ->AddEntry(EventXZprimary,"Primary (No Inelastic)", "l");
         }
 
-        //using a 2 point Tgraph2D to set limits on wire displays
+        // ######### using a 2 point Tgraph2D to set limits on wire displays
         pad1->cd();
         inductionHits->SetTitle("");
         wirePlotLims1->GetXaxis()->SetTitle("Wire ");
@@ -274,9 +288,11 @@ void EventSummary::Loop()
         wirePlotLims1->Draw("P");
         inductionHits->Draw("PCOLZ SAME");
         inductionHits->GetHistogram()->SetMinimum(0);
-        inductionHits->GetHistogram()->SetMaximum(180);
+        //inductionHits->GetHistogram()->SetMaximum(180);
 
-        // Setting limits on 2D reconstructed track plots
+        // ######## Setting limits on 2D reconstructed track plots
+
+
         EventYZprimary->GetXaxis()->SetLimits(-5,90);                 // along X
         EventYZprimary->GetHistogram()->SetMaximum(25.);   // along          
         EventYZprimary->GetHistogram()->SetMinimum(-25.);  //   Y     
@@ -291,7 +307,8 @@ void EventSummary::Loop()
         EventXZother->GetHistogram()->SetMaximum(55);   // along          
         EventXZother->GetHistogram()->SetMinimum(-5);  //   Y     
 
-        
+        EventXZprimary->SetMarkerStyle(6);
+        EventYZprimary->SetMarkerStyle(6);
 
         if (secondaries_size > 0){
           Legend3d->AddEntry(Event3dOther,"Secondaries", "l");
@@ -300,6 +317,7 @@ void EventSummary::Loop()
         }
 
         pad1->SetTheta(90.); pad1->SetPhi(0.001);
+        pad1->SetFrameFillColorAlpha(kAzure+7);
 
         pad5->cd();
         collectionHits->SetTitle("");
@@ -314,13 +332,14 @@ void EventSummary::Loop()
         //colPalette->GetAxis()->SetRangeUser(0,200);
         //gPad->Update();
         collectionHits->GetHistogram()->SetMinimum(0);
-        collectionHits->GetHistogram()->SetMaximum(180);
+        //collectionHits->GetHistogram()->SetMaximum(180);
             
         if (secondaries_size > 0){//EventYZother->Draw("psame");}
         }
         if (!isMC){//EventYZwc->Draw("psame");}
         }
         pad5->SetTheta(90.); pad5->SetPhi(0.001);
+        pad5->SetFrameFillColor(kAzure+7);
 
         pad3->cd();
         TF1 *res_fx = new TF1("res_fx","[0]* x**([1])", 0, 90);
@@ -381,8 +400,8 @@ void EventSummary::Loop()
 
         Event3dPrimary->SetMarkerStyle(6);
         if(isInelastic){
-          Event3dPrimary->SetMarkerColor(3);
-          Event3dPrimary->SetLineColor(3);
+          Event3dPrimary->SetMarkerColor(8);
+          Event3dPrimary->SetLineColor(8);
           Legend3d->AddEntry(IntPoint,"interaction point", "p");
           IntPoint->Draw("P SAME");
           IntPoint->SetName("IntPoint");
@@ -420,8 +439,8 @@ void EventSummary::Loop()
         if (!isMC){wcPosXZ->Draw("psame");}
 
         if(isInelastic){
-          EventXZprimary->SetMarkerColor(3);
-          EventXZprimary->SetLineColor(3);
+          EventXZprimary->SetMarkerColor(8);
+          EventXZprimary->SetLineColor(8);
           LegendXZ->AddEntry(IntPointXZ,"interaction point", "p");
           IntPointXZ->Draw("P SAME");
           //IntPointXZ->SetName("IntPointXZ");
@@ -448,8 +467,8 @@ void EventSummary::Loop()
 
         if(isInelastic){
 
-          EventYZprimary->SetMarkerColor(3);
-          EventYZprimary->SetLineColor(3);
+          EventYZprimary->SetMarkerColor(8);
+          EventYZprimary->SetLineColor(8);
           LegendYZ->AddEntry(IntPointYZ,"interaction point", "p");
           IntPointYZ->Draw("P SAME");
           //IntPointYZ->SetName("IntPointYZ");
@@ -481,15 +500,32 @@ void EventSummary::Loop()
         char topologytext[50];
         sprintf(topologytext, "Inelastic topology type: %d", Int_type);
 
+        char selCritText[50];
+
+        if(Int_type == 1 ){
+          sprintf(selCritText, "Kink Angle = %0.3f deg", selCrit);
+        }
+        else if(Int_type == 2 ){
+          sprintf(selCritText, "Average End dE/dx = %0.3f MeV", selCrit);
+        }
+        else{sprintf(selCritText, "Number of branches = %0.f", selCrit);
+
+        }
+
+
 
         
         pt->AddText(eventtext);
         pt->AddText(efieldtext);
-        if (Int_type > 0) {pt->AddText(topologytext);}
+        if (Int_type > 0) {
+          pt->AddText(topologytext);
+          pt-> AddText(selCritText);}
         //pt->AddText(beamPtext);
         pt->AddText(initialKEtext);
-        if(IntKE != -1 ){pt->AddText(intKEtext);}
+        pt->AddText(intKEtext);
         pt->Draw();
+
+
 
         // gPad->Modified(); 
         gPad->Update();

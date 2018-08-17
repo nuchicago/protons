@@ -146,6 +146,7 @@ ProtonXsec::ProtonXsec( char* jobOptionsFile ) : LArIATAnalysis( jobOptionsFile 
   
   verbose = UI->verbose;
   isMC = UI->isMC;
+  bypassMassCut =  UI->bypassMassCut;
   
 }
 
@@ -178,15 +179,18 @@ void ProtonXsec::AnalyzeFromNtuples(){
 
   // For individual event plotting mode (plotIndividual)
 
-  std::vector<double> total_dedx_v;
-  std::vector<double> total_res_v;
-  TGraph gtotal_res_dedx_item;
-  TGraph * gtotal_res_dedx;
+  //std::vector<double> total_dedx_v;
+  //std::vector<double> total_res_v;
+  //TGraph gtotal_res_dedx_item;
+  //TGraph * gtotal_res_dedx;
 
 
 
   // ### some variables that are needed for the xs calc ###
   double z2 = UI->zSlabSize; //<-- slab size. need to move this to jobOptions
+
+  // EventSelector Options in a vector
+  std::vector<double> ESoptions = {static_cast<double> (verbose), UI->dedxNoBraggMax,UI->branchMaxDist, UI->clusterMaxDist};
 
   
   // globals move later...
@@ -238,6 +242,11 @@ void ProtonXsec::AnalyzeFromNtuples(){
   TH1D *BeamToF = new TH1D("BeamToF","Incoming Particle Momentum",100,0,100);
 
   TH2D * delXYHist =  new TH2D("delXYHist","tpc to wc delta x",200,-100,100,200,-100,100);
+  //TH1D * delXYHistPx =  new TH1D("delXYHistPx","tpc to wc delta x",200,-100,100,200,-100,100);
+  //TH1D * delXYHistPy =  new TH1D("delXYHistPy","tpc to wc delta x",200,-100,100,200,-100,100);
+
+
+
   TH2D *BadTrackHist =  new TH2D("BadTrackHist","non-selected tracks",200,-100,100,200,-100,100);
   TH2D *delBadTrackHist =  new TH2D("delBadTrackHist","non-selected tracks",200,-100,100,200,-100,100);
   TH2D *delPileupHist =  new TH2D("delPileupHist","Pileup Track difference",200,-100,100,200,-100,100);
@@ -257,8 +266,10 @@ void ProtonXsec::AnalyzeFromNtuples(){
   TH1D *BeamMassCutHist = new TH1D("BeamMassCutHist","Beamline particle Mass - after Cut", 100, 0,3000);
   TH1D *primary_dedx = new TH1D("primary_dedx","primary track dE/dx", 400, 0,40);
   
+  //plots for EventSelection Branches
 
-
+  TH1D * BranchDistHist = new TH1D("BranchDistHist", "Inelastic Event Branch Distance",50, 0,25);
+  TH1D * ClusterDistHist = new TH1D("ClusterDistHist", "Additional Branch Distance (Type 4)",50, 0,25);
   // ## plot markers for cuts
 
   TLine  *MassMinLine =  new TLine(0,UI->MassCutMin, 100, UI->MassCutMin);
@@ -277,34 +288,52 @@ void ProtonXsec::AnalyzeFromNtuples(){
   TH1D *hreco_intke_eff = new TH1D("hreco_intke_eff", "interaction selection efficiency", 20, 0, 1000);
   TH1D *hreco_incke_eff = new TH1D("hreco_incke_eff", "incident selection efficiency", 20, 0, 1000);
 
-  if(UI->plotIndividualSet){
-
-  }
   // ## looping once to find Beamline center ##
+
+  if(verbose){std::cout << "num entries in file  = " << nentries << std::endl;}
+  if(verbose){std::cout << "num events to process  = " << numEventsToProcess << std::endl;}
+  /*for (Long64_t jentry=0; jentry < numEventsToProcess && jentry < nentries; jentry++) {
+
+    if(verbose){std::cout<< "test bare loop Entry # " << jentry<< std::endl;}
+  }*/
+
+
+
+
 
   if(!isMC){
   for (Long64_t jentry=0; jentry < numEventsToProcess && jentry < nentries; jentry++) {
 
-    
+    if(verbose){std::cout<< "\nFirst loop Entry # " << jentry<< std::endl;}
     Long64_t ientry = tuple->LoadTree(jentry);
-    if (ientry < 0){continue;}
+    if(verbose){std::cout << "num events to process  = " << numEventsToProcess << "\n" << std::endl;}
+    if (ientry < 0){std::cout << "\n #####ientry < 0 continue #### \n" << std::endl;
+      continue;}
     Long64_t nb = 0;
     nb = tuple->GetEntry(jentry);
+    if(verbose){std::cout << "num events to process  = " << numEventsToProcess << "\n" << std::endl;}
     int numEnteringTracks = 0;
     int best_candidate = -1;
+    if(verbose){std::cout << "num wc tracks = " << num_wctracks << std::endl;}
     wctrkNumHist->Fill(num_wctracks);
 
-      if (num_wctracks == 1){
-          double ParticleMass = -9999999. ;
-          
-          bool isProton = BS->MassCut(wctrk_momentum[0], tofObject[0], ParticleMass, UI->MassCutMin, UI->MassCutMax);
-          
 
-          if(!isProton){continue;}
+      if (num_wctracks != 1){
+        if(verbose){std::cout << "num events to process  = " << numEventsToProcess << "\n" << std::endl;}
+        continue;}
+      else{
+          double ParticleMass = -9999999. ;
+          bool isProton = BS->MassCut(wctrk_momentum[0], tofObject[0], ParticleMass, UI->MassCutMin, UI->MassCutMax);
+          if(verbose){std::cout << "particle mass = " << ParticleMass<<  std::endl;}
+          if(!(bypassMassCut)){
+            if(!isProton){continue;}
+          }
 
         wctrkPositionXY->Fill(wctrk_XFace[0],wctrk_YFace[0]);
+        if(verbose){std::cout << "wctrk X,Y= " << wctrk_XFace[0] << " , " << wctrk_YFace[0]  << std::endl;}
         BeamMomentum->Fill(wctrk_momentum[0]);
         BeamToF->Fill(tofObject[0]);
+        if(verbose){std::cout << "ToF = " << tofObject[0] << std::endl;}
 
         std::vector <double> wctpc_mvect = BS->dataTPCPrimary(wctrk_XFace[0],wctrk_YFace[0], wctrk_theta[0],
           wctrk_phi[0],track_xpos,track_ypos, track_zpos, ntracks_reco, UI->zTPCCutoff,
@@ -313,33 +342,44 @@ void ProtonXsec::AnalyzeFromNtuples(){
 
 
         if(best_candidate != -1){
-
             delXYHist->Fill(wctpc_mvect[1],wctpc_mvect[2]);
             tpcInTracksXY->Fill((*track_xpos)[best_candidate][0],
             (*track_ypos)[best_candidate][0]);
             wctrkSelectedXY->Fill(wctrk_XFace[0],wctrk_YFace[0]);
                      
           }
+
+        if(verbose){std::cout << "num events to process  = " << numEventsToProcess << "\n" << std::endl;}
         }
       }
     }
   // End of beam centering loop
+
     // setting beam center values
     double xMeanTPCentry = delXYHist->GetMean(1);
     double yMeanTPCentry = delXYHist->GetMean(2);
 
+    if(verbose){std::cout << "num entries in file  = " << nentries << std::endl;}
+    if(verbose){std::cout << "num events to process  = " << numEventsToProcess << std::endl;}
+
   // ## event loop ##
+    if(verbose){std::cout << "Starting main loop" << std::endl;
+    std::cout << "x Mean cut" << xMeanTPCentry<< std::endl;
+    std::cout << "y Mean cut" << yMeanTPCentry<< std::endl;
+  }
   for (Long64_t jentry=0; jentry < numEventsToProcess && jentry < nentries; jentry++){
     
     Long64_t ientry = tuple->LoadTree(jentry); 
-    if (ientry < 0){continue;}
+    if (ientry < 0){
+      continue;}
     Long64_t nb = 0;
     nb = tuple->GetEntry(jentry);
     int numEnteringTracks = 0;
     int reco_primary = -1;
     numEventsStart++;
     if(verbose){printEvent();}
-    bool found_primary = false; 
+    bool found_primary = false;
+    bool passed_geo_cuts = true;
     if(!isMC){
       if (num_wctracks !=1){continue;}
       else{
@@ -351,18 +391,19 @@ void ProtonXsec::AnalyzeFromNtuples(){
           bool isProton = BS->MassCut(wctrk_momentum[0], tofObject[0], ParticleMass, UI->MassCutMin, UI->MassCutMax);
           BeamMassHist->Fill(ParticleMass);
           if(!isProton){
-              for(int inTrack = 0; inTrack < ntracks_reco; inTrack++ ){
+            for(int inTrack = 0; inTrack < ntracks_reco; inTrack++ ){
               delPileupHist->Fill(wctrk_XFace[0] - (*track_xpos)[inTrack][0],
                           wctrk_YFace[0] - (*track_ypos)[inTrack][0]);
               PileupHist->Fill((*track_xpos)[inTrack][0],
                             (*track_ypos)[inTrack][0]);
+            }
+            if(!(bypassMassCut)){continue;}
           }
-            continue;}
 
-
-
-          BeamMassCutHist->Fill(ParticleMass);
-          numMassCut++;
+          if (isProton){
+            BeamMassCutHist->Fill(ParticleMass);
+            numMassCut++;
+          }
           std::vector <double> MinVector = BS->dataTPCPrimary(wctrk_XFace[0],wctrk_YFace[0], wctrk_theta[0], wctrk_phi[0],track_xpos,
           track_ypos, track_zpos, ntracks_reco, UI->zTPCCutoff,reco_primary, numEnteringTracks);
 
@@ -372,37 +413,41 @@ void ProtonXsec::AnalyzeFromNtuples(){
             if(verbose){std::cout << "No Valid Primary \n" << std::endl;}
           }
           else{ 
-            numZcutoff++;
+            if (isProton){numZcutoff++;}
 
               if((sqrt(pow((MinVector[1] - xMeanTPCentry),2) + pow((MinVector[2] - yMeanTPCentry),2)))> UI-> rCircleCut) {
                   if(verbose){std::cout << "No Valid Primary \n" << std::endl;}
-                  continue;}
+                  passed_geo_cuts = false;
+                  if(!(bypassMassCut)){continue;}
+                }
               else{
+                if(isProton){
                   xyDeltaCut++;
                   int numTracksSel = 0;
-                for (int inTrack = 0; inTrack < ntracks_reco; inTrack++ ){
-                  if((*track_zpos)[inTrack][0] < UI->zTPCCutoff){
-                    numTracksSel++;
-                    tpcInTracksZ->Fill((*track_zpos)[inTrack][0]);
-                    InTrackLength->Fill((*track_length)[inTrack]);
-                    
-                    if (inTrack != reco_primary){
-                      /*delPileupHist->Fill(wctrk_XFace[0] - (*track_xpos)[inTrack][0],
-                          wctrk_YFace[0] - (*track_ypos)[inTrack][0]);
-                      PileupHist->Fill((*track_xpos)[inTrack][0],
-                          (*track_ypos)[inTrack][0]);*/
-                      BadTrackHist->Fill((*track_xpos)[inTrack][0],(*track_ypos)[inTrack][0]);
-                      delBadTrackHist->Fill(wctrk_XFace[0] - (*track_xpos)[inTrack][0],
-                          wctrk_YFace[0] - (*track_ypos)[inTrack][0]);
-                      BadTrackLength->Fill((*track_length)[inTrack]);
-                      BadTrackStartZ->Fill((*track_zpos)[inTrack][0]);
-                    }
-                    if(inTrack == reco_primary){
-                      PrimaryLength->Fill((*track_length)[inTrack]);
-                      PrimaryStartZ->Fill((*track_zpos)[inTrack][0]);
+                  for (int inTrack = 0; inTrack < ntracks_reco; inTrack++ ){
+                    if((*track_zpos)[inTrack][0] < UI->zTPCCutoff){
+                      numTracksSel++;
+                      tpcInTracksZ->Fill((*track_zpos)[inTrack][0]);
+                      InTrackLength->Fill((*track_length)[inTrack]);
+                      
+                      if (inTrack != reco_primary){
+                        /*delPileupHist->Fill(wctrk_XFace[0] - (*track_xpos)[inTrack][0],
+                            wctrk_YFace[0] - (*track_ypos)[inTrack][0]);
+                        PileupHist->Fill((*track_xpos)[inTrack][0],
+                            (*track_ypos)[inTrack][0]);*/
+                        BadTrackHist->Fill((*track_xpos)[inTrack][0],(*track_ypos)[inTrack][0]);
+                        delBadTrackHist->Fill(wctrk_XFace[0] - (*track_xpos)[inTrack][0],
+                            wctrk_YFace[0] - (*track_ypos)[inTrack][0]);
+                        BadTrackLength->Fill((*track_length)[inTrack]);
+                        BadTrackStartZ->Fill((*track_zpos)[inTrack][0]);
+                      }
+                      if(inTrack == reco_primary){
+                        PrimaryLength->Fill((*track_length)[inTrack]);
+                        PrimaryStartZ->Fill((*track_zpos)[inTrack][0]);
+                      }
                     }
                   }
-                }
+                
                 numTracksSelHist->Fill(numTracksSel);
                 tpcPhiHist->Fill(UtilityFunctions::getTrackPhi(reco_primary,track_xpos,track_ypos));
                 if (wctrk_phi[0] < 0){
@@ -413,11 +458,20 @@ void ProtonXsec::AnalyzeFromNtuples(){
                 wcThetaHist->Fill(wctrk_theta[0]);
                 delThetaHist->Fill(MinVector[3]);
                 delPhiHist->Fill(MinVector[4]);
-                
-                if(MinVector[3] > UI->ThetaCut){continue;}
-                else{numThetaCut++;
-                  if(MinVector[4] > UI->PhiCut){continue;}
-                  else{numPhiCut++;}
+                }
+                if(MinVector[3] > UI->ThetaCut){
+                  passed_geo_cuts = false;
+                  if(!(bypassMassCut)){continue;}
+                }
+                else{
+                  if (isProton){numThetaCut++;}
+                  if(MinVector[4] > UI->PhiCut){
+                    passed_geo_cuts = false;
+                    if (!(bypassMassCut)){continue;}
+                  }
+                  else{
+                    if(isProton){numPhiCut++;}
+                  }
                 }
               }
             }
@@ -437,12 +491,12 @@ void ProtonXsec::AnalyzeFromNtuples(){
 
 
     // ## grabbing interaction point ##
-    double temp[5];
+    double temp[6];
     double* candidate_info = ES->findInt(temp, reco_primary, ntracks_reco, 
                                             ntrack_hits, track_xpos, track_ypos, track_zpos,
                                             track_end_x, track_end_y, track_end_z,
                                             col_track_hits, col_track_dedx, col_track_pitch_hit,
-                                            col_track_x, col_track_y, col_track_z);
+                                            col_track_x, col_track_y, col_track_z, ESoptions);
 
     // ## grabbing what will be histogram entries ##
     double initial_ke = 99999; //<-- setting to a constant to do dev. needs to be WC info
@@ -512,13 +566,31 @@ void ProtonXsec::AnalyzeFromNtuples(){
 
   if(UI->SelEventListSet){IDfile << jentry << "\t" << reco_primary << "\t" << candidate_info[0] << 
     "\t" << candidate_info[1]  << "\t" << candidate_info[2]  << "\t" << candidate_info[3] << "\t " <<
-    candidate_info[4] << "\t" << initial_ke << "\t" << intKE <<"\n";}
+    candidate_info[4] << "\t"<< candidate_info[5] << "\t" << initial_ke << "\t" << intKE <<"\n";}
+
+
+
+
 
 
   
   }//end of event Loop
 
+    std::vector<double> BranchDistVect = ES->BranchDistVect;
+    std::vector<double> ClusterDistVect = ES->ClusterDistVect;
 
+    for(int i = 0; i < ES->BranchDistVect.size(); i++){
+      BranchDistHist->Fill((ES->BranchDistVect)[i]);
+    }
+    for(int i = 0; i < ClusterDistVect.size(); i++){
+      ClusterDistHist->Fill((ES->ClusterDistVect)[i]);
+    }
+
+
+
+
+
+  
   // #####################################################################################
   // #####################################################################################
   // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=- 
@@ -638,17 +710,21 @@ void ProtonXsec::AnalyzeFromNtuples(){
   }
 
 
-  if(UI->plotIndividualSet){
-    gtotal_res_dedx_item = TGraph(total_res_v.size(),&total_res_v[0],&total_dedx_v[0]);
-    gtotal_res_dedx_item.SetName("gtotal_res_dedx");
-    gtotal_res_dedx = &gtotal_res_dedx_item;
-  }
+  //if(UI->plotIndividualSet){
+    //gtotal_res_dedx_item = TGraph(total_res_v.size(),&total_res_v[0],&total_dedx_v[0]);
+    //gtotal_res_dedx_item.SetName("gtotal_res_dedx");
+    //gtotal_res_dedx = &gtotal_res_dedx_item;
+  //}
   
   
   if(isMC){
 
     if(UI->rootOutputFileSet){
       outputFile->cd();
+
+      // ## EventSelector histos ##
+      BranchDistHist->Write();
+      ClusterDistHist->Write();
        
       // ## xs histos ##
       hreco_initialKE->Write();
@@ -667,7 +743,9 @@ void ProtonXsec::AnalyzeFromNtuples(){
   else if (!(isMC)){
     
     if(UI->rootOutputFileSet){
+      if(verbose){std::cout << "Writing to outputFile" << std::endl;}
       outputFile->cd();
+        
     
       PrimaryLength->Write();
       PrimaryStartZ->Write();
@@ -698,10 +776,13 @@ void ProtonXsec::AnalyzeFromNtuples(){
       tpcThetaHist->Write();
       wcThetaHist->Write();
       primary_dedx->Write();
+
+      // ## EventSelector histos ##
+      BranchDistHist->Write();
+      ClusterDistHist->Write();
       
-      if(UI->plotIndividualSet){gtotal_res_dedx->Write();}
-
-
+      //if(UI->plotIndividualSet){gtotal_res_dedx->Write();}
+      if(verbose){std::cout << "Writing xs histos" << std::endl;}
       // ## xs histos ##
       hreco_initialKE->Write();
       hreco_incke->Write();

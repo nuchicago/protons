@@ -9,8 +9,8 @@ inputFiles files/MC_wire_ntuples.dat
 Output File Lists - .root and PostScript
 ----------------------------------------------------- 
 
-rootOutputFile files/XsecOutput.root
-psOutputFile files/XSecOutput.ps
+rootOutputFile files/XsecOutputMC.root
+psOutputFile files/XSecOutputMC.ps
 correctionFile files/corrections/xsCorrection.root
 SelEventList files/PrimaryID_MC.txt
 
@@ -20,7 +20,8 @@ SelEventList files/PrimaryID_MC.txt
 -----------------------------------------------------
  verbosity
 -----------------------------------------------------
-verbose 0
+verbose 1
+bypassMassCut 0
 
 -----------------------------------------------------
  number of event to process
@@ -49,6 +50,8 @@ rCircleCut 5
 ZSlabSize 0.5
 MassCutMin 700
 MassCutMax 1200 
-
+branchMaxDist 5
+dedxNoBraggMax 13
+clusterMaxDist 5
 
 

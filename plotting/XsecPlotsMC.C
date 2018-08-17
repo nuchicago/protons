@@ -2,7 +2,7 @@ void XsecPlotsMC(){
 
   gROOT->SetBatch(true);
 
-  TFile* XsecFile = new TFile("../files/MCOutput.root","READ");
+  TFile* XsecFile = new TFile("../files/XSecOutputMC.root","READ");
   gStyle->SetOptStat("emrou");
 
   TCanvas *c1 = new TCanvas("c1","c1",1000,1000);
@@ -39,7 +39,7 @@ void XsecPlotsMC(){
 
   c1->Print("images/MC/hreco_intke.png","png");
 
-
+  /*
   TH1D *tpcInTracksZ = (TH1D*)XsecFile->Get("tpcInTracksZ");
   
   tpcInTracksZ->GetXaxis()->SetTitle("Z [cm]");
@@ -77,5 +77,19 @@ void XsecPlotsMC(){
 
   primary_dedx->GetXaxis()->SetTitle("dE/dx");
   primary_dedx->Draw("");
-  c1->Print("images/MC/primary_dedx.png","png");
+  c1->Print("images/MC/primary_dedx.png","png");*/
+
+  TH1D *BranchDistHist = (TH1D*)XsecFile->Get("BranchDistHist");
+  
+  BranchDistHist->GetXaxis()->SetTitle("r [cm]");
+  BranchDistHist->GetYaxis()->SetTitle("");
+  BranchDistHist->Draw("");
+  c1->Print("images/MC/BranchDistHist.png","png");
+
+  TH1D *ClusterDistHist = (TH1D*)XsecFile->Get("ClusterDistHist");
+  
+  ClusterDistHist->GetXaxis()->SetTitle("r [cm]");
+  ClusterDistHist->GetYaxis()->SetTitle("");
+  ClusterDistHist->Draw("");
+  c1->Print("images/MC/ClusterDistHist.png","png");
 }
