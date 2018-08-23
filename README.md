@@ -8,8 +8,13 @@ mkdir lib
 make clean
 make
 make
-./bin/ProtonXsec.exe jobOptions/jobOptions.example.in
+./bin/ProtonXsec.exe jobOptions/jobOptions.wirehit.in
 
+
+# general info
+
+anatree root file location is specified in files/Data_wire_ntuples.dat
+modify this file to use different anaTree.root
 
 # From points.C ----> modules
 

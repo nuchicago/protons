@@ -12,3 +12,5 @@ lib
 *.sublime-project
 *.sublime-workspace
 
+files/PrimaryID.txt
+files/PrimaryID_MC.txt

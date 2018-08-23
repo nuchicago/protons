@@ -18,6 +18,8 @@ namespace UtilityFunctions {
   double getTrackPhi(   int trackId,
                         std::vector< std::vector<double> > *track_xpos,
                         std::vector< std::vector<double> > *track_ypos);
+  double pointDistance(double x1, double y1, double z1, 
+                        double x2, double y2, double z2);
 
 };
 

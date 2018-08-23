@@ -97,6 +97,8 @@ void UserInputs::initialize( ){
   outputFileNameSet = false;
   SelEventListSet = false;
   modelSet = false;
+  plotIndividualSet = false;
+  RawWireVar = 0;
 
   printMod = 50000;
 
@@ -106,6 +108,15 @@ void UserInputs::initialize( ){
   numEventsToProcess = 10;
 
   zSlabSize = 0.5;
+  zSlabSizeSet = false;
+  branchMaxDist = 99.;
+  branchMaxDistSet = false;
+  dedxNoBraggMax = 13.;
+  dedxNoBraggMaxSet = false;
+  clusterMaxDist =  99.;
+  clusterMaxDistSet = false;
+
+
 
   zBeamCutoffSet = false;
   zBeamCutoff = 2;
@@ -126,7 +137,7 @@ void UserInputs::initialize( ){
 
   
 
-
+  bypassMassCut = 0;
   verbose = 0;
 
 
@@ -190,6 +201,12 @@ void UserInputs::readIoFiles( ifstream *jobOptionsFile ){
     outputFileNameSet = true;
   }
 
+    if( paramLookUp( jobOptionsFile, (char*)"plotIndividual" ) ){
+    plotIndividual = new char[1000];
+    *jobOptionsFile >> plotIndividual;
+    plotIndividualSet = true;
+  }
+
   if( paramLookUp( jobOptionsFile, (char*)"printMod" ) ){
     *jobOptionsFile >> printMod;
   }
@@ -222,6 +239,11 @@ void UserInputs::readDataSetParams( ifstream *jobOptionsFile ){
     *jobOptionsFile >> Model;
     modelSet = true;
   } 
+
+  if( paramLookUp( jobOptionsFile, (char*)"RawWireVar" ) ){
+    *jobOptionsFile >> RawWireVar;
+  }
+
 
 
   //if( paramLookUp( jobOptionsFile, (char*)"target" ) ){
@@ -265,8 +287,14 @@ void UserInputs::readDataSetParams( ifstream *jobOptionsFile ){
   //  potEmptySet = true;
   //}
 
-  if( paramLookUp( jobOptionsFile, (char*)"verbose" ) )
+  if( paramLookUp( jobOptionsFile, (char*)"verbose" ) ){
     *jobOptionsFile >> verbose;
+  }
+
+  if( paramLookUp( jobOptionsFile, (char*)"bypassMassCut" ) ){
+    *jobOptionsFile >> bypassMassCut;
+  }
+
 
 }
 
@@ -505,10 +533,7 @@ void UserInputs::readAnalysisCuts( ifstream *jobOptionsFile ){
     zTPCCutoffSet = true;
   }
 
-  if( paramLookUp( jobOptionsFile, (char*)"zSlabSize" ) ){
-    *jobOptionsFile >> zSlabSize;
-    zSlabSizeSet = true;
-  }
+
   if( paramLookUp( jobOptionsFile, (char*)"rCircleCut" ) ){
     *jobOptionsFile >> rCircleCut;
     rCircleCutSet = true;
@@ -530,6 +555,28 @@ void UserInputs::readAnalysisCuts( ifstream *jobOptionsFile ){
     ThetaCutSet = true;
   }
   
+    if( paramLookUp( jobOptionsFile, (char*)"zSlabSize" ) ){
+    *jobOptionsFile >> zSlabSize;
+    zSlabSizeSet = true;
+  }
+  
+  if( paramLookUp( jobOptionsFile, (char*)"dedxNoBraggMax" ) ){
+    *jobOptionsFile >> dedxNoBraggMax;
+    dedxNoBraggMaxSet = true;
+
+  }
+
+  if( paramLookUp( jobOptionsFile, (char*)"clusterMaxDist" ) ){
+    *jobOptionsFile >> clusterMaxDist;
+    clusterMaxDistSet = true;
+
+  }
+
+    if( paramLookUp( jobOptionsFile, (char*)"branchMaxDist" ) ){
+    *jobOptionsFile >> branchMaxDist;
+    branchMaxDistSet = true;
+
+  }
   //if( paramLookUp( jobOptionsFile, (char*)"chi2Vertex4MatchCut" ) ){
   //  *jobOptionsFile >> chi2Vertex4MatchCut;
   //  chi2Vertex4MatchCutSet = true;
@@ -954,6 +1001,8 @@ void UserInputs::printUserInputs( ){
   if( SelEventListSet ) cout << "  Selected Event list file = " << SelEventList << endl;
   if( psOutputFileSet)    cout << "  PostScript output file = " << psOutputFile << endl;
   if( outputFileNameSet ) cout << "  Output files name = " << outputFileName << endl;  
+  if( plotIndividualSet ) cout << "  Printing individual event plots to = " << plotIndividual << endl;  
+
   //cout << endl << endl;
   //cout << "------------- Analysis Methods -------" << endl;
   //cout << "  Pass over the data " << (int)multiplePass + 1 << " times" << endl;
@@ -965,7 +1014,7 @@ void UserInputs::printUserInputs( ){
   cout << "  Entering track Z cut = " << zTPCCutoff << " cm" <<  endl;
   cout << "  Entering track circular cut = " << rCircleCut << " cm" <<  endl;
   cout << "  Mass cut range = (" << MassCutMin<< "," << MassCutMax<<") MeV" <<  endl;
-  cout <<"  Angle cuts: Theta = " << ThetaCut << " rad ; Phi = " << PhiCut <<" rad" << endl;
+  cout << "  Angle cuts: Theta = " << ThetaCut << " rad ; Phi = " << PhiCut <<" rad" << endl;
   //cout << "  Beam particle radius cut = " << mwpcTargRadiusCut << " cm." << endl;
   //cout << "  Beam particle angle cut = " << mwpcTargAngleCut << " mrad" << endl;
   //cout << "  t0 cut = " << t0Cut << " ns" << endl;
@@ -973,6 +1022,7 @@ void UserInputs::printUserInputs( ){
 
   cout << "------- XS Event Selection -------" << endl;
   cout << "  Slab Size Z = " << zSlabSize << " cm" << endl;
+  cout << "  Branch Maximum distance  = " << branchMaxDist << "cm" << endl;
   //if( trackTypeSet ) cout << "  Reconstructing tracks using : " << trackType << endl;
   //else cout << "  Track reconstruction method not set" << endl; 
   //cout << "  Perform momentum scale shift for data: " << momScaleShift << endl;

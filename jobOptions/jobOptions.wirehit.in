@@ -3,7 +3,7 @@
  Input File Lists - these are ASCII files that 
   contain lists of ntuple files to be processed.
 -----------------------------------------------------
-inputFiles files/Data_ntuples.dat
+inputFiles files/Data_wire_ntuples.dat
 
 -----------------------------------------------------
 Output File Lists - .root and PostScript
@@ -11,36 +11,42 @@ Output File Lists - .root and PostScript
 
 rootOutputFile files/XsecOutput.root
 psOutputFile files/XSecOutput.ps
+SelEventList files/PrimaryID.txt
+
 
 
 
 -----------------------------------------------------
  verbosity
 -----------------------------------------------------
-verbose 0
+verbose 1
+bypassMassCut 0
 
 -----------------------------------------------------
  number of event to process
 -----------------------------------------------------
-events 4000
+
 
 -----------------------------------------------------
  Data Set description
 -----------------------------------------------------
-DataMC Data
-
+DataMC data
+RawWireVar 1
 
 ------------------------------------------------------
- Particle ID and PDF files
+ Beamline and Event Selection 
 ------------------------------------------------------
 
 
 zBeamCutoff 2
 zTPCCutoff 4
-rCircleCut 5
+rCircleCut 99
 ZSlabSize 0.5
 MassCutMin 700
-MassCutMax 1200 
+MassCutMax 1200
+branchMaxDist 5
+dedxNoBraggMax 13
+clusterMaxDist 5
 
 
 

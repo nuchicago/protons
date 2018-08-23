@@ -286,6 +286,12 @@ void LArIATAnalysis::bookNtuple( TChain* tuple, bool isMC ){
   tuple->SetBranchAddress("DMidPosZ", &DMidPosZ, &b_DMidPosZ);
   tuple->SetBranchAddress("InteractionPoint", &InteractionPoint, &b_InteractionPoint);
   tuple->SetBranchAddress("InteractionPointType", &InteractionPointType, &b_InteractionPointType);
+  tuple->SetBranchAddress("nhits", &nhits, &b_nhits);
+  tuple->SetBranchAddress("hit_wire", &hit_wire, &b_hit_wire);
+  tuple->SetBranchAddress("hit_time", &hit_time, &b_hit_time);
+  tuple->SetBranchAddress("hit_amp", &hit_amp, &b_hit_amp);
+
+
   if(!isMC){
     tuple->SetBranchAddress("wctrk_momentum", &wctrk_momentum, &b_wctrk_momentum);
     tuple->SetBranchAddress("wctrk_XFace", &wctrk_XFace, &b_wctrk_XFace);
@@ -334,7 +340,7 @@ void LArIATAnalysis::printEvent(){
 
 
   
-  cout << "run = " << run << ", subrun = " << subrun << ", event = " << event << ", Ntracks = " << ntracks_reco << ", wctrk_momentum = " << wctrk_momentum[0] << endl;
+  cout << "event = " << event << ", Ntracks = " << ntracks_reco << ", wctrk_momentum = " << wctrk_momentum[0] << endl;
 
   
 

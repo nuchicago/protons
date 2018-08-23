@@ -67,6 +67,8 @@ using std::vector;
 #include "TF1.h"
 #include "TF2.h"
 #include "TGraph.h"
+#include "TGraph2D.h"
+#include "TMultiGraph.h"
 #include "TVector.h"
 #include "TArray.h"
 #include "TLegend.h"

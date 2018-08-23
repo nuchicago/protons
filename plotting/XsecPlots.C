@@ -302,4 +302,9 @@ void XsecPlots(){
   wcThetaHist->Draw("");
   c1->Print("images/wcThetaHist.png","png");
 
+  TH1D *primary_dedx = (TH1D*)XsecFile->Get("primary_dedx");
+
+  primary_dedx->GetXaxis()->SetTitle("dE/dx");
+  primary_dedx->Draw("");
+  c1->Print("images/primary_dedx.png","png");
 }

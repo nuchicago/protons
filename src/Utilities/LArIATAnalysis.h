@@ -41,6 +41,7 @@ class LArIATAnalysis {
   UserInputs *UI;
   int verbose;
   bool isMC;
+  int bypassMassCut;
 
 
   //---------------------------------------------
@@ -201,8 +202,12 @@ class LArIATAnalysis {
   Int_t     num_tof_objects;  
   Double_t  tofObject[max_num_wctracks];
 
+  std::vector<int> nhits;
+  std::vector<float> hit_time;
+  std::vector<float> hit_amp;
+  std::vector<int> hit_wire;
+  //std::vector<float> hit_view;
 
-  
   // List of branches
   TBranch        *b_run;   //!
   TBranch        *b_subrun;   //!
@@ -305,6 +310,13 @@ class LArIATAnalysis {
   TBranch        *b_wctrk_phi;  
   TBranch        *b_num_wctracks;  //!
   TBranch        *b_tofObject;   //!
+  TBranch        *b_nhits;
+  TBranch        *b_hit_wire;
+  TBranch        *b_hit_time;
+  TBranch        *b_hit_amp;
+  //TBranch        *b_hit_view;
+
+
   
 };
 

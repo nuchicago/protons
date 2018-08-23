@@ -33,10 +33,13 @@ class UserInputs {
   bool outputFileNameSet;
   char *SelEventList;
   bool SelEventListSet;
+  char *plotIndividual;
+  bool plotIndividualSet;
 
   int printMod;
 
   int verbose;
+  int bypassMassCut;
   int numberIterations;
   bool multiplePass;
   char *correctionMethod;
@@ -53,6 +56,7 @@ class UserInputs {
   bool potTargetSet;
   int  potEmpty;
   bool potEmptySet;
+  int RawWireVar;
   
 
   //== BeamSelect Values
@@ -60,8 +64,7 @@ class UserInputs {
   double zBeamCutoff;
   bool zTPCCutoffSet;
   double zTPCCutoff;
-  double zSlabSize;
-  bool zSlabSizeSet;
+
   double rCircleCut;
   bool rCircleCutSet;
   double MassCutMin;
@@ -72,6 +75,19 @@ class UserInputs {
   bool ThetaCutSet;
   double PhiCut;
   bool PhiCutSet;
+
+  //== EventSelector Values
+
+  double zSlabSize;
+  bool zSlabSizeSet;
+  double branchMaxDist;
+  bool branchMaxDistSet;
+  double dedxNoBraggMax;
+  bool dedxNoBraggMaxSet;
+  double clusterMaxDist;
+  bool clusterMaxDistSet;
+
+
 
 
     

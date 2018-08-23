@@ -157,6 +157,9 @@ ProtonAnalyzerMC::ProtonAnalyzerMC( char* jobOptionsFile ) : LArIATAnalysis( job
 
 void ProtonAnalyzerMC::AnalyzeFromNtuples() {
 
+  // EventSelector UIoptions vector
+  std::vector<double> ESoptions = {static_cast<double>(verbose), UI->dedxNoBraggMax,UI->branchMaxDist, UI->clusterMaxDist};
+
 
   // globals move later...
   double mass = 938.57;
@@ -567,12 +570,12 @@ void ProtonAnalyzerMC::AnalyzeFromNtuples() {
 
 
     // ## grabbing interaction point ##
-    double temp[4];
+    double temp[6];
     double* candidate_info = ES->findInt(temp, reco_primary, ntracks_reco, 
                                             ntrack_hits, track_xpos, track_ypos, track_zpos,
                                             track_end_x, track_end_y, track_end_z,
                                             col_track_hits, col_track_dedx, col_track_pitch_hit,
-                                            col_track_x, col_track_y, col_track_z);
+                                            col_track_x, col_track_y, col_track_z, ESoptions);
 
     // ## comparing int candidate to g4 info ##
     bool signal = false;
