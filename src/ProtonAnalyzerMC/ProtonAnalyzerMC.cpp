@@ -173,6 +173,7 @@ void ProtonAnalyzerMC::AnalyzeFromNtuples() {
 
 
   // ## signal regions ##
+  int numInteractions = 0;
   bool sr;
   int n_true_none = 0; int n_true_one = 0; int n_true_more = 0;
   int n_reco_none = 0; int n_reco_one = 0; int n_reco_more = 0;
@@ -718,7 +719,7 @@ void ProtonAnalyzerMC::AnalyzeFromNtuples() {
       double int_candidate_z = candidate_info[3];
       // loop over slabs to find slab closest to interaction candidate
       double min_dist_int = 99;
-      for(int calo_slab = 0; calo_slab < calo_slab_KE.size(); calo_slab++){
+      for(unsigned int calo_slab = 0; calo_slab < calo_slab_KE.size(); calo_slab++){
         double calo_slab_x = calo_slab_xpos[calo_slab];  
         double calo_slab_y = calo_slab_ypos[calo_slab];  
         double calo_slab_z = calo_slab_zpos[calo_slab];  
@@ -761,6 +762,7 @@ void ProtonAnalyzerMC::AnalyzeFromNtuples() {
         // ## also need to check on non-physical entries (negative ?)
         // ### should probably also just grab any non terminating protons as interactions...
         hreco_intke->Fill(calo_slab_KE[calo_slab]);
+        numInteractions++;
         hreco_intke_sr->Fill(calo_slab_KE[calo_slab]);
         if(signal){
           hreco_intke_signal->Fill(calo_slab_KE[calo_slab]); 
@@ -994,6 +996,7 @@ void ProtonAnalyzerMC::AnalyzeFromNtuples() {
 
   // ## post event loop prinout ##
   std::cout<<"---------------- Loop Printout ------------------------\n";
+  std::cout<<"Num interactions: "<<numInteractions<<std::endl;
   std::cout<<"# d w/ ke >100\t\t | reco \t\t | true \t\t |\n";
   std::cout<<"zero \t\t\t | "<<n_reco_none<<" \t\t\t | "<<n_true_none<<"\t\t\t|\n";
   std::cout<<"one \t\t\t | "<<n_reco_one<<" \t\t\t | "<<n_true_one<<"\t\t\t|\n";

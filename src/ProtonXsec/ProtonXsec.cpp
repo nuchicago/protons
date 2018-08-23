@@ -165,7 +165,7 @@ void ProtonXsec::AnalyzeFromNtuples(){
   double numPhiCut = 0;
 
 
-
+  int numInteractions = 0;
 
 
   // ### some variables that are needed for the xs calc ###
@@ -252,6 +252,11 @@ void ProtonXsec::AnalyzeFromNtuples(){
   TH2D *hreco_unfolding_matrix_normalized = new TH2D("hreco_unfolding_matrix_normalized", "energy unfolding matrix", 20, 0, 1000, 20, 0, 1000);
   TH1D *hreco_intke_eff = new TH1D("hreco_intke_eff", "interaction selection efficiency", 20, 0, 1000);
   TH1D *hreco_incke_eff = new TH1D("hreco_incke_eff", "incident selection efficiency", 20, 0, 1000);
+
+  TH1D *hreco_folded_intke_signal = new TH1D("hreco_folded_intke_signal", "total-back", 20, 0, 1000);
+  TH1D *hreco_folded_incke_signal = new TH1D("hreco_folded_incke_signal", "total-back", 20, 0, 1000);
+  TH1D *hreco_unfolded_intke_signal = new TH1D("hreco_unfolded_intke_signal", "U(total-back)", 20, 0, 1000);
+  TH1D *hreco_unfolded_incke_signal = new TH1D("hreco_unfolded_incke_signal", "U(total-back)", 20, 0, 1000);
 
   // ## looping once to find Beamline center ##
 
@@ -403,7 +408,8 @@ void ProtonXsec::AnalyzeFromNtuples(){
     if(isMC){
       double first_reco_z = 99.;
       reco_primary = BS->isTPCPrimary(track_zpos, ntracks_reco, isMC, UI->zBeamCutoff, 
-        reco_primary, first_reco_z, verbose);}
+        reco_primary, first_reco_z, verbose);
+    }
     if(reco_primary == -1){continue;}//<- skipping events that didn't pass isTPCPrimary 
     else{ found_primary = true;}
 
@@ -416,7 +422,8 @@ void ProtonXsec::AnalyzeFromNtuples(){
                                             col_track_x, col_track_y, col_track_z);
 
     // ## grabbing what will be histogram entries ##
-    double initial_ke = 99999; //<-- setting to a constant to do dev. needs to be WC info
+    //double initial_ke = 99999; //<-- setting to a constant to do dev. needs to be WC info
+    double initial_ke = 0; //<-- setting to a constant to do dev. needs to be WC info
     std::vector<double> calo_slab_xpos;
     std::vector<double> calo_slab_ypos;
     std::vector<double> calo_slab_zpos;
@@ -451,7 +458,7 @@ void ProtonXsec::AnalyzeFromNtuples(){
         double calo_slab_z = calo_slab_zpos[calo_slab];  
         double dist_int_slab = sqrt( pow(int_candidate_x - calo_slab_x, 2) 
                                    + pow(int_candidate_y - calo_slab_y, 2) 
-                                   + pow(int_candidate_z - calo_slab_z, 2));
+                                   + pow(int_candidate_z - calo_slab_z, 2) );
         if(calo_slab_z < int_candidate_z){
           if(dist_int_slab < min_dist_int){
             min_dist_int = dist_int_slab;
@@ -468,6 +475,7 @@ void ProtonXsec::AnalyzeFromNtuples(){
       hreco_incke->Fill(calo_slab_KE[calo_slab]);
       if(calo_slab == calo_int_slab){
         hreco_intke->Fill(calo_slab_KE[calo_slab]);
+        numInteractions++;
       }//<-- End if this is the interacting slab
     }//<--End calo slab loop
 
@@ -497,7 +505,7 @@ void ProtonXsec::AnalyzeFromNtuples(){
   if(UI->isMC) {
 
     // ## should probably incorp this into the joboptions in a clever way -- ryan
-    TFile *mc_corrections = new TFile("files/corrections/xsCorrectionBertini.root"); 
+    TFile *mc_corrections = new TFile("files/corrections/xsCorrectionBinary.root"); 
 
     hreco_intke_background = (TH1D*)mc_corrections->Get("hreco_intke_background");
     hreco_incke_background = (TH1D*)mc_corrections->Get("hreco_incke_background");
@@ -505,11 +513,6 @@ void ProtonXsec::AnalyzeFromNtuples(){
     hreco_intke_eff = (TH1D*)mc_corrections->Get("hreco_int_eff");
     hreco_incke_eff = (TH1D*)mc_corrections->Get("hreco_inc_eff");
 
-    // ## temporary histograms ##
-    TH1D *hreco_folded_intke_signal = new TH1D("hreco_folded_intke_signal", "total-back", 20, 0, 1000);
-    TH1D *hreco_folded_incke_signal = new TH1D("hreco_folded_incke_signal", "total-back", 20, 0, 1000);
-    TH1D *hreco_unfolded_intke_signal = new TH1D("hreco_unfolded_intke_signal", "U(total-back)", 20, 0, 1000);
-    TH1D *hreco_unfolded_incke_signal = new TH1D("hreco_unfolded_incke_signal", "U(total-back)", 20, 0, 1000);
 
     // ## folded signal distributions ##
     for(int iBin = 0; iBin < hreco_intke->GetNbinsX(); iBin++){
@@ -589,6 +592,13 @@ void ProtonXsec::AnalyzeFromNtuples(){
     }
   }
 
+  if (isMC){
+    if(verbose > 0){
+      std::cout << "\n------- MC Selection Results -------\n"<< std::endl;
+      std::cout << "Number of interacting candidates: " << numInteractions << std::endl;
+    }
+  }
+
 
   
   
@@ -602,6 +612,10 @@ void ProtonXsec::AnalyzeFromNtuples(){
       hreco_initialKE->Write();
       hreco_incke->Write();
       hreco_intke->Write();
+      hreco_folded_intke_signal->Write(); 
+      hreco_folded_incke_signal->Write();
+      hreco_unfolded_intke_signal->Write(); 
+      hreco_unfolded_incke_signal->Write();
       hreco_xs->Write();
   }
 
