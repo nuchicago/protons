@@ -137,7 +137,7 @@ void UserInputs::initialize( ){
 
   
 
-  bypassMassCut = 0;
+  applyMassCut = 1;
   verbose = 0;
 
 
@@ -291,8 +291,8 @@ void UserInputs::readDataSetParams( ifstream *jobOptionsFile ){
     *jobOptionsFile >> verbose;
   }
 
-  if( paramLookUp( jobOptionsFile, (char*)"bypassMassCut" ) ){
-    *jobOptionsFile >> bypassMassCut;
+  if( paramLookUp( jobOptionsFile, (char*)"applyMassCut" ) ){
+    *jobOptionsFile >> applyMassCut;
   }
 
 

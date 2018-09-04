@@ -34,6 +34,73 @@ BeamSelector::BeamSelector(){
 //=============================================================================
 
 
+
+
+std::vector<double> BeamSelector::BeamCentering(double wc_x, double wc_y,// double wc_theta, double wc_phi,
+                  std::vector< std::vector<double> > *track_xpos,
+                  std::vector< std::vector<double> > *track_ypos,
+                  std::vector< std::vector<double> > *track_zpos, int ntracks_reco, std::vector<int> *ntrack_hits,
+                   double zPointCutoff,
+                   int& best_candidate){
+          //////////////////////////////////////////////////////////
+          //  finds closest track to Wire chamber projection
+          //
+          //
+          //
+          //
+          //
+          //  Returns: vector of doubles made up of
+          //      {trackID, 1st Z point index, 2nd Z point index, Last Z point Index,
+          //      WC to tpc track start distance in XY, angle between WC track and TPC track}
+          /////////////////////////////////////////////////////////
+
+
+        std::vector<double> centeringMatch;
+
+        for (int itrack = 0; itrack < ntracks_reco ;  itrack++ ){
+          //std::cout << "track : " << itrack  <<"ntrack_hits" << (*ntrack_hits)[itrack]<< std::endl;
+
+          std::vector<int> zIndices = UtilityFunctions::zOrderedTrack(track_zpos,itrack, ntrack_hits);
+
+          //std::cout << "loading zmin1 : "<< zIndices[0 ]<< std::endl;
+          double zmin1 = (*track_zpos)[itrack][zIndices[0]];
+          //std::cout << "loading zmin2 : "<< zIndices[1] << std::endl;
+          double zmin2 = (*track_zpos)[itrack][zIndices[1]];
+          //std::cout << "loading zlast : "<< zIndices[2] << std::endl;
+          double zmax = (*track_zpos)[itrack][zIndices[2]];
+
+          double rValueMin = 999.;
+          
+          double delXMin;
+          double delYMin;
+          double alphaMin;
+        
+          if(zmin1 < zPointCutoff){
+
+             //std::cout << "Calculating delX : " << itrack << std::endl;
+            double delX = wc_x - (*track_xpos)[itrack][zIndices[0]];
+            double delY = wc_y - (*track_ypos)[itrack][zIndices[0]];
+            //double delTheta = wc_theta - UtilityFunctions::getTrackTheta(mtrack, track_xpos,track_ypos,track_zpos);
+            //double delPhi;   ########reminder to reimplement angle.
+            double alpha = -999.;
+            double rValue = sqrt(pow(delX,2) + pow(delY,2));
+
+            
+
+            if(rValue < rValueMin){
+                rValueMin = rValue;
+                centeringMatch = {1.* itrack, 1.* zIndices[0], 1.* zIndices[1], 1.* zIndices[2], rValue, alpha};
+                best_candidate =  itrack;
+
+              }
+            }
+        //std::cout << "Moving to next tracl \n " << std::endl;
+      }
+      return centeringMatch;
+    }
+
+
+
 int BeamSelector::isTPCPrimary(std::vector<std::vector<double>> *track_zpos,int ntracks_reco,bool mc_mode, 
   double zPointCutoff, int& reco_primary, double& first_reco_z, int verbose){
 
@@ -190,10 +257,10 @@ double BeamSelector::getMCInitialKE(double initial_ke, unsigned int geant_list_s
 }
 
 
-double BeamSelector::getDataInitialKE(double initial_ke, double wctrk_momentum) {
+double BeamSelector::getDataInitialKE(double initial_ke, double wctrk_momentum, double ParticleMass) {
   
-  double mass = 938.57;
-  double wc_ke = sqrt(pow(mass, 2) + pow(wctrk_momentum, 2)) - mass;
+  //double mass = 938.57;
+  double wc_ke = sqrt(pow(ParticleMass, 2) + pow(wctrk_momentum, 2)) - ParticleMass;
   double ke_loss = 60;
   initial_ke = wc_ke - ke_loss;
 

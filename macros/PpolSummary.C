@@ -1,27 +1,14 @@
-#define EventSummary_cxx
-#include "EventSummary.h"
+#define PpolSummary_cxx
+#include "PpolSummary.h"
 #include <TH2.h>
-#include <TGraph2D.h>
-#include <TGraph.h>
-#include <TMultiGraph.h>
-#include <TPolyMarker.h>
-#include <TPolyMarker3D.h>
 #include <TStyle.h>
-#include <TPaveText.h>
 #include <TCanvas.h>
-#include <TPad.h>
-#include <TPaletteAxis.h>
-#include "Riostream.h"
-#include "math.h"
-#include "../src/Utilities/UtilityFunctions.h"
 
-
-
-void EventSummary::Loop()
+void PpolSummary::Loop()
 {
 //   In a ROOT session, you can do:
-//      root> .L EventSummary.C
-//      root> EventSummary t
+//      root> .L PpolSummary.C
+//      root> PpolSummary t
 //      root> t.GetEntry(12); // Fill t data members with entry number 12
 //      root> t.Show();       // Show values of entry 12
 //      root> t.Show(16);     // Read and show values of entry 16
@@ -46,29 +33,29 @@ void EventSummary::Loop()
    gROOT->SetBatch(true);
    gStyle->SetPalette(53);
 
-	  TGraph2D *wirePlotLims1 = new TGraph2D(2);
-	  wirePlotLims1->SetName("wirePlotLims1");
-	  wirePlotLims1->SetTitle("");
-	  wirePlotLims1->SetPoint(0,0,0,0);
-	  wirePlotLims1->SetPoint(1,240,3100,200);
-	  wirePlotLims1->SetMarkerStyle(1);
+    TGraph2D *wirePlotLims1 = new TGraph2D(2);
+    wirePlotLims1->SetName("wirePlotLims1");
+    wirePlotLims1->SetTitle("");
+    wirePlotLims1->SetPoint(0,0,0,0);
+    wirePlotLims1->SetPoint(1,240,3100,200);
+    wirePlotLims1->SetMarkerStyle(1);
 
-	  TGraph2D *wirePlotLims2 = new TGraph2D(2);
-	  wirePlotLims2->SetName("wirePlotLims2");
-	  wirePlotLims2->SetTitle("");
-	  wirePlotLims2->SetPoint(0,240,0,0);
-	  wirePlotLims2->SetPoint(1,480,3100,200);
-	  wirePlotLims2->SetMarkerStyle(1);
+    TGraph2D *wirePlotLims2 = new TGraph2D(2);
+    wirePlotLims2->SetName("wirePlotLims2");
+    wirePlotLims2->SetTitle("");
+    wirePlotLims2->SetPoint(0,240,0,0);
+    wirePlotLims2->SetPoint(1,480,3100,200);
+    wirePlotLims2->SetMarkerStyle(1);
 
   TCanvas *c1 = new TCanvas("c1","Canvas",1920,1080);
   
 
 
-  TPad *pad1 = new TPad("pad1", "Induction Plane",0.0,0.5,0.3,1.0,0);
+  TPad *pad1 = new TPad("pad1", "Induction Plane",0.02,0.5,0.28,1.0,0);
   TPad *pad2 = new TPad("pad2", "XZ Tracks" ,0.3, 0.5, 0.6, 1.0, 0);
   TPad *pad3 = new TPad("pad3", "Residuals",0.6,0.6,0.85,1.0,0);
   TPad *pad4 = new TPad("pad4", "Relevant Figures",0.85,0.6,1.0,1.0,0);
-  TPad *pad5 = new TPad("pad5", "collection Plane",0.0,0.0,0.3,0.5,0);
+  TPad *pad5 = new TPad("pad5", "collection Plane",0.02,0.0,0.28,0.5,0);
   TPad *pad6 = new TPad("pad6", "YZ Tracks",0.3,0.0,0.6,0.5,0);
   TPad *pad7 = new TPad("pad7", "Graph 3D",0.6,0.0,1.0,0.6,0);
 
@@ -90,7 +77,7 @@ void EventSummary::Loop()
 
   //Opening primaryID file
 
-   std::ifstream idfile("../files/PrimaryID.txt");
+   std::ifstream idfile("../files/PrimaryID_PP.txt");
    Long64_t fileEntry;
    int reco_primary, isInelastic, Int_type;
    double Int_x, Int_y, Int_z, selCrit, InitialKE, IntKE, truthIntKE, beamMass;
@@ -157,7 +144,7 @@ void EventSummary::Loop()
           }
         }
 
-					//####### creating a TGraph2d for reconstructed track
+          //####### creating a TGraph2d for reconstructed track
 
         int primary_size = (*ntrack_hits)[reco_primary];
 
@@ -537,7 +524,7 @@ void EventSummary::Loop()
         c1->Update();
 
         char eventdisp_title[100];
-        sprintf(eventdisp_title,"../plotting/images/EventSummary/EventSummary%d.png",event);
+        sprintf(eventdisp_title,"../plotting/images/EventSummary/Positive_Pol/EventSummary%d.png",event);
         
         //char gres_dedx_title[100];
         //sprintf(gres_dedx_title,"%s/dedx_Residuals/gres_dedx%d.png",UI->plotIndividual,event);
@@ -562,4 +549,4 @@ void EventSummary::Loop()
    } //end while
 
    idfile.close();
-} //end loop()
+}

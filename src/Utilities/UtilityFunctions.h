@@ -20,6 +20,8 @@ namespace UtilityFunctions {
                         std::vector< std::vector<double> > *track_ypos);
   double pointDistance(double x1, double y1, double z1, 
                         double x2, double y2, double z2);
+  std::vector<int> zOrderedTrack(std::vector<std::vector<double>> *track_zpos, int trackId,
+                                    std::vector<int> *ntrack_hits);
 
 };
 

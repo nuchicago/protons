@@ -39,7 +39,7 @@ class UserInputs {
   int printMod;
 
   int verbose;
-  int bypassMassCut;
+  int applyMassCut;
   int numberIterations;
   bool multiplePass;
   char *correctionMethod;

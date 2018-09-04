@@ -33,8 +33,8 @@ echo_%:
 
 
 BIN_SUBDIRS = src/ProtonAnalyzerMC \
-	      src/ProtonXsec	
-
+	      src/ProtonXsec \
+	      src/BendStudy	
 
 lib: $(LIBDIR)/$(LIB)
 

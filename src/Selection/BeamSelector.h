@@ -10,6 +10,13 @@ class BeamSelector {
  public:
 
   BeamSelector();
+
+  std::vector<double> BeamCentering(double wc_x, double wc_y,// double wc_theta, double wc_phi,
+                  std::vector< std::vector<double> > *track_xpos,
+                  std::vector< std::vector<double> > *track_ypos,
+                  std::vector< std::vector<double> > *track_zpos, int ntracks_reco, std::vector<int> *ntrack_hits,
+                   double zPointCutoff,
+                   int& best_candidate);
  
   int  isTPCPrimary(std::vector< std::vector<double> > *track_zpos, int ntracks_reco,
   				 bool mc_mode, double zPointCutoff, int& reco_primary, double& first_reco_z, int verbose);
@@ -32,7 +39,7 @@ class BeamSelector {
                       std::vector<std::vector<double>> *MidPx, std::vector<std::vector<double>> *MidPy,
                       std::vector<std::vector<double>> *MidPz); 
 
-  double getDataInitialKE(double initial_ke, double wctrk_momentum);
+  double getDataInitialKE(double initial_ke, double wctrk_momentum, double ParticleMass);
 
 
   bool MassCut(double wctrk_momentum, double tofObject, double& ParticleMass,

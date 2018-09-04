@@ -3,7 +3,7 @@
  Input File Lists - these are ASCII files that 
   contain lists of ntuple files to be processed.
 -----------------------------------------------------
-inputFiles files/Data_wire_ntuples.dat
+inputFiles files/Bend_ntuples.dat
 
 -----------------------------------------------------
 Output File Lists - .root and PostScript
@@ -11,7 +11,7 @@ Output File Lists - .root and PostScript
 
 rootOutputFile files/XsecOutput.root
 psOutputFile files/XSecOutput.ps
-SelEventList files/PrimaryID.txt
+SelEventList files/PrimaryID_NP.txt
 
 
 
@@ -25,7 +25,7 @@ applyMassCut 0
 -----------------------------------------------------
  number of event to process
 -----------------------------------------------------
-events 1717
+events 7370
 
 -----------------------------------------------------
  Data Set description
@@ -42,8 +42,8 @@ RawWireVar 1
 zTPCCutoff 4
 rCircleCut 5
 ZSlabSize 0.5
-MassCutMin 700
-MassCutMax 1200
+MassCutMin 0
+MassCutMax 3000
 branchMaxDist 5
 dedxNoBraggMax 13
 clusterMaxDist 5
