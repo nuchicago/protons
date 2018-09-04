@@ -31,7 +31,7 @@ DataMC MC
 -----------------------------------------------------
 Geant 4 model choice (Bertini/Binary/INCLXX)
 -----------------------------------------------------
-Model Bertini 
+Model Binary 
 
 -----------------------------------------------------
 Which xs corrections to use (Bertini/Binary/INCLXX)
