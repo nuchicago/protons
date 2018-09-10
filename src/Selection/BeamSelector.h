@@ -11,12 +11,34 @@ class BeamSelector {
 
   BeamSelector();
 
+  double numEventsStart = 0;
+  double numMassCut = 0;
+  double numtofvalid = 0;
+  double numZcutoff = 0;
+  double numWCTrack = 0;
+  double numXYdeltaCut = 0;
+  double numAlphaCut = 0;
+  double numPileupCut  = 0;
+  double numShowerCut = 0;
+  double numMultipleMatch = 0;
+
+  double xMeanTPCentry = 0;
+  double yMeanTPCentry = 0;
+
   std::vector<double> BeamCentering(double wc_x, double wc_y,// double wc_theta, double wc_phi,
                   std::vector< std::vector<double> > *track_xpos,
                   std::vector< std::vector<double> > *track_ypos,
                   std::vector< std::vector<double> > *track_zpos, int ntracks_reco, std::vector<int> *ntrack_hits,
                    double zPointCutoff,
                    int& best_candidate);
+
+  std::vector<double> BeamMatching(double wc_x, double wc_y, double wc_theta, double wc_phi,
+                  std::vector< std::vector<double> > *track_xpos,
+                  std::vector< std::vector<double> > *track_ypos,
+                  std::vector< std::vector<double> > *track_zpos, int ntracks_reco, std::vector<int> *ntrack_hits,
+                  std::vector<double> *track_length ,int& best_candidate, std::vector<double> BSoptions);
+
+  void printSummary(std::vector <double> BSoptions);
  
   int  isTPCPrimary(std::vector< std::vector<double> > *track_zpos, int ntracks_reco,
   				 bool mc_mode, double zPointCutoff, int& reco_primary, double& first_reco_z, int verbose);

@@ -181,11 +181,6 @@ void BendStudy::AnalyzeFromNtuples(){
   
 
   double numWCTrack = 0;
-  double xyDeltaCut = 0;
-  double numThetaCut = 0;
-  double numPhiCut = 0;
-  int multiple_matches = 0;
-  double numInteractions = 0; 
   double NumEventsSelList = 0;
   bool intHistFilled = false;
 
@@ -196,21 +191,13 @@ void BendStudy::AnalyzeFromNtuples(){
 
   double bendZcut  =  UI->zBeamCutoff; //using this leftover input option to select stubby tracks
 
-  // For individual event plotting mode (plotIndividual)
 
-  //std::vector<double> total_dedx_v;
-  //std::vector<double> total_res_v;
-  //TGraph gtotal_res_dedx_item;
-  //TGraph * gtotal_res_dedx;
 
 
 
   // ### some variables that are needed for the xs calc ###
   double z2 = UI->zSlabSize; //<-- slab size. need to move this to jobOptions
 
-  // EventSelector Options in a vector
-  std::vector<double> ESoptions = {static_cast<double> (verbose), UI->dedxNoBraggMax,
-    UI->branchMaxDist, UI->clusterMaxDist};
 
   
   // globals move later...
@@ -246,12 +233,12 @@ void BendStudy::AnalyzeFromNtuples(){
 // ## Histograms for entering tracks
   //TH2D *tpcInTracksXY =  new TH2D("tpcInTracksXY","Position of TPC track start XY",
     //200, -100, 100, 200, -100, 100);
-  TH2D *wctrkPositionXY =  new TH2D("wctrkPositionXY","Position of Wire Chamber Track",
-    200,-100 ,100 , 200, -100, 100);
-  TH1D *tpcInTracksZ =  new TH1D("tpcInTracksZ","Position of TPC track start Z",25, 0, 10);
-  TH1D *ShortStartZ =  new TH1D("ShortStartZ","Track start in Z",200, 0, 90);
+  //TH2D *wctrkSelectedXY =  new TH2D("wctrkSelectedXY","Position of Wire Chamber Track",
+  //200, -100, 100, 200, -100, 100);
+  
+  TH1D *ShortStartZ =  new TH1D("ShortStartZ","Earlies track start in Z",200, 0, 90);
   TH2D *ZLengthStart = new TH2D("ZLengthStart","Z projection vs Start Position", 200, 0, 90, 200, 0, 90);
-  TH1D *ShortEndZ =  new TH1D("ShortEndZ","Track end in Z",25, 80, 90);
+  TH1D *ShortEndZ =  new TH1D("ShortEndZ","Earlies track end in Z",25, 0, 10);
 
 
 
@@ -263,15 +250,10 @@ void BendStudy::AnalyzeFromNtuples(){
   //TH1D *BadTrackLength =  new TH1D("BadTrackLength","non-selected Entering Track Length",250, 0, 100);
 
   TH1D *inTracksNumHist = new TH1D("inTracksNumHist","Number of Entering Tracks TPC",100,0,10);
-  TH1D *CylNumHist = new TH1D("CylNumHist","Number of Tracks in selection cylinder",100,0,10);
 
-  TH1D *BeamMomentum = new TH1D("BeamMomentum","Incoming Particle Momentum",200,0,2000);
-  TH1D *wctrkNumHist = new TH1D("wctrkNumHist","Number of Entering Tracks TPC",20,0,5);
-  TH1D *BeamToF = new TH1D("BeamToF","Incoming Particle Momentum",100,0,100);
 
-  TH2D * delXYHist =  new TH2D("delXYHist","tpc to wc delta x",200,-100,100,200,-100,100);
 
-  TH2D * BendingZHist =  new TH2D("BendingZHist"," Bending vs Z_{tpc}",50,80,90,400,-8,8);
+  TH2D * BendingZHist =  new TH2D("BendingZHist"," Bending vs Z_{tpc}",50,0,10,400,-8,8);
   TH2D * BendingXHist =  new TH2D("BendingXHist","Bending vs X_{tpc}",50,0,48,400,-8,8);
 
   //TH1D * delXYHistPx =  new TH1D("delXYHistPx","tpc to wc delta x",200,-100,100,200,-100,100);
@@ -295,9 +277,9 @@ void BendStudy::AnalyzeFromNtuples(){
 
 
 
-  TH1D * numTracksSelHist =  new TH1D("numTracksSelHist","number of Entering Tracks - Selected Events", 10, 0, 5);
+  
 
-  TH2D *tofMomentHist = new TH2D("tofMomentHist","Momentum vs TOF",100,0,2000, 100 , 0,100);
+  
   TH1D *BeamMassHist = new TH1D("BeamMassHist","Beamline particle Mass", 100, 0,3000);
   TH1D *BeamMassCutHist = new TH1D("BeamMassCutHist","Beamline particle Mass - after Cut", 100, 0,3000);
   
@@ -343,16 +325,8 @@ void BendStudy::AnalyzeFromNtuples(){
     Long64_t nb = 0;
     nb = tuple->GetEntry(jentry);
     numEventsStart++;
-
-    int numTracksCircle = 0;
-    int numEnteringTracks = 0;
-    int reco_primary = -1;
-    double ParticleMass;
-    
     if(verbose){printEvent();}
-    bool found_primary = false;
-    bool passed_geo_cuts = true;
-    bool skipCircleCut = false;
+    double ParticleMass;
     int numInEvent = 0;
 
     std::vector<int> selected_short = {-1,-1,-1,-1};
@@ -369,7 +343,6 @@ void BendStudy::AnalyzeFromNtuples(){
             continue;}
           numtofvalid++;
           ParticleMass = -9999999. ;
-          tofMomentHist->Fill(wctrk_momentum[0], tofObject[0]);
 
           bool isProton = BS->MassCut(wctrk_momentum[0], tofObject[0], ParticleMass, UI->MassCutMin, UI->MassCutMax);
 
@@ -419,15 +392,15 @@ void BendStudy::AnalyzeFromNtuples(){
           numzProjShort++;
 
           ShortStartZ->Fill(zmin1);
+
           
-          ShortEndZ->Fill(zmax);
-          if (zmax < 90 - bendZcut){continue;}
+
+          if (zmin1 > bendZcut){continue;}
           numBendZcut++;
 
-          
-
+          ShortEndZ->Fill(zmax);
           if(UI->BendDirFilter){
-            if ((*track_xpos)[itrack][indexLast] < (*track_xpos)[itrack][index1]){continue;}
+            if ((*track_xpos)[itrack][index1] < (*track_xpos)[itrack][indexLast]){continue;}
           }
           numRightSided++;
 
@@ -443,11 +416,11 @@ void BendStudy::AnalyzeFromNtuples(){
             if (otrack == itrack){continue;}
 
             std::vector<int> otrackIndices = UtilityFunctions::zOrderedTrack(track_zpos,otrack,ntrack_hits);
-            if ((*track_zpos)[otrack][otrackIndices[2]] > 90 - UI->zTPCCutoff){
+            if ((*track_zpos)[otrack][otrackIndices[0]] < UI->zTPCCutoff){
 
-              double delX = (*track_xpos)[itrack][index1] - (*track_xpos)[otrack][otrackIndices[2]];
-              double delY = (*track_ypos)[itrack][index1] - (*track_ypos)[otrack][otrackIndices[2]];
-              double delZ = (*track_zpos)[itrack][index1] - (*track_zpos)[otrack][otrackIndices[2]];
+              double delX = (*track_xpos)[itrack][indexLast] - (*track_xpos)[otrack][otrackIndices[0]];
+              double delY = (*track_ypos)[itrack][indexLast] - (*track_ypos)[otrack][otrackIndices[0]];
+              double delZ = (*track_zpos)[itrack][indexLast] - (*track_zpos)[otrack][otrackIndices[0]];
 
               double delMatch =  sqrt( pow(delX,2) + pow(delY,2) + pow(delZ,2));
 
@@ -475,7 +448,7 @@ void BendStudy::AnalyzeFromNtuples(){
 
           LongLength->Fill((*track_length)[DownstreamID]);
 
-          double zmaxFit = (*track_zpos)[DownstreamID][downstreamIndices[2]] - 4;
+          double zmaxFit = (*track_zpos)[DownstreamID][downstreamIndices[0]] + 4;
 
           TGraph *BendGraph =  new TGraph(); // X as a function of Z
 
@@ -483,7 +456,7 @@ void BendStudy::AnalyzeFromNtuples(){
             BendGraph->SetPoint(ipoint,(*track_zpos)[DownstreamID][ipoint],(*track_xpos)[DownstreamID][ipoint]);
           }
           
-          TF1 *FitFz = new TF1("FitFz","[0]+[1]*x",zmaxFit, 90);
+          TF1 *FitFz = new TF1("FitFz","[0]+[1]*x",0, zmaxFit);
           FitFz->SetParameters(22,1);
           c->cd(1);
 
@@ -609,69 +582,20 @@ void BendStudy::AnalyzeFromNtuples(){
       if(verbose){std::cout << "Writing to outputFile" << std::endl;}
       outputFile->cd();
         
-    
       ShortLength->Write();
       LongLength->Write();
       ShortStartZ->Write();
       ShortEndZ->Write();
-      CylNumHist->Write();
-
-
-      //tpcInTracksXY->Write();
-      //tpcInTracksZ->Write();
-      //InTrackLength->Write();
-      //wctrkPositionXY->Write();
-      //wctrkSelectedXY->Write();
-      //wctrkNumHist->Write();
-      //inTracksNumHist->Write();
-      //BeamMomentum->Write();
-      //BeamToF->Write();
-      delXYHist->Write();
-      //delThetaHist->Write();
-      //delPhiHist->Write();
-      //BadTrackHist->Write();
-      //BadTrackLength->Write();
-      //BadTrackStartZ->Write();
-      //delBadTrackHist->Write();
       BeamMassHist->Write();
-      //BeamMassCutHist->Write();
-      //tofMomentHist->Write();
-      //numTracksSelHist->Write();
-      //tpcPhiHist->Write();
-      //wcPhiHist->Write();
-      //tpcThetaHist->Write();
-      //wcThetaHist->Write();
-      //primary_dedx->Write();
-
-      //## entrering kink diagnostics
-
-      //InTrackTPCnum_out->Write();
-      //InTrackTPCnum_in->Write();
-      //zProjTrack_in->Write();
-      //zProjTrack_out->Write();
       zProjTrack_short->Write();
       zProjTrack_all->Write();
 
-      //InTrackLength_in->Write();
-      //InTrackLength_out->Write();
-      if(verbose){std::cout << "Writing bending histos" << std::endl;}
       BendingXHist->Write();
       BendingZHist->Write();
       BendingProxHist->Write();
       ZLengthStart->Write();
 
 
-
-      // ## EventSelector histos ##
-      //BranchDistHist->Write();
-      //ClusterDistHist->Write();
-      
-      //if(UI->plotIndividualSet){gtotal_res_dedx->Write();}
-      
-      // ## xs histos ##
-      //hreco_initialKE->Write();
-     // hreco_incke->Write();
-      //hreco_intke->Write();
     }
   }
   if(UI->SelEventListSet){IDfile.close();}

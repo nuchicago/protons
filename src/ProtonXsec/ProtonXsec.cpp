@@ -190,8 +190,11 @@ void ProtonXsec::AnalyzeFromNtuples(){
   // ### some variables that are needed for the xs calc ###
   double z2 = UI->zSlabSize; //<-- slab size. need to move this to jobOptions
 
-  // EventSelector Options in a vector
+  // Selector Options in a vector
   std::vector<double> ESoptions = {static_cast<double> (verbose), UI->dedxNoBraggMax,UI->branchMaxDist, UI->clusterMaxDist};
+  //std::vector<double> BSoptions = {static_cast<double> (verbose), UI->zTPCCutoff, UI->alphaCut, UI->rCircleCut,
+    //UI->pionCuts, UI->numPileupCut, UI->pcPileupDist, UI->numTracksShower, UI->lenTracksShower};
+
 
   
   // globals move later...
@@ -243,8 +246,8 @@ void ProtonXsec::AnalyzeFromNtuples(){
   TH1D *BeamToF = new TH1D("BeamToF","Incoming Particle Momentum",100,0,100);
 
   TH2D * delXYHist =  new TH2D("delXYHist","tpc to wc delta x",200,-100,100,200,-100,100);
-  //TH1D * delXYHistPx =  new TH1D("delXYHistPx","tpc to wc delta x",200,-100,100,200,-100,100);
-  //TH1D * delXYHistPy =  new TH1D("delXYHistPy","tpc to wc delta x",200,-100,100,200,-100,100);
+  TH1D * delXYHistPx =  new TH1D("delXYHistPx","tpc to wc delta x",200,-100,100);
+  TH1D * delXYHistPy =  new TH1D("delXYHistPy","tpc to wc delta x",200,-100,100);
 
 
 
@@ -269,10 +272,6 @@ void ProtonXsec::AnalyzeFromNtuples(){
 
   TH1D * BranchDistHist = new TH1D("BranchDistHist", "Inelastic Event Branch Distance",50, 0,25);
   TH1D * ClusterDistHist = new TH1D("ClusterDistHist", "Additional Branch Distance (Type 4)",50, 0,25);
-  // ## plot markers for cuts
-
-  TLine  *MassMinLine =  new TLine(0,UI->MassCutMin, 100, UI->MassCutMin);
-  TLine  *MassMaxLine =  new TLine(0,UI->MassCutMax, 100, UI->MassCutMax);
 
   // ## xs histos ##
   TH1D *hreco_initialKE = new TH1D("hreco_initialKE", "initial ke", 20, 0, 1000);
@@ -334,14 +333,9 @@ void ProtonXsec::AnalyzeFromNtuples(){
 
         if(best_candidate != -1){
 
-           //if(verbose){std::cout << "doing static cast int"<< std::endl;}
-
-            //int best_candidate = static_cast <int> (matchCandidates[0][0]);
+           //if(verbose){std::cout << "doing static cast int"<< std::endl;
             int startIndex = static_cast <int> (matchCandidate[1]);
-
-
             //if(verbose){std::cout << "Filling delXYHist"<< std::endl;}
-
             delXYHist->Fill(wctrk_XFace[0] - (*track_xpos)[best_candidate][startIndex],
             wctrk_YFace[0] - (*track_ypos)[best_candidate][startIndex]);
             delXYHistPx->Fill(wctrk_XFace[0] - (*track_xpos)[best_candidate][startIndex]);
@@ -360,8 +354,8 @@ void ProtonXsec::AnalyzeFromNtuples(){
 
   // ## event loop ##
     if(verbose){std::cout << "Starting main loop" << std::endl;
-    std::cout << "x Mean cut :" << xMeanTPCentry<< std::endl;
-    std::cout << "y Mean cut :" << yMeanTPCentry<< std::endl;
+    std::cout << "x Entering Mean :" << xMeanTPCentry<< std::endl;
+    std::cout << "y Entering Mean :" << yMeanTPCentry<< std::endl;
   }
   for (Long64_t jentry=0; jentry < numEventsToProcess && jentry < nentries; jentry++){
     

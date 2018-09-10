@@ -82,6 +82,8 @@ std::vector<double> BeamSelector::BeamCentering(double wc_x, double wc_y,// doub
             double delY = wc_y - (*track_ypos)[itrack][zIndices[0]];
             //double delTheta = wc_theta - UtilityFunctions::getTrackTheta(mtrack, track_xpos,track_ypos,track_zpos);
             //double delPhi;   ########reminder to reimplement angle.
+
+
             double alpha = -999.;
             double rValue = sqrt(pow(delX,2) + pow(delY,2));
 
@@ -99,6 +101,130 @@ std::vector<double> BeamSelector::BeamCentering(double wc_x, double wc_y,// doub
       return centeringMatch;
     }
 
+std::vector<double> BeamSelector::BeamMatching(double wc_x, double wc_y, double wc_theta, double wc_phi,
+                  std::vector< std::vector<double> > *track_xpos,
+                  std::vector< std::vector<double> > *track_ypos,
+                  std::vector< std::vector<double> > *track_zpos, int ntracks_reco, std::vector<int> *ntrack_hits,
+                   std::vector<double> *track_length, int& best_candidate, std::vector<double> BSoptions){
+          //////////////////////////////////////////////////////////
+          //  Matches Wire Chamber to TPC and Applies Cuts
+          //    to print summary of cuts, use BeamSelector::printSummary
+          //
+          //
+          //
+          //
+          //  Returns: vector of doubles made up of
+          //      {isMatch(1 or 0), trackID, 1st Z point index, 2nd Z point index, Last Z point Index,
+          //      ,delX, delY, angle between WC track and TPC track}
+          /////////////////////////////////////////////////////////
+
+        numEventsStart++;
+        std::vector<double> matchInfo {0,-1, -1, -1, -1,-1, -1, -1};
+        int numMatchesFound = 0;
+        int numShortTracks = 0;
+        int numPileupTracks = 0;
+        int foundMatch = 0;
+
+        bool zConditionMet = false;
+        bool angleConditionMet = false;
+        bool circleConditionMet = false;
+        bool pileupConditionMet = false;
+        bool showerConditionMet = false;
+
+
+        for (int itrack = 0; itrack < ntracks_reco ;  itrack++ ){
+
+          std::vector<int> zIndices = UtilityFunctions::zOrderedTrack(track_zpos,itrack, ntrack_hits);
+
+          double zmin1 = (*track_zpos)[itrack][zIndices[0]];
+          double zmin2 = (*track_zpos)[itrack][zIndices[1]];
+          double zmax = (*track_zpos)[itrack][zIndices[2]];
+
+          double rValueMin = 999.;
+          double delXMin;
+          double delYMin;
+          double alphaMin;
+
+          double trkLength = (*track_length)[itrack];
+
+          if(trkLength < BSoptions[8]){ numShortTracks++;}
+          if(zmin1 < BSoptions[6]){numPileupTracks++;}
+
+          if(zmin1 < BSoptions[1]){
+            if(!zConditionMet){numZcutoff++;}
+            zConditionMet = true;
+            
+
+             //std::cout << "Calculating delX : " << itrack << std::endl;
+            double delX = wc_x - (*track_xpos)[itrack][zIndices[0]];
+            double delY = wc_y - (*track_ypos)[itrack][zIndices[0]];
+
+            double tpc_vec []= { ((*track_xpos)[itrack][zIndices[1]] -(*track_xpos)[itrack][zIndices[0]]),
+                              ((*track_ypos)[itrack][zIndices[1]] -(*track_ypos)[itrack][zIndices[0]]),
+                              ((*track_zpos)[itrack][zIndices[1]] -(*track_zpos)[itrack][zIndices[0]])};
+            
+            double tpc_size = UtilityFunctions::pointDistance((*track_xpos)[itrack][zIndices[1]],
+                                                              (*track_ypos)[itrack][zIndices[1]],
+                                                              (*track_zpos)[itrack][zIndices[1]], 
+                                                              (*track_xpos)[itrack][zIndices[0]],
+                                                              (*track_ypos)[itrack][zIndices[0]],
+                                                              (*track_zpos)[itrack][zIndices[0]]);
+
+            double wc_vec []= { sin(wc_theta)*cos(wc_phi), sin(wc_theta)* sin(wc_phi), cos(wc_theta)};
+
+            double wc_dot_tpc = wc_vec[0]*tpc_vec[0]+wc_vec[1]*tpc_vec[1]+wc_vec[2]*tpc_vec[2];
+
+            double alpha =  wc_dot_tpc / (1.*tpc_size);  
+            double rValue = sqrt(pow(delX,2) + pow(delY,2));
+
+            double adjustedR = (sqrt(pow((delX - xMeanTPCentry),2) + pow((delY - yMeanTPCentry),2)));
+
+            if(alpha < BSoptions[2]){
+            if(!angleConditionMet){numAlphaCut++;}
+            angleConditionMet = true;
+              if(adjustedR < BSoptions[3]){
+                if(!circleConditionMet){numXYdeltaCut++;}
+                circleConditionMet = true;
+
+                if (rValue < rValueMin){
+
+                  matchInfo = {1., static_cast <double> (itrack), static_cast <double> (zIndices[0]),
+                    static_cast <double> (zIndices[1]),static_cast <double> (zIndices[2]), delX, delY,alpha};
+                  rValueMin = rValue;
+                  alphaMin = alpha;
+                  delXMin = delX;
+                  delYMin = delY;
+                  best_candidate = itrack;
+                  numMatchesFound++;
+                }
+              }// end if circle cut
+            }//end if alpha cut
+          }//end if ztpc cut
+        
+      }//end of track loop
+
+      if(BSoptions[4]){
+        if(numPileupTracks > BSoptions[5]){matchInfo[0] = 0;}
+        else{
+
+          numPileupCut++;
+          if(numShortTracks > BSoptions[7]){matchInfo[0] = 0;}
+          else{
+            numShowerCut++;
+              if(numMatchesFound > 1){matchInfo[0] = 0;}
+              else{numMultipleMatch++;}
+           } 
+        }
+      }
+      return matchInfo;
+    }
+
+void BeamSelector::printSummary(std::vector <double> BSoptions){
+
+  std::cout << "\n------- Beam Selection Results -------\n"<< std::endl;
+
+
+}
 
 
 int BeamSelector::isTPCPrimary(std::vector<std::vector<double>> *track_zpos,int ntracks_reco,bool mc_mode, 
