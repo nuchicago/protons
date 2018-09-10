@@ -9,8 +9,9 @@ inputFiles files/Bend_ntuples.dat
 Output File Lists - .root and PostScript
 ----------------------------------------------------- 
 
-rootOutputFile files/BendOutput.root
-psOutputFile files/XSecOutput.ps
+rootOutputFile files/BendAllOutput.root
+SelEventList files/PrimaryID_Bending.txt
+
 
 
 
@@ -18,8 +19,9 @@ psOutputFile files/XSecOutput.ps
 -----------------------------------------------------
  verbosity
 -----------------------------------------------------
-verbose 1
+verbose 0
 applyMassCut 0
+BendDirFilter 1
 
 -----------------------------------------------------
  number of event to process
@@ -39,10 +41,11 @@ RawWireVar 1
 
 zBeamCutoff 2
 zTPCCutoff 10
+zProjCut 4
 rCircleCut 5
 ZSlabSize 0.5
 MassCutMin 0
-MassCutMax 3000
+MassCutMax 5000
 branchMaxDist 3
 dedxNoBraggMax 13
-clusterMaxDist 5
+clusterMaxDist 1

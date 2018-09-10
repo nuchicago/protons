@@ -40,6 +40,7 @@ class UserInputs {
 
   int verbose;
   int applyMassCut;
+  int BendDirFilter;
   int numberIterations;
   bool multiplePass;
   char *correctionMethod;
@@ -64,6 +65,8 @@ class UserInputs {
   double zBeamCutoff;
   bool zTPCCutoffSet;
   double zTPCCutoff;
+  bool zProjCutSet;
+  double zProjCut;
 
   double rCircleCut;
   bool rCircleCutSet;
@@ -71,6 +74,12 @@ class UserInputs {
   bool MassCutMinSet;
   double MassCutMax;
   bool MassCutMaxSet;
+
+  double pionMassCutMin;
+  bool pionMassCutMinSet;
+  double pionMassCutMax;
+  bool pionMassCutMaxSet;
+
   double ThetaCut;
   bool ThetaCutSet;
   double PhiCut;

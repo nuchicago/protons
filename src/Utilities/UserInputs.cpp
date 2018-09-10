@@ -122,12 +122,20 @@ void UserInputs::initialize( ){
   zBeamCutoff = 2;
   zTPCCutoffSet = false;
   zTPCCutoff = 2;
+  zProjCutSet = false;
+  zProjCut = 99;
   rCircleCutSet = false;
   rCircleCut = 5;
   MassCutMinSet = false;
   MassCutMin = 0;
   MassCutMaxSet = false;
   MassCutMax = 10000;
+
+  pionMassCutMinSet = false;
+  pionMassCutMin = 0;
+  pionMassCutMaxSet = false;
+  pionMassCutMax = 10000;
+
   PhiCut = 10;
   PhiCutSet = false;
   ThetaCut = 10;
@@ -139,6 +147,7 @@ void UserInputs::initialize( ){
 
   applyMassCut = 1;
   verbose = 0;
+  BendDirFilter = 0;
 
 
 }
@@ -293,6 +302,10 @@ void UserInputs::readDataSetParams( ifstream *jobOptionsFile ){
 
   if( paramLookUp( jobOptionsFile, (char*)"applyMassCut" ) ){
     *jobOptionsFile >> applyMassCut;
+  }
+
+  if( paramLookUp( jobOptionsFile, (char*)"BendDirFilter" ) ){
+    *jobOptionsFile >> BendDirFilter;
   }
 
 
@@ -533,6 +546,11 @@ void UserInputs::readAnalysisCuts( ifstream *jobOptionsFile ){
     zTPCCutoffSet = true;
   }
 
+  if( paramLookUp( jobOptionsFile, (char*)"zProjCut" ) ){
+    *jobOptionsFile >> zProjCut;
+    zProjCutSet = true;
+  }
+
 
   if( paramLookUp( jobOptionsFile, (char*)"rCircleCut" ) ){
     *jobOptionsFile >> rCircleCut;
@@ -546,6 +564,17 @@ void UserInputs::readAnalysisCuts( ifstream *jobOptionsFile ){
     *jobOptionsFile >> MassCutMax;
     MassCutMaxSet = true;
   }
+  if( paramLookUp( jobOptionsFile, (char*)"pionMassCutMin" ) ){
+    *jobOptionsFile >> pionMassCutMin;
+    pionMassCutMinSet = true;
+  }
+  if( paramLookUp( jobOptionsFile, (char*)"pionMassCutMax" ) ){
+    *jobOptionsFile >> pionMassCutMax;
+    pionMassCutMaxSet = true;
+  }
+
+
+
   if( paramLookUp( jobOptionsFile, (char*)"PhiCut" ) ){
     *jobOptionsFile >> PhiCut;
     PhiCutSet = true;

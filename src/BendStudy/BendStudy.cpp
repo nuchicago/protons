@@ -106,6 +106,7 @@ BendStudy::BendStudy( ) : LArIATAnalysis( ) {
 BendStudy::BendStudy( char* jobOptionsFile ) : LArIATAnalysis( jobOptionsFile ) { 
 
   tuple = NULL;
+
   
 
   //== Open list of ntuple files 
@@ -132,7 +133,7 @@ BendStudy::BendStudy( char* jobOptionsFile ) : LArIATAnalysis( jobOptionsFile ) 
 
   if (UI->SelEventListSet){
     
-    //IDfile.open(UI->SelEventList, ios::trunc);
+    IDfile.open(UI->SelEventList, ios::trunc);
   }
 
   //== number of events to process
@@ -164,6 +165,10 @@ void BendStudy::AnalyzeFromNtuples(){
   double numEventsStart = 0;
   double numMassCut = 0;
   double numtofvalid = 0;
+
+
+  double numTrackTotal = 0;
+  double numMultiHit = 0 ;
   double numZcutoff = 0;
   double numHasCandidate = 0; 
   double numTwoTracks = 0;
@@ -172,7 +177,8 @@ void BendStudy::AnalyzeFromNtuples(){
   double numRightSided = 0;
   double numHasLong = 0 ;
   double numXYZMatching = 0;
-  double numZmatching = 0;
+
+  
 
   double numWCTrack = 0;
   double xyDeltaCut = 0;
@@ -242,11 +248,10 @@ void BendStudy::AnalyzeFromNtuples(){
     //200, -100, 100, 200, -100, 100);
   TH2D *wctrkPositionXY =  new TH2D("wctrkPositionXY","Position of Wire Chamber Track",
     200,-100 ,100 , 200, -100, 100);
-  //TH2D *wctrkSelectedXY =  new TH2D("wctrkSelectedXY","Position of Wire Chamber Track",
-  //200, -100, 100, 200, -100, 100);
   TH1D *tpcInTracksZ =  new TH1D("tpcInTracksZ","Position of TPC track start Z",25, 0, 10);
-  TH1D *ShortStartZ =  new TH1D("ShortStartZ","Earlies track start in Z",25, 0, 10);
-  TH1D *ShortEndZ =  new TH1D("ShortEndZ","Earlies track end in Z",25, 0, 10);
+  TH1D *ShortStartZ =  new TH1D("ShortStartZ","Track start in Z",200, 0, 90);
+  TH2D *ZLengthStart = new TH2D("ZLengthStart","Z projection vs Start Position", 200, 0, 90, 200, 0, 90);
+  TH1D *ShortEndZ =  new TH1D("ShortEndZ","Track end in Z",25, 80, 90);
 
 
 
@@ -260,15 +265,14 @@ void BendStudy::AnalyzeFromNtuples(){
   TH1D *inTracksNumHist = new TH1D("inTracksNumHist","Number of Entering Tracks TPC",100,0,10);
   TH1D *CylNumHist = new TH1D("CylNumHist","Number of Tracks in selection cylinder",100,0,10);
 
-
   TH1D *BeamMomentum = new TH1D("BeamMomentum","Incoming Particle Momentum",200,0,2000);
   TH1D *wctrkNumHist = new TH1D("wctrkNumHist","Number of Entering Tracks TPC",20,0,5);
   TH1D *BeamToF = new TH1D("BeamToF","Incoming Particle Momentum",100,0,100);
 
   TH2D * delXYHist =  new TH2D("delXYHist","tpc to wc delta x",200,-100,100,200,-100,100);
 
-  TH2D * BendingZHist =  new TH2D("BendingZHist"," Bending vs Z_{tpc}",50,0,10,50,0,2);
-  TH2D * BendingXHist =  new TH2D("BendingXHist","Bending vs X_{tpc}",50,0,48,50,0,2);
+  TH2D * BendingZHist =  new TH2D("BendingZHist"," Bending vs Z_{tpc}",50,80,90,400,-8,8);
+  TH2D * BendingXHist =  new TH2D("BendingXHist","Bending vs X_{tpc}",50,0,48,400,-8,8);
 
   //TH1D * delXYHistPx =  new TH1D("delXYHistPx","tpc to wc delta x",200,-100,100,200,-100,100);
   //TH1D * delXYHistPy =  new TH1D("delXYHistPy","tpc to wc delta x",200,-100,100,200,-100,100);
@@ -276,19 +280,18 @@ void BendStudy::AnalyzeFromNtuples(){
   //TH2D *BadTrackHist =  new TH2D("BadTrackHist","non-selected tracks",200,-100,100,200,-100,100);
   //TH2D *delBadTrackHist =  new TH2D("delBadTrackHist","non-selected tracks",200,-100,100,200,-100,100);
 
-
-
-  
   //TH1D * zProjTrack_out = new TH1D("zProjTrack_out","",100,0,40);
   //TH1D * zProjTrack_in = new TH1D("zProjTrack_in","",100,0,40);
  // TH1D * InTrackLength_out = new TH1D("InTrackLength_out","",100,0,40);
  // TH1D * InTrackLength_in = new TH1D("InTrackLength_in","",100,0,40);
    //z projections of tracks, in/out of circle cut
-  TH1D * zProjTrack_short = new TH1D("zProjTrack_short","Earliest Entering Track Length - Z projection",100,0,40);
+  TH1D * zProjTrack_short = new TH1D("zProjTrack_short","Earliest Entering Track Length - Z projection",100,0,90);
+  TH1D * zProjTrack_all = new TH1D("zProjTrack_all","Track Length - Z projection",200,0,90);
   //TH1D * InTrackTPCnum_in = new TH1D("InTrackTPCnum_in","",100, 0, 10);
   //TH1D * InTrackTPCnum_out = new TH1D("InTrackTPCnum_out","",100, 0, 10);
 
   TH1D *BendingProxHist = new TH1D("BendingProxHist","short to long tagged track distance", 50, 0, 10);
+
 
 
 
@@ -322,84 +325,16 @@ void BendStudy::AnalyzeFromNtuples(){
 
   // ## looping once to find Beamline center ##
 
-std::cout << "num entries in file  = " << nentries << std::endl;
-std::cout << "num events to process  = " << numEventsToProcess << std::endl;
+  
 
 
 
-
-
-  if(!isMC){
-  for (Long64_t jentry=0;  jentry < numEventsToProcess && jentry < nentries; jentry++) {
-    
-    //if(verbose){std::cout << "entry = " << jentry << std::endl;}
-    Long64_t ientry = tuple->LoadTree(jentry);
-    if (ientry < 0){continue;}
-    Long64_t nb = 0;
-    nb = tuple->GetEntry(jentry);
-     //if(verbose){std::cout << jentry << " loaded succesfully "<< std::endl;}
-    
-    int numEnteringTracks = 0;
-    int best_candidate = -1;
-    
-    wctrkNumHist->Fill(num_wctracks);
-
-    double xMeanTPCentry = 0;
-    double yMeanTPCentry = 0;
-
-    bool skipCircleCut = true;
-
-
-      if (num_wctracks != 1){continue;}
-      else{
-          double ParticleMass = -9999999.;
-
-          bool isProton = BS->MassCut(wctrk_momentum[0], tofObject[0], ParticleMass, UI->MassCutMin, UI->MassCutMax);
-
-          if(applyMassCut){
-            if(!isProton){continue;}
-          }
-
-        wctrkPositionXY->Fill(wctrk_XFace[0],wctrk_YFace[0]);
-        //if(verbose){std::cout << "wctrk X,Y= " << wctrk_XFace[0] << " , " << wctrk_YFace[0]  << std::endl;}
-        BeamMomentum->Fill(wctrk_momentum[0]);
-        BeamToF->Fill(tofObject[0]);
-
-        std::vector<double> matchCandidate = BS->BeamCentering(wctrk_XFace[0], wctrk_YFace[0],
-         track_xpos, track_ypos, track_zpos, ntracks_reco, ntrack_hits, UI->zTPCCutoff, best_candidate);
-
-        if(best_candidate != -1){
-
-           //if(verbose){std::cout << "doing static cast int"<< std::endl;}
-
-            //int best_candidate = static_cast <int> (matchCandidates[0][0]);
-            int startIndex = static_cast <int> (matchCandidate[1]);
-
-
-            //if(verbose){std::cout << "Filling delXYHist"<< std::endl;}
-
-            delXYHist->Fill(wctrk_XFace[0] - (*track_xpos)[best_candidate][startIndex],
-            wctrk_YFace[0] - (*track_ypos)[best_candidate][startIndex]);
-            //tpcInTracksXY->Fill((*track_xpos)[best_candidate][startIndex],
-            //(*track_ypos)[best_candidate][startIndex]);
-            //wctrkSelectedXY->Fill(wctrk_XFace[0],wctrk_YFace[0]);
-            //if(verbose){std::cout << "finished filling histos"<< std::endl;}
-                     
-          }
-        } 
-      }
-    }
-  // End of beam centering loop
-
-    // setting beam center values
-    double xMeanTPCentry = delXYHist->GetMean(1);
-    double yMeanTPCentry = delXYHist->GetMean(2);
 
   // ## event loop ##
-    if(verbose){std::cout << "Starting main loop" << std::endl;
-    std::cout << "x Mean cut " << xMeanTPCentry<< std::endl;
-    std::cout << "y Mean cut " << yMeanTPCentry<< std::endl;
-  }
+
+  int max_numInEvent = 0;
+
+  if(verbose){std::cout << "Starting main loop" << std::endl;}
   for (Long64_t jentry=0; jentry < numEventsToProcess && jentry < nentries; jentry++){
     
     Long64_t ientry = tuple->LoadTree(jentry); 
@@ -418,11 +353,16 @@ std::cout << "num events to process  = " << numEventsToProcess << std::endl;
     bool found_primary = false;
     bool passed_geo_cuts = true;
     bool skipCircleCut = false;
+    int numInEvent = 0;
 
-    if(!isMC){
+    std::vector<int> selected_short = {-1,-1,-1,-1};
+    std::vector<int> selected_downstream = {-1,-1,-1,-1}; 
+
+    
       if (num_wctracks !=1){if(verbose){std::cout << "no WC track \n" << std::endl;}
         continue;}
       else{
+
           numWCTrack++;
           if(tofObject[0] < 0){
             if(verbose){std::cout << "no valid ToF \n" << std::endl;}
@@ -453,6 +393,10 @@ std::cout << "num events to process  = " << numEventsToProcess << std::endl;
         double numZtracks = 0;
         double numCylinder = 0; 
         for (int itrack = 0; itrack < ntracks_reco ;  itrack++ ){
+          numTrackTotal++;
+
+          if ((*ntrack_hits)[itrack] < 2) {continue;}
+          numMultiHit++;
 
 
           std::vector<int> zIndices = UtilityFunctions::zOrderedTrack(track_zpos,itrack,ntrack_hits);
@@ -461,212 +405,117 @@ std::cout << "num events to process  = " << numEventsToProcess << std::endl;
           int index2 = zIndices[1];
           int indexLast = zIndices[2];
           double zmin1 = (*track_zpos)[itrack][zIndices[0]];
-          //std::cout << "loading zmin2 : "<< zIndices[1] << std::endl;
           double zmin2 = (*track_zpos)[itrack][zIndices[1]];
-          //std::cout << "loading zlast : "<< zIndices[2] << std::endl;
           double zmax = (*track_zpos)[itrack][zIndices[2]];
-          
-
-          //zIndexes.push_back(trackInd);
 
 
+          double zProjLength = zmax - zmin1;
+          zProjTrack_all->Fill(zProjLength);
+          ShortLength->Fill((*track_length)[itrack]);
 
-        
-          if(zmin1 < UI->zTPCCutoff){
-            numZtracks++;
+          ZLengthStart->Fill(zmin1, zProjLength);
 
-            double delX = wctrk_XFace[0] - (*track_xpos)[itrack][index1];
-            double delY = wctrk_YFace[0] - (*track_ypos)[itrack][index1];
-            //double delTheta = wc_theta - UtilityFunctions::getTrackTheta(itrack, track_xpos,track_ypos,track_zpos);
-            //double delPhi;   ########reminder to reimplement angle.
-            double alpha = -999;
-            double rValue = sqrt(pow(delX,2) + pow(delY,2));
-
-
-
-            
-            double adjustedR = (sqrt(pow((delX - xMeanTPCentry),2) + pow((delY - yMeanTPCentry),2)));
-
-              if (adjustedR < UI->rCircleCut){
-                numCylinder++;
-                std::vector<double> candidate = {1.* itrack, 1.* index1, 1.* index2, 1.* indexLast, rValue, alpha};
-                matchCandidates.push_back(candidate);
-              
-            }
-          }
-        }
-
-        tpcInTracksZ->Fill(numZtracks);
-        CylNumHist->Fill(numCylinder);
-        if (numZtracks > 0){numZcutoff++;}
-        if (numCylinder > 0){numHasCandidate++;}
-
-
-        
-        if (matchCandidates.size() < 2){continue;} //maybe use this branch to find kinks?
-        else{
-            numTwoTracks++;
-            double minZpos = 9999;
-
-            std::vector<double> ShortCandidate;
-            int Short_StartPoint;
-            int Short_EndPoint;
-            int Short_ID;
-
-
-            std::vector<double> LongCandidate;
-            bool found_bending = false;
-            for (int icandidate = 0;  icandidate < matchCandidates.size() ; icandidate++){
-              int startPoint = static_cast <int> (matchCandidates[icandidate][1]);
-              int genID = static_cast <int> (matchCandidates[icandidate][0]);
-
-              if ((*track_zpos)[genID][startPoint] < minZpos){
-                ShortCandidate = matchCandidates[icandidate];
-                Short_ID = genID;
-                Short_EndPoint = static_cast <int> (matchCandidates[icandidate][3]);
-                Short_StartPoint= startPoint;
-              }
-            }
-
-
-          
-          double zProjLength = (*track_zpos)[Short_ID][Short_EndPoint] - (*track_zpos)[Short_ID][Short_StartPoint];
-          zProjTrack_short->Fill(zProjLength);
-          ShortLength->Fill((*track_length)[Short_ID]);
-          ShortStartZ->Fill((*track_zpos)[Short_ID][Short_StartPoint]);
-          ShortEndZ->Fill((*track_zpos)[Short_ID][Short_EndPoint]);
-
-
-          if(zProjLength > 4) {continue;}
+          if(zProjLength > UI->zProjCut){continue;}
           numzProjShort++;
 
-          if((*track_zpos)[Short_ID][Short_StartPoint] > bendZcut ){ continue;}
+          ShortStartZ->Fill(zmin1);
+          
+          ShortEndZ->Fill(zmax);
+          if (zmax < 90 - bendZcut){continue;}
           numBendZcut++;
 
-          if((*track_xpos)[Short_ID][Short_StartPoint] < (*track_xpos)[Short_ID][Short_EndPoint]){continue;}
-
-          else{
-
-          numRightSided++;
           
-          found_bending = true;
-          double XYZMin = 999;
-          int Long_ID;
-          int Long_StartPoint;
 
-          bool found_long = false;
+          if(UI->BendDirFilter){
+            if ((*track_xpos)[itrack][indexLast] < (*track_xpos)[itrack][index1]){continue;}
+          }
+          numRightSided++;
 
-              for (int icandidate = 0; icandidate < matchCandidates.size(); icandidate++){
+          
 
-                int startPoint = static_cast <int> (matchCandidates[icandidate][1]);
-                int genID = static_cast <int> (matchCandidates[icandidate][0]);
-                if (genID ==  Short_ID){continue;}
-                else{
-                    //if  ((*track_zpos)[genID][startPoint] > (*track_zpos)[Short_ID][Short_EndPoint]){
-                      found_long = true;
+          double XYZMin = 99.;
+          int DownstreamID = -1;
+          std::vector<int>  downstreamIndices;
 
-                      double delX = (*track_xpos)[Short_ID][Short_EndPoint] - (*track_xpos)[genID][startPoint];
-                      double delY = (*track_ypos)[Short_ID][Short_EndPoint] - (*track_ypos)[genID][startPoint];
-                      double delZ = (*track_zpos)[Short_ID][Short_EndPoint] - (*track_zpos)[genID][startPoint];
+          bool found_downstream  = false;
 
-                      double delMatch =  sqrt( pow(delX,2) + pow(delY,2) + pow(delZ,2));
+          for (int otrack = 0 ;  otrack < ntracks_reco; otrack++){
+            if (otrack == itrack){continue;}
 
+            std::vector<int> otrackIndices = UtilityFunctions::zOrderedTrack(track_zpos,otrack,ntrack_hits);
+            if ((*track_zpos)[otrack][otrackIndices[2]] > 90 - UI->zTPCCutoff){
 
-                      
+              double delX = (*track_xpos)[itrack][index1] - (*track_xpos)[otrack][otrackIndices[2]];
+              double delY = (*track_ypos)[itrack][index1] - (*track_ypos)[otrack][otrackIndices[2]];
+              double delZ = (*track_zpos)[itrack][index1] - (*track_zpos)[otrack][otrackIndices[2]];
 
-                      if (delMatch < XYZMin){
-                        XYZMin = delMatch;
-                        LongCandidate = matchCandidates[icandidate];
-                        Long_ID = genID;
-                        Long_StartPoint =  startPoint;
-                    }
-                  //}
-                }
+              double delMatch =  sqrt( pow(delX,2) + pow(delY,2) + pow(delZ,2));
+
+              if (delMatch < XYZMin){
+                XYZMin = delMatch;
+                DownstreamID = otrack;
+                downstreamIndices = otrackIndices;
+                found_downstream = true;
               }
+            }
+          }
 
-          if(!found_long){continue;}
+          if (!found_downstream){continue;}
           numHasLong++;
+
           BendingProxHist->Fill(XYZMin);
           if (XYZMin > UI->branchMaxDist){continue;}
           numXYZMatching++;
-          //if( abs((*track_zpos)[Long_ID][Long_StartPoint] - (*track_zpos)[Short_ID][Short_EndPoint]) > 4 ){continue;}
-          //numZmatching++;
-
-          //double CandidateDist = UtilityFunctions::pointDistance((*track_xpos)[Short_ID][Short_EndPoint],
-                                                      //(*track_ypos)[Short_ID][Short_EndPoint],
-                                                      //(*track_zpos)[Short_ID][Short_EndPoint],
-                                                      //(*track_xpos)[genID][startPoint],
-                                                      //(*track_ypos)[genID][startPoint],
-                                                      //(*track_zpos)[genID][startPoint]);
           
-          //if (DistanceMin < UI || (*track_zpos)[Long_ID][Long_StartPoint] < (*track_zpos)[Short_ID][Short_EndPoint]){
-           // continue;
-          //}
-
-      
-
-          ///####### at last, we begin plotting projections!!!
-
-          // ...
-          // How do I even do this?
 
 
-          //TF1 fit, taking only X, Z into account.
+          selected_short[numInEvent] = itrack;
+          selected_downstream[numInEvent] = DownstreamID;
+          numInEvent++;
 
+          LongLength->Fill((*track_length)[DownstreamID]);
 
-          // finding interaction to avoid
-          //reco_primary =  Long_ID;
-          //double temp[6];
-          //double* candidate_info = ES->findInt(temp, reco_primary, ntracks_reco, 
-                                            //ntrack_hits, track_xpos, track_ypos, track_zpos,
-                                            //track_end_x, track_end_y, track_end_z,
-                                            //col_track_hits, col_track_dedx, col_track_pitch_hit,
-                                            //col_track_x, col_track_y, col_track_z, ESoptions);
-
-          //double interaction_x = candidate_info[1];
-          //double interaction_z =  candidate_info[3];
-
-          double zmaxFit = (*track_zpos)[Long_ID][Long_StartPoint] + 4;
+          double zmaxFit = (*track_zpos)[DownstreamID][downstreamIndices[2]] - 4;
 
           TGraph *BendGraph =  new TGraph(); // X as a function of Z
 
-          for (int ipoint = 0; ipoint < (*ntrack_hits)[Long_ID] ; ipoint++){
-            BendGraph->SetPoint(ipoint,(*track_zpos)[Long_ID][ipoint],(*track_xpos)[Long_ID][ipoint]);
+          for (int ipoint = 0; ipoint < (*ntrack_hits)[DownstreamID] ; ipoint++){
+            BendGraph->SetPoint(ipoint,(*track_zpos)[DownstreamID][ipoint],(*track_xpos)[DownstreamID][ipoint]);
           }
           
-          TF1 *FitFz = new TF1("FitFz","[0]+[1]*x",0, zmaxFit);
+          TF1 *FitFz = new TF1("FitFz","[0]+[1]*x",zmaxFit, 90);
           FitFz->SetParameters(22,1);
           c->cd(1);
 
-          TGraph *ShortGraph =  new TGraph();
-
+          //TGraph *ShortGraph =  new TGraph();
+          /*
           for (int ipoint = 0; ipoint < (*ntrack_hits)[Short_ID] ; ipoint++){
             ShortGraph->SetPoint(ipoint,(*track_zpos)[Short_ID][ipoint],(*track_xpos)[Short_ID][ipoint]);
           }
           ShortGraph->SetMarkerStyle(17);
           ShortGraph->SetMarkerColor(3);
           BendGraph->SetMarkerStyle(17);
-          BendGraph->SetMarkerColor(4);
+          BendGraph->SetMarkerColor(4);*/
           
 
-          BendGraph->GetXaxis()->SetLimits(-1,UI->zTPCCutoff);
-          BendGraph->GetHistogram()->SetMinimum((wctrk_XFace[0] - xMeanTPCentry - UI->rCircleCut));
-          BendGraph->GetHistogram()->SetMaximum((wctrk_XFace[0] - xMeanTPCentry + UI->rCircleCut));
-          BendGraph->Draw("AP");
-          BendGraph->GetXaxis()->SetTitle("Z[cm]");
-          BendGraph->GetYaxis()->SetTitle("X[cm]");
+          //BendGraph->GetXaxis()->SetLimits(-1,UI->zTPCCutoff);
+          //BendGraph->GetHistogram()->SetMinimum((wctrk_XFace[0] - xMeanTPCentry - UI->rCircleCut));
+          //BendGraph->GetHistogram()->SetMaximum((wctrk_XFace[0] - xMeanTPCentry + UI->rCircleCut));
+          //BendGraph->Draw("AP");
+          //BendGraph->GetXaxis()->SetTitle("Z[cm]");
+          //BendGraph->GetYaxis()->SetTitle("X[cm]");
 
 
           BendGraph->Fit("FitFz","R");
 
-          ShortGraph->Draw("P SAME");
+          /*ShortGraph->Draw("P SAME");
 
           TGraph *OthersGraph = new TGraph();
           
           if (matchCandidates.size() > 2){
             int graphPtBuffer = 0;
             for (int itrack = 0; itrack < ntracks_reco; itrack++ ){
-              if (itrack != Short_ID && itrack != Long_ID){
+              if (itrack != Short_ID && itrack != DownstreamID){
                 //std::cout << "which track" << itrack << std::endl;
                 
                 for(int ipoint = 0; ipoint < (*ntrack_hits)[itrack]; ipoint++){
@@ -681,46 +530,48 @@ std::cout << "num events to process  = " << numEventsToProcess << std::endl;
           }
           OthersGraph->SetMarkerStyle(17);
           OthersGraph->SetMarkerColor(12);
-          OthersGraph->Draw("P SAME");
+          OthersGraph->Draw("P SAME");*/
 
-          c->Update();
+          //c->Update();
 
           
-          char graph_title[100];
-          sprintf(graph_title,"plotting/images/Bending/Graph%d.png",event);
-          c->Update();
-          c->Print(graph_title,"png");
+          //char graph_title[100];
+          //sprintf(graph_title,"plotting/images/Bending/Graph%d.png",event);
+          //c->Update();
+          //c->Print(graph_title,"png");
 
 
 
 
-          for(int ipoint = 0; ipoint < (*ntrack_hits)[Short_ID]; ipoint++){
-            double xval  = (*track_xpos)[Short_ID][ipoint];
-            double zval = (*track_zpos)[Short_ID][ipoint];
+          for(int ipoint = 0; ipoint < (*ntrack_hits)[itrack]; ipoint++){
+            double xval  = (*track_xpos)[itrack][ipoint];
+            double zval = (*track_zpos)[itrack][ipoint];
             double projX = FitFz->Eval(zval);
             double deltaX = xval - projX;
             BendingZHist->Fill(zval,deltaX);
             BendingXHist->Fill(projX,deltaX);
           }
 
-
-
           delete BendGraph;
-          delete ShortGraph;
+          //delete ShortGraph
+
+          
+        }//end of track loop
+        if (numInEvent > max_numInEvent){
+        max_numInEvent = numInEvent;}
+        if(UI->SelEventListSet && numInEvent > 0){IDfile << jentry << "\t" << ParticleMass << "\t" << selected_short[0] << "\t"<< selected_downstream[0] << 
+        "\t" << selected_short[1]<< "\t"<<  selected_downstream[1]  << "\t" << selected_short[2]<< "\t"<< selected_downstream[2]  <<
+         "\t" << selected_short[3]<< "\t"<< selected_downstream[3] <<"\n";}
+      }//events with wc track
+
+      
 
 
-        }
-
-        }
-        }
-      }
-    }
+    }//end of event loop
 
 
-    // ### porting over the work from ProtonAnalyzerMC module -- ryan ###
-    // ## grabbing reco primary ##
-    //int reco_primary = -1;
- 
+    
+
  
 
     std::cout << "\n------- Cut Results -------\n"<< std::endl;
@@ -729,32 +580,22 @@ std::cout << "num events to process  = " << numEventsToProcess << std::endl;
     std::cout << "Events with only one wc track: "<< numWCTrack << std::endl;
     std::cout << "Events with valid ToF value: "<< numtofvalid << std::endl;
     std::cout << "Events passing mass cut: "<< numMassCut << std::endl;
-    std::cout << "Events with at least 1 TPC track Z < "  << UI->zTPCCutoff << ": " << numZcutoff << std::endl;
-    std::cout << "Events with at least 1 Candidate in Cylinder cut: " << numHasCandidate << std::endl;
-    std::cout << "Events with 2 or more Candidates in Cylinder cut: " << numTwoTracks << std::endl;
-    std::cout << "Events with Short track Z proj < 4 :" << numzProjShort << std::endl;
-    std::cout << "Events with Short track start < "<< UI->zBeamCutoff << ": " << numBendZcut << std::endl;
-    std::cout << "Events with track tilt to the Right in XZ: "<< numRightSided  << std::endl;
-    std::cout << "Events with Long track found "<< numHasLong << std::endl;
-    std::cout << "Events with Long track matched in XY: "<< numXYZMatching << std::endl;
-    //std::cout << "Events with long matched in Z "<< numZmatching << std::endl;
+
+    std::cout << "\n------- Per Track Stats -------\n"<< std::endl;
+    std::cout << "Tracks processed: " << numTrackTotal << std::endl;
+    std::cout << "tracks with more than 1 hit" << numMultiHit << std::endl;
+    std::cout << "Tracks with Short track Z proj  < " << UI->zProjCut << ": " << numzProjShort << std::endl;
+    std::cout << "Tracks with Short track start < "<< UI->zBeamCutoff << ": " << numBendZcut << std::endl;
+    std::cout << "Tracks with track tilt to the Right in XZ: "<< numRightSided  << std::endl;
+    std::cout << "Tracks with Long track found :"<< numHasLong << std::endl;
+    std::cout << "Tracks with Long track matched within r < " << UI->branchMaxDist  << ": "<< numXYZMatching << std::endl; 
+
+    std::cout << "Max number of tracks selected in an event : " << max_numInEvent << std::endl; 
 
 
 
 
-    
-    
 
-    
-
-
-
-
-  //if(UI->plotIndividualSet){
-    //gtotal_res_dedx_item = TGraph(total_res_v.size(),&total_res_v[0],&total_dedx_v[0]);
-    //gtotal_res_dedx_item.SetName("gtotal_res_dedx");
-    //gtotal_res_dedx = &gtotal_res_dedx_item;
-  //}
   
 
 
@@ -770,6 +611,7 @@ std::cout << "num events to process  = " << numEventsToProcess << std::endl;
         
     
       ShortLength->Write();
+      LongLength->Write();
       ShortStartZ->Write();
       ShortEndZ->Write();
       CylNumHist->Write();
@@ -791,7 +633,7 @@ std::cout << "num events to process  = " << numEventsToProcess << std::endl;
       //BadTrackLength->Write();
       //BadTrackStartZ->Write();
       //delBadTrackHist->Write();
-      //BeamMassHist->Write();
+      BeamMassHist->Write();
       //BeamMassCutHist->Write();
       //tofMomentHist->Write();
       //numTracksSelHist->Write();
@@ -808,12 +650,15 @@ std::cout << "num events to process  = " << numEventsToProcess << std::endl;
       //zProjTrack_in->Write();
       //zProjTrack_out->Write();
       zProjTrack_short->Write();
+      zProjTrack_all->Write();
+
       //InTrackLength_in->Write();
       //InTrackLength_out->Write();
       if(verbose){std::cout << "Writing bending histos" << std::endl;}
       BendingXHist->Write();
       BendingZHist->Write();
       BendingProxHist->Write();
+      ZLengthStart->Write();
 
 
 
@@ -829,7 +674,7 @@ std::cout << "num events to process  = " << numEventsToProcess << std::endl;
       //hreco_intke->Write();
     }
   }
-  //if(UI->SelEventListSet){IDfile.close();}
+  if(UI->SelEventListSet){IDfile.close();}
 
 }
 
