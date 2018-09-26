@@ -292,6 +292,8 @@ void LArIATAnalysis::bookNtuple( TChain* tuple, bool isMC ){
   tuple->SetBranchAddress("hit_amp", &hit_amp, &b_hit_amp);
 
 
+
+
   if(!isMC){
     tuple->SetBranchAddress("wctrk_momentum", &wctrk_momentum, &b_wctrk_momentum);
     tuple->SetBranchAddress("wctrk_XFace", &wctrk_XFace, &b_wctrk_XFace);
@@ -299,7 +301,13 @@ void LArIATAnalysis::bookNtuple( TChain* tuple, bool isMC ){
     tuple->SetBranchAddress("wctrk_theta", &wctrk_theta, &b_wctrk_theta);
     tuple->SetBranchAddress("wctrk_phi", &wctrk_phi, &b_wctrk_phi);
     tuple->SetBranchAddress("num_wctracks", &num_wctracks, &b_num_wctracks);
-    tuple->SetBranchAddress("tofObject", &tofObject, &b_tofObject); }
+    tuple->SetBranchAddress("tofObject", &tofObject, &b_tofObject);
+    tuple->SetBranchAddress("wctrk_x_proj_3cm", &wctrk_x_proj_3cm, &b_wctrk_x_proj_3cm);
+    tuple->SetBranchAddress("wctrk_y_proj_3cm", &wctrk_y_proj_3cm, &b_wctrk_y_proj_3cm);
+    tuple->SetBranchAddress("wctrk_missed", &wctrk_missed, &b_wctrk_missed);
+    tuple->SetBranchAddress("wctrk_picky", &wctrk_picky, &b_wctrk_picky);
+    tuple->SetBranchAddress("electron_lifetime", &electron_lifetime, &b_electron_lifetime);
+     }
 
   
 }

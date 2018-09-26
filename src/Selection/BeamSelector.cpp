@@ -101,6 +101,11 @@ std::vector<double> BeamSelector::BeamCentering(double wc_x, double wc_y,// doub
       return centeringMatch;
     }
 
+void BeamSelector::SetMeanXY(double xMean, double yMean){
+      xMeanTPCentry = xMean;
+      yMeanTPCentry = yMean;
+    }
+
 std::vector<double> BeamSelector::BeamMatching(double wc_x, double wc_y, double wc_theta, double wc_phi,
                   std::vector< std::vector<double> > *track_xpos,
                   std::vector< std::vector<double> > *track_ypos,
@@ -131,6 +136,10 @@ std::vector<double> BeamSelector::BeamMatching(double wc_x, double wc_y, double 
         bool pileupConditionMet = false;
         bool showerConditionMet = false;
 
+        EnteringTrkStart.clear();
+        EnteringTrkID.clear();
+        EnteringTrkAlpha.clear();
+
 
         for (int itrack = 0; itrack < ntracks_reco ;  itrack++ ){
 
@@ -153,6 +162,10 @@ std::vector<double> BeamSelector::BeamMatching(double wc_x, double wc_y, double 
           if(zmin1 < BSoptions[1]){
             if(!zConditionMet){numZcutoff++;}
             zConditionMet = true;
+
+            EnteringTrkStart.push_back(zIndices[0]);
+            EnteringTrkID.push_back(itrack);
+
             
 
              //std::cout << "Calculating delX : " << itrack << std::endl;
@@ -174,7 +187,10 @@ std::vector<double> BeamSelector::BeamMatching(double wc_x, double wc_y, double 
 
             double wc_dot_tpc = wc_vec[0]*tpc_vec[0]+wc_vec[1]*tpc_vec[1]+wc_vec[2]*tpc_vec[2];
 
-            double alpha =  wc_dot_tpc / (1.*tpc_size);  
+            double alpha =  acos(wc_dot_tpc / (tpc_size)) * (180/pi);  
+
+            EnteringTrkAlpha.push_back(alpha);
+
             double rValue = sqrt(pow(delX,2) + pow(delY,2));
 
             double adjustedR = (sqrt(pow((delX - xMeanTPCentry),2) + pow((delY - yMeanTPCentry),2)));
@@ -202,18 +218,19 @@ std::vector<double> BeamSelector::BeamMatching(double wc_x, double wc_y, double 
           }//end if ztpc cut
         
       }//end of track loop
-
-      if(BSoptions[4]){
-        if(numPileupTracks > BSoptions[5]){matchInfo[0] = 0;}
-        else{
-
-          numPileupCut++;
-          if(numShortTracks > BSoptions[7]){matchInfo[0] = 0;}
+      if(matchInfo[0]){
+        if(BSoptions[4]){
+          if(numPileupTracks > BSoptions[5]){matchInfo[0] = 0;}
           else{
-            numShowerCut++;
-              if(numMatchesFound > 1){matchInfo[0] = 0;}
-              else{numMultipleMatch++;}
-           } 
+
+            numPileupCut++;
+            if(numShortTracks > BSoptions[7]){matchInfo[0] = 0;}
+            else{
+              numShowerCut++;
+                if(numMatchesFound > 1){matchInfo[0] = 0;}
+                else{numUniqueMatch++;}
+             } 
+          }
         }
       }
       return matchInfo;
@@ -223,7 +240,17 @@ void BeamSelector::printSummary(std::vector <double> BSoptions){
 
   std::cout << "\n------- Beam Selection Results -------\n"<< std::endl;
 
+  std::cout << "Events Passed through Matching: "<< numEventsStart << std::endl; 
+  std::cout << "Events with at least one TPC track Z < " << BSoptions[1] << ": "<< numZcutoff << std::endl;
+  std::cout << "Events passing alpha angle cut a < "  << BSoptions[2] << ": " << numAlphaCut << std::endl;
+  std::cout << "Events passing circular distance cut r < " << BSoptions[3] << ": "<< numXYdeltaCut << std::endl;
 
+  if(BSoptions[4]){
+  std::cout << "\n------- Additional Data Selection-------\n"<< std::endl;
+  std::cout << "Events passing pileup cut ( > " << BSoptions[5] << " tracks in first "<< BSoptions[6]<<" cm): " << numPileupCut << std::endl;
+  std::cout << "Events passing EM shower cut ( "  << BSoptions[7] <<" or more tracks < " << BSoptions[8] <<" cm long): " << numShowerCut << std::endl;
+  std::cout << "Events with unique matched track: " << numUniqueMatch << std::endl;
+  }
 }
 
 

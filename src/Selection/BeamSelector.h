@@ -11,6 +11,7 @@ class BeamSelector {
 
   BeamSelector();
 
+  // counters for command line summary
   double numEventsStart = 0;
   double numMassCut = 0;
   double numtofvalid = 0;
@@ -20,10 +21,18 @@ class BeamSelector {
   double numAlphaCut = 0;
   double numPileupCut  = 0;
   double numShowerCut = 0;
-  double numMultipleMatch = 0;
+  double numUniqueMatch = 0;
 
+  // Beam Centering Parameters
   double xMeanTPCentry = 0;
   double yMeanTPCentry = 0;
+
+  // Beam Matching containers
+  std::vector<int> EnteringTrkStart;
+  std::vector<int> EnteringTrkID;
+  std::vector<double> EnteringTrkAlpha;
+
+  void SetMeanXY(double xMean, double yMean);
 
   std::vector<double> BeamCentering(double wc_x, double wc_y,// double wc_theta, double wc_phi,
                   std::vector< std::vector<double> > *track_xpos,
@@ -31,6 +40,7 @@ class BeamSelector {
                   std::vector< std::vector<double> > *track_zpos, int ntracks_reco, std::vector<int> *ntrack_hits,
                    double zPointCutoff,
                    int& best_candidate);
+
 
   std::vector<double> BeamMatching(double wc_x, double wc_y, double wc_theta, double wc_phi,
                   std::vector< std::vector<double> > *track_xpos,

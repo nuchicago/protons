@@ -201,6 +201,11 @@ class LArIATAnalysis {
   Double_t  wctrk_phi[max_num_wctracks];
   Int_t     num_tof_objects;  
   Double_t  tofObject[max_num_wctracks];
+  Double_t wctrk_x_proj_3cm[max_num_wctracks];
+  Double_t wctrk_y_proj_3cm[max_num_wctracks];
+  Int_t wctrk_picky;
+  Int_t wctrk_missed;
+  Double_t electron_lifetime;
 
   std::vector<int> nhits;
   std::vector<float> hit_time;
@@ -314,6 +319,12 @@ class LArIATAnalysis {
   TBranch        *b_hit_wire;
   TBranch        *b_hit_time;
   TBranch        *b_hit_amp;
+  TBranch        *b_wctrk_x_proj_3cm;
+  TBranch        *b_wctrk_y_proj_3cm;
+  TBranch        *b_wctrk_picky;
+  TBranch        *b_wctrk_missed;
+  TBranch        *b_electron_lifetime;
+
   //TBranch        *b_hit_view;
 
 

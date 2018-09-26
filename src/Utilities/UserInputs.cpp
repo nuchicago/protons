@@ -136,18 +136,31 @@ void UserInputs::initialize( ){
   pionMassCutMaxSet = false;
   pionMassCutMax = 10000;
 
+  pionCuts = 0;
+  alphaCut = 99;
+  alphaCutSet = false;
+  pcPileupDist = 14;
+  pcPileupDistSet = false;
+  numPileupCut = 4;
+  numPileupCutSet = false;
+  numTracksShower = 2;
+  numTracksShowerSet = false;
+  lenTracksShower = 5;
+  lenTracksShowerSet = false;
+  tofMin = 0;
+  tofMinSet = false;
+  tofMax = 200;
+  tofMaxSet = false;
+
   PhiCut = 10;
   PhiCutSet = false;
   ThetaCut = 10;
   ThetaCutSet = false;
 
-
-
-  
-
   applyMassCut = 1;
   verbose = 0;
   BendDirFilter = 0;
+  pickyTracksWC = 1;
 
 
 }
@@ -237,6 +250,16 @@ void UserInputs::readDataSetParams( ifstream *jobOptionsFile ){
     if( strcmp( buffer, "MC" ) == 0 || strcmp( buffer, "Mc" ) == 0 || strcmp( buffer, "mc" ) == 0 )
       isMC = true;
   }
+  char PIDbuffer[1000];
+  if( paramLookUp( jobOptionsFile, (char*)"ParticleType" ) ){
+    *jobOptionsFile >> PIDbuffer;
+    if( strcmp( PIDbuffer, "PROTON" ) == 0 || strcmp( PIDbuffer, "Proton" ) == 0 || strcmp( PIDbuffer, "proton" ) == 0 )
+      isProton = true;
+    if( strcmp( PIDbuffer, "KAON" ) == 0 || strcmp( PIDbuffer, "Kaon" ) == 0 || strcmp( PIDbuffer, "kaon" ) == 0 )
+      isKaon = true;
+    if( strcmp( PIDbuffer, "PION" ) == 0 || strcmp( PIDbuffer, "Pion" ) == 0 || strcmp( PIDbuffer, "pion" ) == 0 )
+      isKaon = true;
+  }
 
   if( paramLookUp( jobOptionsFile, (char*)"events" ) ){
     *jobOptionsFile >> numEventsToProcess;
@@ -300,8 +323,14 @@ void UserInputs::readDataSetParams( ifstream *jobOptionsFile ){
     *jobOptionsFile >> verbose;
   }
 
+  if( paramLookUp( jobOptionsFile, (char*)"pionCuts" ) ){
+    *jobOptionsFile >> pionCuts;
+  }
   if( paramLookUp( jobOptionsFile, (char*)"applyMassCut" ) ){
     *jobOptionsFile >> applyMassCut;
+  }
+  if( paramLookUp( jobOptionsFile, (char*)"pickyTracksWC" ) ){
+    *jobOptionsFile >> pickyTracksWC;
   }
 
   if( paramLookUp( jobOptionsFile, (char*)"BendDirFilter" ) ){
@@ -564,15 +593,14 @@ void UserInputs::readAnalysisCuts( ifstream *jobOptionsFile ){
     *jobOptionsFile >> MassCutMax;
     MassCutMaxSet = true;
   }
-  if( paramLookUp( jobOptionsFile, (char*)"pionMassCutMin" ) ){
-    *jobOptionsFile >> pionMassCutMin;
-    pionMassCutMinSet = true;
+  if( paramLookUp( jobOptionsFile, (char*)"tofMin" ) ){
+    *jobOptionsFile >> tofMin;
+    tofMinSet = true;
   }
-  if( paramLookUp( jobOptionsFile, (char*)"pionMassCutMax" ) ){
-    *jobOptionsFile >> pionMassCutMax;
-    pionMassCutMaxSet = true;
+  if( paramLookUp( jobOptionsFile, (char*)"tofMax" ) ){
+    *jobOptionsFile >> tofMax;
+    tofMaxSet = true;
   }
-
 
 
   if( paramLookUp( jobOptionsFile, (char*)"PhiCut" ) ){
@@ -583,7 +611,31 @@ void UserInputs::readAnalysisCuts( ifstream *jobOptionsFile ){
     *jobOptionsFile >> ThetaCut;
     ThetaCutSet = true;
   }
+
+  if( paramLookUp( jobOptionsFile, (char*)"alphaCut" ) ){
+    *jobOptionsFile >> alphaCut;
+    alphaCutSet = true;
+  }
   
+  if( paramLookUp( jobOptionsFile, (char*)"pcPileupDist" ) ){
+    *jobOptionsFile >> pcPileupDist;
+    pcPileupDistSet = true;
+  }
+
+  if( paramLookUp( jobOptionsFile, (char*)"numPileupCut" ) ){
+    *jobOptionsFile >> numPileupCut;
+    numPileupCutSet = true;
+  }
+
+  if( paramLookUp( jobOptionsFile, (char*)"numTracksShower" ) ){
+    *jobOptionsFile >> numTracksShower;
+    numTracksShowerSet = true;
+  }
+
+  if( paramLookUp( jobOptionsFile, (char*)"lenTracksShower" ) ){
+    *jobOptionsFile >> lenTracksShower;
+    lenTracksShowerSet = true;
+  }
     if( paramLookUp( jobOptionsFile, (char*)"zSlabSize" ) ){
     *jobOptionsFile >> zSlabSize;
     zSlabSizeSet = true;
@@ -1043,7 +1095,7 @@ void UserInputs::printUserInputs( ){
   cout << "  Entering track Z cut = " << zTPCCutoff << " cm" <<  endl;
   cout << "  Entering track circular cut = " << rCircleCut << " cm" <<  endl;
   cout << "  Mass cut range = (" << MassCutMin<< "," << MassCutMax<<") MeV" <<  endl;
-  cout << "  Angle cuts: Theta = " << ThetaCut << " rad ; Phi = " << PhiCut <<" rad" << endl;
+  cout << "  Alpha Angle cut: " <<  alphaCut << " degrees" << endl;
   //cout << "  Beam particle radius cut = " << mwpcTargRadiusCut << " cm." << endl;
   //cout << "  Beam particle angle cut = " << mwpcTargAngleCut << " mrad" << endl;
   //cout << "  t0 cut = " << t0Cut << " ns" << endl;
@@ -1051,7 +1103,8 @@ void UserInputs::printUserInputs( ){
 
   cout << "------- XS Event Selection -------" << endl;
   cout << "  Slab Size Z = " << zSlabSize << " cm" << endl;
-  cout << "  Branch Maximum distance  = " << branchMaxDist << "cm" << endl;
+  cout << "  Branch Maximum distance  = " << branchMaxDist << " cm" << endl;
+  cout << " Branch Cluster counting distance  = " << clusterMaxDist << " cm" << endl; 
   //if( trackTypeSet ) cout << "  Reconstructing tracks using : " << trackType << endl;
   //else cout << "  Track reconstruction method not set" << endl; 
   //cout << "  Perform momentum scale shift for data: " << momScaleShift << endl;

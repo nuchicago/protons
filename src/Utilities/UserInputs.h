@@ -39,7 +39,6 @@ class UserInputs {
   int printMod;
 
   int verbose;
-  int applyMassCut;
   int BendDirFilter;
   int numberIterations;
   bool multiplePass;
@@ -58,6 +57,11 @@ class UserInputs {
   int  potEmpty;
   bool potEmptySet;
   int RawWireVar;
+
+  char *ParticleType;
+  bool isProton;
+  bool isPion;
+  bool isKaon;
   
 
   //== BeamSelect Values
@@ -84,6 +88,29 @@ class UserInputs {
   bool ThetaCutSet;
   double PhiCut;
   bool PhiCutSet;
+
+  int applyMassCut;
+  int pickyTracksWC;
+
+  // pion inclusive analysis cuts
+
+  int pionCuts;
+  double alphaCut;
+  bool alphaCutSet;
+  double pcPileupDist;
+  bool pcPileupDistSet;
+  double numPileupCut;
+  bool numPileupCutSet;
+  double numTracksShower;
+  bool numTracksShowerSet;
+  double lenTracksShower;
+  bool lenTracksShowerSet;
+  double tofMin;
+  double tofMinSet;
+  double tofMax;
+  double tofMaxSet;
+
+
 
   //== EventSelector Values
 
