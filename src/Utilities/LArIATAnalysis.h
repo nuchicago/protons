@@ -114,9 +114,9 @@ class LArIATAnalysis {
   std::vector<std::vector<double> > *track_ypos;
   std::vector<std::vector<double> > *track_zpos;
   std::vector<std::vector<int> > *nhit_ids;
-  const static int max_ntracks = 1000;
-  const static int max_nhits = 10000;
-  const static int max_nhit_ids = 1000;
+  const static int max_ntracks = 200;
+  const static int max_nhits = 1000;
+  const static int max_nhit_ids = 100;
   Double_t  track_spt_idarr[max_ntracks][max_nhits][max_nhit_ids];
   Double_t  track_spt_earr[max_ntracks][max_nhits][max_nhit_ids];
   std::vector<int>     *ind_track_hits;
@@ -206,6 +206,7 @@ class LArIATAnalysis {
   Int_t wctrk_picky;
   Int_t wctrk_missed;
   Double_t electron_lifetime;
+  Int_t wctrk_quality;
 
   std::vector<int> nhits;
   std::vector<float> hit_time;
@@ -324,6 +325,8 @@ class LArIATAnalysis {
   TBranch        *b_wctrk_picky;
   TBranch        *b_wctrk_missed;
   TBranch        *b_electron_lifetime;
+  TBranch        *b_wctrk_quality;
+
 
   //TBranch        *b_hit_view;
 

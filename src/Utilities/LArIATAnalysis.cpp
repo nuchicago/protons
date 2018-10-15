@@ -307,6 +307,7 @@ void LArIATAnalysis::bookNtuple( TChain* tuple, bool isMC ){
     tuple->SetBranchAddress("wctrk_missed", &wctrk_missed, &b_wctrk_missed);
     tuple->SetBranchAddress("wctrk_picky", &wctrk_picky, &b_wctrk_picky);
     tuple->SetBranchAddress("electron_lifetime", &electron_lifetime, &b_electron_lifetime);
+    tuple->SetBranchAddress("wctrk_quality", &wctrk_quality, &b_wctrk_quality);
      }
 
   
