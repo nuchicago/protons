@@ -30,7 +30,10 @@ class BeamSelector {
   // Beam Matching containers
   std::vector<int> EnteringTrkStart;
   std::vector<int> EnteringTrkID;
+  std::vector<int> EnteringTrkEnd;
   std::vector<double> EnteringTrkAlpha;
+  int ShowerTracksBuffer;
+  int PileupTracksBuffer;
 
   void SetMeanXY(double xMean, double yMean);
 

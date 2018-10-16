@@ -237,16 +237,21 @@ void ProtonXsec::AnalyzeFromNtuples(){
     200,-100 ,100 , 200, -100, 100);
   TH2D *wctrkSelectedXY =  new TH2D("wctrkSelectedXY","Position of Wire Chamber Track",
   200, -100, 100, 200, -100, 100);
-  TH1D *tpcInTracksZ =  new TH1D("tpcInTracksZ","Position of TPC track start Z",10, 0, 4);
+  TH1D *tpcInTracksZ =  new TH1D("tpcInTracksZ","Position of TPC entering track start Z",25, 0, 10);
+  //TH1D *tpcAllTrackStartZ = new TH1D("tpcAllTrackStartZ", "Position of TPC track start in Z", 250, 0, 100);
+  //TH1D *tpcAllTrackEndZ = new TH1D("tpcAllTrackEndZ", "Position of TPC track end in Z", 250, 0, 100);
+  TH1D *tpcInTrackEndZ = new TH1D("tpcInTrackEndZ","Postion of entering track end in Z", 250, 0, 100);
+  TH1D *zProjPrimaryTrack =  new TH1D("zProjPrimaryTrack","Length of primary track - z projection", 250, 0, 100);
+  TH1D *zProjBadTrack =  new TH1D("zProjBadTrack","Length of pileup track - z projection", 250, 0, 100);
   TH1D *PrimaryStartZ =  new TH1D("PrimaryStartZ","Selected track start in Z",25, 0, 10);
   TH1D *BadTrackStartZ =  new TH1D("BadTrackStartZ","non-selected track start in Z",25, 0, 10);
-  TH1D *InTrackLength =  new TH1D("InTrackLength","Entering Track Length",100, 0, 100);
-  TH1D *PrimaryLength =  new TH1D("PrimaryLength","Selected Entering Track Length",100, 0, 100);
+  TH1D *InTrackLength =  new TH1D("InTrackLength","Entering Track Length",250, 0, 100);
+  TH1D *PrimaryLength =  new TH1D("PrimaryLength","Selected Entering Track Length",250, 0, 100);
   TH1D *BadTrackLength =  new TH1D("BadTrackLength","non-selected Entering Track Length",250, 0, 100);
   TH1D *inTracksNumHist = new TH1D("inTracksNumHist","Number of Entering Tracks TPC",100,0,10);
   TH1D *BeamMomentum = new TH1D("BeamMomentum","Incoming Particle Momentum",200,0,2000);
-  TH1D *wctrkNumHist = new TH1D("wctrkNumHist","Number of Entering Tracks TPC",20,0,5);
-  TH1D *BeamToF = new TH1D("BeamToF","Incoming Particle Momentum",100,0,100);
+  TH1D *wctrkNumHist = new TH1D("wctrkNumHist","Number of Entering Tracks TPC",40,0,10);
+  TH1D *BeamToF = new TH1D("BeamToF","Incoming Particle ToF",100,0,100);
 
   TH2D * delXYHist =  new TH2D("delXYHist","tpc to wc delta x",200,-100,100,200,-100,100);
   TH1D * delXYHistPx =  new TH1D("delXYHistPx","tpc to wc delta x",200,-100,100);
@@ -265,13 +270,15 @@ void ProtonXsec::AnalyzeFromNtuples(){
 //  TH1D * wcPhiHist =  new TH1D("wcPhiHist","Wire chamber #phi",100,0,7);
 
   TH1D * alphaHist = new TH1D("alphaHist","Angle between WC and TPC track",90,0,90);
+  TH1D * numPileupTracksHist = new TH1D("numPileupTracksHist","number of Tracks for Pileup Filter",30,0,30);
+  TH1D * numShowerCutHist = new TH1D("numShowerCutHist", "number of short tracks - EM shower cut",30,0,30);
 
   TH1D * numTracksSelHist =  new TH1D("numTracksSelHist","number of Entering Tracks - Selected Events", 10, 0, 5);
 
   TH2D *tofMomentHist = new TH2D("tofMomentHist","Momentum vs TOF",100,0,2000, 100 , 0,100);
   TH1D *BeamMassHist = new TH1D("BeamMassHist","Beamline particle Mass", 300, 0,3000);
   TH1D *BeamMassCutHist = new TH1D("BeamMassCutHist","Beamline particle Mass - after Cut", 300, 0,3000);
-  TH1D *primary_dedx = new TH1D("primary_dedx","primary track dE/dx", 400, 0,40);
+  //TH1D *primary_dedx = new TH1D("primary_dedx","primary track dE/dx", 400, 0,40);
   
   //plots for EventSelection Branches
 
@@ -415,11 +422,22 @@ void ProtonXsec::AnalyzeFromNtuples(){
 
       numEnteringTracks = BS->EnteringTrkID.size();
       inTracksNumHist->Fill(numEnteringTracks);
+      numPileupTracksHist->Fill(BS->PileupTracksBuffer);
+      numShowerCutHist->Fill(BS->ShowerTracksBuffer);
 
       if (matchCandidate[0]){
         found_primary = true;
         wctrkSelectedXY->Fill(wctrk_x_proj_3cm[0],wctrk_y_proj_3cm[0]);
         if (verbose){std::cout << "Primary Found" << std::endl;}
+        if (jentry > UI->numCenteringEvents){
+          int startIndex = static_cast <int> (matchCandidate[1]);
+            delXYHist->Fill(wctrk_x_proj_3cm[0] - (*track_xpos)[reco_primary][startIndex],
+            wctrk_y_proj_3cm[0] - (*track_ypos)[reco_primary][startIndex]);
+            delXYHistPx->Fill(wctrk_x_proj_3cm[0] - (*track_xpos)[reco_primary][startIndex]);
+            delXYHistPy->Fill(wctrk_y_proj_3cm[0] - (*track_ypos)[reco_primary][startIndex]);
+            wctrkPositionXY->Fill(wctrk_x_proj_3cm[0],wctrk_y_proj_3cm[0]);
+        }
+
       }
 
       if (verbose){std::cout << "Num Entering Tracks : " << numEnteringTracks << std::endl;}
@@ -428,14 +446,17 @@ void ProtonXsec::AnalyzeFromNtuples(){
       for (int i = 0;  i < numEnteringTracks; i++){
           int inTrackID = BS->EnteringTrkID[i];
           int inStart =  BS->EnteringTrkStart[i];
+          int inEnd = BS->EnteringTrkEnd[i];
           double trackAlpha = BS->EnteringTrkAlpha[i];
           tpcInTracksZ->Fill((*track_zpos)[inTrackID][inStart]);
+          tpcInTrackEndZ->Fill((*track_zpos)[inTrackID][inStart]);
           InTrackLength->Fill((*track_length)[inTrackID]);
           alphaHist->Fill(trackAlpha);
           if(found_primary){
             if(inTrackID == reco_primary){
               PrimaryLength->Fill((*track_length)[inTrackID]);
-              PrimaryStartZ->Fill((*track_zpos)[inTrackID][0]);
+              PrimaryStartZ->Fill((*track_zpos)[inTrackID][inStart]);
+              zProjPrimaryTrack->Fill((*track_zpos)[inTrackID][inEnd] -  (*track_zpos)[inTrackID][inStart]);
             }
             else{
               BadTrackHist->Fill((*track_xpos)[inTrackID][inStart],(*track_ypos)[inTrackID][inStart]);
@@ -443,9 +464,11 @@ void ProtonXsec::AnalyzeFromNtuples(){
                   wctrk_y_proj_3cm[0] - (*track_ypos)[inTrackID][inStart]);
               BadTrackLength->Fill((*track_length)[inTrackID]);
               BadTrackStartZ->Fill((*track_zpos)[inTrackID][inStart]);
+              zProjBadTrack->Fill((*track_zpos)[inTrackID][inEnd] -  (*track_zpos)[inTrackID][inStart]);
             }
           }
       }
+
 
 
 
@@ -807,6 +830,14 @@ void ProtonXsec::AnalyzeFromNtuples(){
       tofMomentHist->Write();
       numTracksSelHist->Write();
       alphaHist->Write();
+
+      //tpcAllTrackStartZ->Write(); 
+      //tpcAllTrackEndZ->Write(); 
+      tpcInTrackEndZ->Write();
+      zProjPrimaryTrack->Write();
+      zProjBadTrack->Write();
+      numPileupTracksHist->Write();
+      numShowerCutHist->Write();
 //      tpcPhiHist->Write();
 //      wcPhiHist->Write();
 //      tpcThetaHist->Write();

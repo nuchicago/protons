@@ -138,6 +138,7 @@ std::vector<double> BeamSelector::BeamMatching(double wc_x, double wc_y, double 
 
         EnteringTrkStart.clear();
         EnteringTrkID.clear();
+        EnteringTrkEnd.clear();
         EnteringTrkAlpha.clear();
 
 
@@ -165,6 +166,7 @@ std::vector<double> BeamSelector::BeamMatching(double wc_x, double wc_y, double 
 
             EnteringTrkStart.push_back(zIndices[0]);
             EnteringTrkID.push_back(itrack);
+            EnteringTrkEnd.push_back(zIndices[2]);
 
             
 
@@ -218,6 +220,9 @@ std::vector<double> BeamSelector::BeamMatching(double wc_x, double wc_y, double 
           }//end if ztpc cut
         
       }//end of track loop
+
+      PileupTracksBuffer = numPileupTracks;
+      ShowerTracksBuffer = numShortTracks;
       if(matchInfo[0]){
         if(BSoptions[4]){
           if(numPileupTracks > BSoptions[5]){matchInfo[0] = 0;}
