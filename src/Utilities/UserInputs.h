@@ -91,6 +91,7 @@ class UserInputs {
 
   int applyMassCut;
   int pickyTracksWC;
+  int qualityTracksWC;
 
   // pion inclusive analysis cuts
 

@@ -161,6 +161,7 @@ void UserInputs::initialize( ){
   verbose = 0;
   BendDirFilter = 0;
   pickyTracksWC = 1;
+  qualityTracksWC = 0;
 
 
 }
@@ -332,7 +333,9 @@ void UserInputs::readDataSetParams( ifstream *jobOptionsFile ){
   if( paramLookUp( jobOptionsFile, (char*)"pickyTracksWC" ) ){
     *jobOptionsFile >> pickyTracksWC;
   }
-
+  if( paramLookUp( jobOptionsFile, (char*)"qualityTracksWC" ) ){
+    *jobOptionsFile >> qualityTracksWC;
+  }
   if( paramLookUp( jobOptionsFile, (char*)"BendDirFilter" ) ){
     *jobOptionsFile >> BendDirFilter;
   }

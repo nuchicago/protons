@@ -166,6 +166,7 @@ void ProtonXsec::AnalyzeFromNtuples(){
   double numWCTrack = 0;
   double num4PointTrack = 0;
   double numPickyTrack = 0;
+  double numQualityTrack = 0;
   double xyDeltaCut = 0;
   double numThetaCut = 0;
   double numPhiCut = 0;
@@ -323,6 +324,7 @@ void ProtonXsec::AnalyzeFromNtuples(){
       if (wctrk_missed > 0){continue;}
       else{
           if(UI->pickyTracksWC){if (  wctrk_picky != 1){continue;}}
+          if(UI->qualityTracksWC){if (wctrk_quality !=1){continue;}}
           
 
           double ParticleMass = -9999999.;
@@ -386,6 +388,8 @@ void ProtonXsec::AnalyzeFromNtuples(){
       num4PointTrack++;
       if(UI->pickyTracksWC){if (wctrk_picky != 1){continue;}}
       numPickyTrack++;
+      if(UI->qualityTracksWC){if (wctrk_quality !=1){continue;}}
+      numQualityTrack++;
       
      
       if(tofObject[0] < UI->tofMin || tofObject[0] > UI->tofMax){continue;}
@@ -478,7 +482,6 @@ void ProtonXsec::AnalyzeFromNtuples(){
 //                  }
 //                }
 //              }
-//            
 //              numTracksSelHist->Fill(numTracksSel);
 //              tpcPhiHist->Fill(UtilityFunctions::getTrackPhi(reco_primary,track_xpos,track_ypos));//
 
@@ -721,6 +724,7 @@ void ProtonXsec::AnalyzeFromNtuples(){
     std::cout << "Events with only one wc track: "<< numWCTrack << std::endl;
     std::cout << "Events with 4-point wc track: " << num4PointTrack << std::endl;
     if (UI->pickyTracksWC){std::cout << "Events with picky tracks: " << numPickyTrack << std::endl;}
+    if (UI->qualityTracksWC){std::cout << "Events passing quality flag: " << numQualityTrack << std::endl;}
     std::cout << "Events with ToF value in range (" << UI->tofMin << " , " << UI->tofMax<< ") [ns]: " << numtofvalid << std::endl;
     std::cout << "Events passing mass cut (" << UI->MassCutMin << " , " << UI->MassCutMax << ") [GeV/c^2]: "<< numMassCut << std::endl;  
 
