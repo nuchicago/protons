@@ -52,6 +52,8 @@ class UserInputs {
   bool modelSet;
   long numEventsToProcess;
   bool numEventsToProcessSet;
+  long numCenteringEvents;
+  bool numCenteringEventsSet;
   int  potTarget;
   bool potTargetSet;
   int  potEmpty;
@@ -90,6 +92,7 @@ class UserInputs {
   bool PhiCutSet;
 
   int applyMassCut;
+  int skipEventSelection;
   int pickyTracksWC;
   int qualityTracksWC;
 

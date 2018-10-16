@@ -303,7 +303,7 @@ void ProtonXsec::AnalyzeFromNtuples(){
 
 
   if(!isMC){
-  for (Long64_t jentry=0;  jentry < numEventsToProcess && jentry < nentries; jentry++) {
+  for (Long64_t jentry=0;  jentry < UI->numCenteringEvents && jentry < nentries; jentry++) {
     
     
     Long64_t ientry = tuple->LoadTree(jentry);
@@ -523,6 +523,8 @@ void ProtonXsec::AnalyzeFromNtuples(){
     }
     if(reco_primary == -1){continue;}//<- skipping events that didn't pass isTPCPrimary 
     else{ found_primary = true;}
+
+    if(UI->skipEventSelection){continue;}//skipping Event Selection - running in beam diagnostic mode
 
 
 

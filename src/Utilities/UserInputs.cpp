@@ -106,6 +106,8 @@ void UserInputs::initialize( ){
   isMC = false;
   numEventsToProcessSet = false;
   numEventsToProcess = 10;
+  numCenteringEventsSet = false;
+  numCenteringEvents = 10;
 
   zSlabSize = 0.5;
   zSlabSizeSet = false;
@@ -158,10 +160,12 @@ void UserInputs::initialize( ){
   ThetaCutSet = false;
 
   applyMassCut = 1;
+  skipEventSelection = 0;
   verbose = 0;
   BendDirFilter = 0;
   pickyTracksWC = 1;
   qualityTracksWC = 0;
+
 
 
 }
@@ -267,6 +271,11 @@ void UserInputs::readDataSetParams( ifstream *jobOptionsFile ){
     numEventsToProcessSet = true;
   }
 
+  if( paramLookUp( jobOptionsFile, (char*)"centeringEvents" ) ){
+    *jobOptionsFile >> numCenteringEvents;
+    numCenteringEventsSet = true;
+  }
+
   if( paramLookUp( jobOptionsFile, (char*)"Model" ) ){
     Model = new char[1000];
     *jobOptionsFile >> Model;
@@ -330,6 +339,9 @@ void UserInputs::readDataSetParams( ifstream *jobOptionsFile ){
   if( paramLookUp( jobOptionsFile, (char*)"applyMassCut" ) ){
     *jobOptionsFile >> applyMassCut;
   }
+  if( paramLookUp( jobOptionsFile, (char*)"skipEventSelection" ) ){
+    *jobOptionsFile >> skipEventSelection;
+  }
   if( paramLookUp( jobOptionsFile, (char*)"pickyTracksWC" ) ){
     *jobOptionsFile >> pickyTracksWC;
   }
@@ -339,6 +351,8 @@ void UserInputs::readDataSetParams( ifstream *jobOptionsFile ){
   if( paramLookUp( jobOptionsFile, (char*)"BendDirFilter" ) ){
     *jobOptionsFile >> BendDirFilter;
   }
+
+  if (!numCenteringEventsSet){ numCenteringEvents = numEventsToProcess;}
 
 
 }
@@ -1048,6 +1062,7 @@ void UserInputs::printUserInputs( ){
   cout << endl;
   cout << "Options input summary : " << endl << endl; 
   cout << " Process a maximum of " << numEventsToProcess;
+  cout << " Centering with " << numCenteringEvents;
   if( isData ) cout << " data";
   else if( isMC ) { 
     cout << " monte carlo";
