@@ -120,6 +120,9 @@ ProtonXsec::ProtonXsec( char* jobOptionsFile ) : LArIATAnalysis( jobOptionsFile 
   //== Open output root file and postscript file
   if( UI->rootOutputFileSet ){
     outputFile = new TFile( UI->rootOutputFile, "RECREATE" );
+    //char LogTitle[500];
+    //sprintf(LogTitle,"%s.txt", UI->rootOutputFile);
+    //RunLog.open()
     //ps = new TPostScript( UI->psOutputFile, 112 );
     //ps->Range(26,18); 
     //psPage = 1; 
@@ -321,7 +324,6 @@ void ProtonXsec::AnalyzeFromNtuples(){
     
     int numEnteringTracks = 0;
     int best_candidate = -1;
-    wctrkNumHist->Fill(num_wctracks);
     double xMeanTPCentry = 0;
     double yMeanTPCentry = 0;
     bool skipCircleCut = true;
@@ -341,9 +343,6 @@ void ProtonXsec::AnalyzeFromNtuples(){
           if(applyMassCut){
             if(!isProton){continue;}
           }
-
-        BeamMomentum->Fill(wctrk_momentum[0]);
-        BeamToF->Fill(tofObject[0]);
 
         std::vector<double> matchCandidate = BS->BeamCentering(wctrk_x_proj_3cm[0], wctrk_y_proj_3cm[0],
          track_xpos, track_ypos, track_zpos, ntracks_reco, ntrack_hits, UI->zTPCCutoff, best_candidate);
@@ -388,6 +387,7 @@ void ProtonXsec::AnalyzeFromNtuples(){
     bool found_primary = false;
     bool passed_geo_cuts = true;
     double ParticleMass = -9999999.;
+    wctrkNumHist->Fill(num_wctracks);
     if(!isMC){
       if (num_wctracks !=1){continue;}
       numWCTrack++;
@@ -402,6 +402,8 @@ void ProtonXsec::AnalyzeFromNtuples(){
       if(tofObject[0] < UI->tofMin || tofObject[0] > UI->tofMax){continue;}
       numtofvalid++;
       
+      BeamMomentum->Fill(wctrk_momentum[0]);
+      BeamToF->Fill(tofObject[0]);
       tofMomentHist->Fill(wctrk_momentum[0], tofObject[0]);
 
       bool isProton = BS->MassCut(wctrk_momentum[0], tofObject[0], ParticleMass, UI->MassCutMin, UI->MassCutMax);
@@ -424,6 +426,7 @@ void ProtonXsec::AnalyzeFromNtuples(){
       inTracksNumHist->Fill(numEnteringTracks);
       numPileupTracksHist->Fill(BS->PileupTracksBuffer);
       numShowerCutHist->Fill(BS->ShowerTracksBuffer);
+      
 
       if (matchCandidate[0]){
         found_primary = true;
