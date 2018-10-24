@@ -364,12 +364,21 @@ void ProtonXsec::AnalyzeFromNtuples(){
         std::vector<double> matchCandidate = BS->BeamCentering(wctrk_x_proj_3cm[0], wctrk_y_proj_3cm[0],
          track_xpos, track_ypos, track_zpos, ntracks_reco, ntrack_hits, UI->zTPCCutoff, best_candidate);
 
-        if(best_candidate != -1 && matchCandidate[4] < 10 && matchCandidate[5] < BSoptions[2]){
-            int startIndex = static_cast <int> (matchCandidate[1]);
+        if(best_candidate != -1){
+          int startIndex = static_cast <int> (matchCandidate[1]);
+          delXYHist->Fill(wctrk_x_proj_3cm[0] - (*track_xpos)[best_candidate][startIndex],
+          wctrk_y_proj_3cm[0] - (*track_ypos)[best_candidate][startIndex]);
+          delXYHistPx->Fill(wctrk_x_proj_3cm[0] - (*track_xpos)[best_candidate][startIndex]);
+          delXYHistPy->Fill(wctrk_y_proj_3cm[0] - (*track_ypos)[best_candidate][startIndex]);
+          wctrkPositionXY->Fill(wctrk_x_proj_3cm[0],wctrk_y_proj_3cm[0]);
+
+
+          if (matchCandidate[4] < 10 && matchCandidate[5] < BSoptions[2]){
             delXYHistCenter->Fill(wctrk_x_proj_3cm[0] - (*track_xpos)[best_candidate][startIndex],
             wctrk_y_proj_3cm[0] - (*track_ypos)[best_candidate][startIndex]);
             delXYHistPxCenter->Fill(wctrk_x_proj_3cm[0] - (*track_xpos)[best_candidate][startIndex]);
             delXYHistPyCenter->Fill(wctrk_y_proj_3cm[0] - (*track_ypos)[best_candidate][startIndex]);
+            }
           }
         } 
       }
@@ -404,6 +413,11 @@ void ProtonXsec::AnalyzeFromNtuples(){
     bool passed_geo_cuts = true;
     double ParticleMass = -9999999.;
     wctrkNumHist->Fill(num_wctracks);
+
+    bool isProton = BS->MassCut(wctrk_momentum[0], tofObject[0], ParticleMass, UI->MassCutMin, UI->MassCutMax);
+
+    BeamMassHist->Fill(ParticleMass);
+
     if(!isMC){
       if (num_wctracks !=1){continue;}
       numWCTrack++;
@@ -429,17 +443,15 @@ void ProtonXsec::AnalyzeFromNtuples(){
       BeamToF->Fill(tofObject[0]);
       tofMomentHist->Fill(wctrk_momentum[0], tofObject[0]);
 
-      bool isProton = BS->MassCut(wctrk_momentum[0], tofObject[0], ParticleMass, UI->MassCutMin, UI->MassCutMax);
-
-      BeamMassHist->Fill(ParticleMass);
       if(applyMassCut){
         if(!isProton){continue;}
       }
-
       if (isProton){
         BeamMassCutHist->Fill(ParticleMass);
         numMassCut++;
       }
+
+      //if(verbose){std::cout << "matching to tpc" << std::endl;}
 
       std::vector <double> matchCandidate = BS->BeamMatching(wctrk_x_proj_3cm[0],wctrk_y_proj_3cm[0], wctrk_theta[0], wctrk_phi[0],
                                                              track_xpos, track_ypos, track_zpos, ntracks_reco, ntrack_hits,
@@ -450,12 +462,10 @@ void ProtonXsec::AnalyzeFromNtuples(){
       numPileupTracksHist->Fill(BS->PileupTracksBuffer);
       numShowerCutHist->Fill(BS->ShowerTracksBuffer);
 
-      int startIndex = static_cast <int> (matchCandidate[2]);
-      delXYHist->Fill(wctrk_x_proj_3cm[0] - (*track_xpos)[reco_primary][startIndex],
-      wctrk_y_proj_3cm[0] - (*track_ypos)[reco_primary][startIndex]);
-      delXYHistPx->Fill(wctrk_x_proj_3cm[0] - (*track_xpos)[reco_primary][startIndex]);
-      delXYHistPy->Fill(wctrk_y_proj_3cm[0] - (*track_ypos)[reco_primary][startIndex]);
-      wctrkPositionXY->Fill(wctrk_x_proj_3cm[0],wctrk_y_proj_3cm[0]);
+
+      //if(verbose){std::cout << "ploting delXY" << std::endl;}
+
+
       
 
       if (matchCandidate[0]){
