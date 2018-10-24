@@ -252,7 +252,7 @@ void ProtonXsec::AnalyzeFromNtuples(){
   TH1D *PrimaryLength =  new TH1D("PrimaryLength","Selected Entering Track Length",250, 0, 100);
   TH1D *BadTrackLength =  new TH1D("BadTrackLength","non-selected Entering Track Length",250, 0, 100);
   TH1D *inTracksNumHist = new TH1D("inTracksNumHist","Number of Entering Tracks TPC",100,0,10);
-  TH1D *BeamMomentum = new TH1D("BeamMomentum","Incoming Particle Momentum",200,0,2000);
+  
   TH1D *wctrkNumHist = new TH1D("wctrkNumHist","Number of Entering Tracks TPC",40,0,10);
   TH1D *BeamToF = new TH1D("BeamToF","Incoming Particle ToF",100,0,100);
 
@@ -260,7 +260,14 @@ void ProtonXsec::AnalyzeFromNtuples(){
   TH1D * delXYHistPx =  new TH1D("delXYHistPx","tpc to wc delta x",200,-100,100);
   TH1D * delXYHistPy =  new TH1D("delXYHistPy","tpc to wc delta x",200,-100,100);
 
+  TH2D * delXYHistCenter =  new TH2D("delXYHistCenter","tpc to wc delta x",200,-100,100,200,-100,100);
+  TH1D * delXYHistPxCenter =  new TH1D("delXYHistPxCenter","tpc to wc delta x",200,-100,100);
+  TH1D * delXYHistPyCenter =  new TH1D("delXYHistPyCenter","tpc to wc delta x",200,-100,100);
 
+
+  TH2D * delXYHistMatch =  new TH2D("delXYHistMatch","tpc to wc delta x",200,-100,100,200,-100,100);
+  TH1D * delXYHistPxMatch =  new TH1D("delXYHistPxMatch","tpc to wc delta x",200,-100,100);
+  TH1D * delXYHistPyMatch =  new TH1D("delXYHistPyMatch","tpc to wc delta x",200,-100,100);
 
   TH2D *BadTrackHist =  new TH2D("BadTrackHist","non-selected tracks",200,-100,100,200,-100,100);
   TH2D *delBadTrackHist =  new TH2D("delBadTrackHist","non-selected tracks",200,-100,100,200,-100,100);
@@ -282,7 +289,17 @@ void ProtonXsec::AnalyzeFromNtuples(){
   TH1D *BeamMassHist = new TH1D("BeamMassHist","Beamline particle Mass", 300, 0,3000);
   TH1D *BeamMassCutHist = new TH1D("BeamMassCutHist","Beamline particle Mass - after Cut", 300, 0,3000);
   //TH1D *primary_dedx = new TH1D("primary_dedx","primary track dE/dx", 400, 0,40);
-  
+  TH1D *BeamMomentum = new TH1D("BeamMomentum","Incoming Particle Momentum",200,0,2000);
+  // resolution changes with cuts
+
+  TH1D *BeamMomentumInit = new TH1D("BeamMomentumInit","Incoming Particle Momentum",200,0,2000);
+  TH1D *BeamMomentumQual = new TH1D("BeamMomentumQual","Momentum after quality flag",200,0,2000);
+  TH1D *BeamMomentumMatch = new TH1D("BeamMomentumMatch","Incoming Particle Momentum",200,0,2000);
+
+  TH1D *BeamMassInit = new TH1D("BeamMassInit","Incoming Particle Mass", 300, 0,3000);
+  TH1D *BeamMassQual = new TH1D("BeamMassQual","Mass after quality flag", 300, 0,3000);
+  TH1D *BeamMassMatch = new TH1D("BeamMassMatch","Mass after matching", 300, 0,3000);
+
   //plots for EventSelection Branches
 
   TH1D * BranchDistHist = new TH1D("BranchDistHist", "Inelastic Event Branch Distance",50, 0,25);
@@ -347,13 +364,12 @@ void ProtonXsec::AnalyzeFromNtuples(){
         std::vector<double> matchCandidate = BS->BeamCentering(wctrk_x_proj_3cm[0], wctrk_y_proj_3cm[0],
          track_xpos, track_ypos, track_zpos, ntracks_reco, ntrack_hits, UI->zTPCCutoff, best_candidate);
 
-        if(best_candidate != -1){
+        if(best_candidate != -1 && matchCandidate[4] < 10 && matchCandidate[5] < BSoptions[2]){
             int startIndex = static_cast <int> (matchCandidate[1]);
-            delXYHist->Fill(wctrk_x_proj_3cm[0] - (*track_xpos)[best_candidate][startIndex],
+            delXYHistCenter->Fill(wctrk_x_proj_3cm[0] - (*track_xpos)[best_candidate][startIndex],
             wctrk_y_proj_3cm[0] - (*track_ypos)[best_candidate][startIndex]);
-            delXYHistPx->Fill(wctrk_x_proj_3cm[0] - (*track_xpos)[best_candidate][startIndex]);
-            delXYHistPy->Fill(wctrk_y_proj_3cm[0] - (*track_ypos)[best_candidate][startIndex]);
-            wctrkPositionXY->Fill(wctrk_x_proj_3cm[0],wctrk_y_proj_3cm[0]);
+            delXYHistPxCenter->Fill(wctrk_x_proj_3cm[0] - (*track_xpos)[best_candidate][startIndex]);
+            delXYHistPyCenter->Fill(wctrk_y_proj_3cm[0] - (*track_ypos)[best_candidate][startIndex]);
           }
         } 
       }
@@ -363,8 +379,8 @@ void ProtonXsec::AnalyzeFromNtuples(){
 
 
     // setting beam center values
-    double xMeanTPCentry = delXYHist->GetMean(1);
-    double yMeanTPCentry = delXYHist->GetMean(2);
+    double xMeanTPCentry = delXYHistCenter->GetMean(1);
+    double yMeanTPCentry = delXYHistCenter->GetMean(2);
 
     BS->SetMeanXY(xMeanTPCentry,yMeanTPCentry);
 
@@ -395,10 +411,17 @@ void ProtonXsec::AnalyzeFromNtuples(){
       num4PointTrack++;
       if(UI->pickyTracksWC){if (wctrk_picky != 1){continue;}}
       numPickyTrack++;
+
+      BeamMomentumInit->Fill(wctrk_momentum[0]);
+      BeamMassInit->Fill(ParticleMass);
+
+
       if(UI->qualityTracksWC){if (wctrk_quality !=1){continue;}}
       numQualityTrack++;
       
-     
+      BeamMomentumQual->Fill(wctrk_momentum[0]);
+      BeamMassQual->Fill(ParticleMass);
+      
       if(tofObject[0] < UI->tofMin || tofObject[0] > UI->tofMax){continue;}
       numtofvalid++;
       
@@ -426,21 +449,21 @@ void ProtonXsec::AnalyzeFromNtuples(){
       inTracksNumHist->Fill(numEnteringTracks);
       numPileupTracksHist->Fill(BS->PileupTracksBuffer);
       numShowerCutHist->Fill(BS->ShowerTracksBuffer);
+
+      int startIndex = static_cast <int> (matchCandidate[1]);
+      delXYHist->Fill(wctrk_x_proj_3cm[0] - (*track_xpos)[reco_primary][startIndex],
+      wctrk_y_proj_3cm[0] - (*track_ypos)[reco_primary][startIndex]);
+      delXYHistPx->Fill(wctrk_x_proj_3cm[0] - (*track_xpos)[reco_primary][startIndex]);
+      delXYHistPy->Fill(wctrk_y_proj_3cm[0] - (*track_ypos)[reco_primary][startIndex]);
+      wctrkPositionXY->Fill(wctrk_x_proj_3cm[0],wctrk_y_proj_3cm[0]);
       
 
       if (matchCandidate[0]){
         found_primary = true;
         wctrkSelectedXY->Fill(wctrk_x_proj_3cm[0],wctrk_y_proj_3cm[0]);
+        BeamMomentumMatch->Fill(wctrk_momentum[0]);
+        BeamMassMatch->Fill(ParticleMass);
         if (verbose){std::cout << "Primary Found" << std::endl;}
-        if (jentry > UI->numCenteringEvents){
-          int startIndex = static_cast <int> (matchCandidate[1]);
-            delXYHist->Fill(wctrk_x_proj_3cm[0] - (*track_xpos)[reco_primary][startIndex],
-            wctrk_y_proj_3cm[0] - (*track_ypos)[reco_primary][startIndex]);
-            delXYHistPx->Fill(wctrk_x_proj_3cm[0] - (*track_xpos)[reco_primary][startIndex]);
-            delXYHistPy->Fill(wctrk_y_proj_3cm[0] - (*track_ypos)[reco_primary][startIndex]);
-            wctrkPositionXY->Fill(wctrk_x_proj_3cm[0],wctrk_y_proj_3cm[0]);
-        }
-
       }
 
       if (verbose){std::cout << "Num Entering Tracks : " << numEnteringTracks << std::endl;}
@@ -822,13 +845,31 @@ void ProtonXsec::AnalyzeFromNtuples(){
       delXYHist->Write();
       delXYHistPx->Write();
       delXYHistPy->Write();
+
+      delXYHistCenter->Write();
+      delXYHistPxCenter->Write();
+      delXYHistPyCenter->Write();
+
+      delXYHistMatch->Write();
+      delXYHistPxMatch->Write();
+      delXYHistPyMatch->Write();
 //      delThetaHist->Write();
 //      delPhiHist->Write();
       BadTrackHist->Write();
       BadTrackLength->Write();
       BadTrackStartZ->Write();
       delBadTrackHist->Write();
+
       BeamMassHist->Write();
+      BeamMassInit->Write();
+      BeamMassQual->Write();
+      BeamMassMatch->Write();
+
+      BeamMomentumInit->Write();
+      BeamMomentumQual->Write();
+      BeamMomentumMatch->Write();
+
+
       BeamMassCutHist->Write();
       tofMomentHist->Write();
       numTracksSelHist->Write();
