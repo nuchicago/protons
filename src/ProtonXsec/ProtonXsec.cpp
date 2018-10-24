@@ -450,7 +450,7 @@ void ProtonXsec::AnalyzeFromNtuples(){
       numPileupTracksHist->Fill(BS->PileupTracksBuffer);
       numShowerCutHist->Fill(BS->ShowerTracksBuffer);
 
-      int startIndex = static_cast <int> (matchCandidate[1]);
+      int startIndex = static_cast <int> (matchCandidate[2]);
       delXYHist->Fill(wctrk_x_proj_3cm[0] - (*track_xpos)[reco_primary][startIndex],
       wctrk_y_proj_3cm[0] - (*track_ypos)[reco_primary][startIndex]);
       delXYHistPx->Fill(wctrk_x_proj_3cm[0] - (*track_xpos)[reco_primary][startIndex]);
