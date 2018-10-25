@@ -490,6 +490,11 @@ void ProtonXsec::AnalyzeFromNtuples(){
           alphaHist->Fill(trackAlpha);
           if(found_primary){
             if(inTrackID == reco_primary){
+            delXYHistMatch->Fill(wctrk_x_proj_3cm[0] - (*track_xpos)[inTrackID][inStart],
+            wctrk_y_proj_3cm[0] - (*track_ypos)[inTrackID][inStart]);
+            delXYHistPxMatch->Fill(wctrk_x_proj_3cm[0] - (*track_xpos)[inTrackID][inStart]);
+            delXYHistPyMatch->Fill(wctrk_y_proj_3cm[0] - (*track_ypos)[inTrackID][inStart]);
+
               PrimaryLength->Fill((*track_length)[inTrackID]);
               PrimaryStartZ->Fill((*track_zpos)[inTrackID][inStart]);
               zProjPrimaryTrack->Fill((*track_zpos)[inTrackID][inEnd] -  (*track_zpos)[inTrackID][inStart]);
