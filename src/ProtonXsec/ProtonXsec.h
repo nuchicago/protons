@@ -33,6 +33,8 @@ class ProtonXsec : public LArIATAnalysis {
   TFile *outputFile;
   TPostScript *ps;
   ofstream IDfile;
+  TFile *beamPlotFile;
+  TFile *haloPlotFile;
   //ofstream XSecLog;
   int psPage;
 

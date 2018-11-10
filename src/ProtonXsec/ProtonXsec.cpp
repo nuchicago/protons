@@ -138,6 +138,15 @@ ProtonXsec::ProtonXsec( char* jobOptionsFile ) : LArIATAnalysis( jobOptionsFile 
     IDfile.open(UI->SelEventList, ios::trunc);
   }
 
+  // output for data driven monte carlo
+
+  if (UI->beamCharFileSet){
+    beamPlotFile = new TFile( UI->beamCharFile, "RECREATE");
+  }
+  if(UI->haloCharFileSet){
+    haloPlotFile = new TFile( UI->haloCharFile, "RECREATE");
+  }
+
   //== number of events to process
   if( UI->numEventsToProcessSet )
     numEventsToProcess = UI->numEventsToProcess;
@@ -240,6 +249,10 @@ void ProtonXsec::AnalyzeFromNtuples(){
     200,-100 ,100 , 200, -100, 100);
   TH2D *wctrkSelectedXY =  new TH2D("wctrkSelectedXY","Position of Wire Chamber Track",
   200, -100, 100, 200, -100, 100);
+  TH2D *wctrk4XY =  new TH2D("wctrk4XY","Position of Wire Chamber Track on detector 4",
+  200, -100, 100, 200, -100, 100);
+  TH2D *wctrkTpcXY =  new TH2D("wctrkTpcXY","Position of Wire Chamber Tracks z = 0, after quality cut",
+  200, -100, 100, 200, -100, 100);
   TH1D *tpcInTracksZ =  new TH1D("tpcInTracksZ","Position of TPC entering track start Z",25, 0, 10);
   //TH1D *tpcAllTrackStartZ = new TH1D("tpcAllTrackStartZ", "Position of TPC track start in Z", 250, 0, 100);
   //TH1D *tpcAllTrackEndZ = new TH1D("tpcAllTrackEndZ", "Position of TPC track end in Z", 250, 0, 100);
@@ -286,19 +299,21 @@ void ProtonXsec::AnalyzeFromNtuples(){
   TH1D * numTracksSelHist =  new TH1D("numTracksSelHist","number of Entering Tracks - Selected Events", 10, 0, 5);
 
   TH2D *tofMomentHist = new TH2D("tofMomentHist","Momentum vs TOF",100,0,2000, 100 , 0,100);
-  TH1D *BeamMassHist = new TH1D("BeamMassHist","Beamline particle Mass", 300, 0,3000);
+  TH1D *BeamMassHist = new TH1D("BeamMassHist","Beamline particle Mass", 600, -3000,3000);
   TH1D *BeamMassCutHist = new TH1D("BeamMassCutHist","Beamline particle Mass - after Cut", 300, 0,3000);
   //TH1D *primary_dedx = new TH1D("primary_dedx","primary track dE/dx", 400, 0,40);
   TH1D *BeamMomentum = new TH1D("BeamMomentum","Incoming Particle Momentum",200,0,2000);
+
+
   // resolution changes with cuts
 
   TH1D *BeamMomentumInit = new TH1D("BeamMomentumInit","Incoming Particle Momentum",200,0,2000);
   TH1D *BeamMomentumQual = new TH1D("BeamMomentumQual","Momentum after quality flag",200,0,2000);
   TH1D *BeamMomentumMatch = new TH1D("BeamMomentumMatch","Incoming Particle Momentum",200,0,2000);
 
-  TH1D *BeamMassInit = new TH1D("BeamMassInit","Incoming Particle Mass", 300, 0,3000);
-  TH1D *BeamMassQual = new TH1D("BeamMassQual","Mass after quality flag", 300, 0,3000);
-  TH1D *BeamMassMatch = new TH1D("BeamMassMatch","Mass after matching", 300, 0,3000);
+  TH1D *BeamMassInit = new TH1D("BeamMassInit","Incoming Particle Mass", 360, -600,3000);
+  TH1D *BeamMassQual = new TH1D("BeamMassQual","Mass after quality flag", 360, -600,3000);
+  TH1D *BeamMassMatch = new TH1D("BeamMassMatch","Mass after matching", 360, -600,3000);
 
   //plots for EventSelection Branches
 
@@ -322,6 +337,30 @@ void ProtonXsec::AnalyzeFromNtuples(){
   TH1D *hreco_folded_incke_signal = new TH1D("hreco_folded_incke_signal", "total-back", 20, 0, 1000);
   TH1D *hreco_unfolded_intke_signal = new TH1D("hreco_unfolded_intke_signal", "U(total-back)", 20, 0, 1000);
   TH1D *hreco_unfolded_incke_signal = new TH1D("hreco_unfolded_incke_signal", "U(total-back)", 20, 0, 1000);
+
+
+  TH1D *beamXtpc0 = new TH1D("beamXtpc0","beam X position, z = 0 cm", 160, -20, 60);
+  TH1D *beamYtpc0 = new TH1D("beamYtpc0","beam Y position, z = 0 cm", 160, -40, 40);
+  TH1D *beamZtpc0 = new TH1D("beamZtpc0","beam Z at tpc face", 160, -140 , -60);
+  // Plots for data driven MC
+
+  TH1D *beam_x = new TH1D("beam_x","beam X position, z = -100 cm", 160, -20, 60);
+  TH1D *beam_y = new TH1D("beam_y","beam Y position, z = -100 cm", 160, -40, 40);
+  TH1D *beam_z = new TH1D("beam_z","beam Z start", 160, -140 , -60);
+
+  TH1D *beam_angle_xz =  new TH1D("beam_angle_xz", "beam theta xz", 200, -10, 10);
+  TH1D *beam_angle_yz = new TH1D("beam_angle_yz", "beam theta yz", 200 , -10, 10);
+  TH1D *beam_momentum = new TH1D("beam_momentum","beam momentum after quality flag",200,0,2000);
+
+
+  TH1D *halo_pileup_x = new TH1D("halo_pileup_x","halo pileup X position, z = -1 cm", 160, -20, 60);
+  TH1D *halo_pileup_y = new TH1D("halo_pileup_y","halo pileup Y position, z = -1 cm", 160, -40, 40);
+  TH1D *halo_pileup_z = new TH1D("halo_pileup_z","halo pileup Z start", 160, -40 , -40);
+
+  TH1D *halo_pileup_angle_xz =  new TH1D("halo_pileup_angle_xz", "halo pileup theta xz", 200, -5, 5);
+  TH1D *halo_pileup_angle_yz = new TH1D("halo_pileup_angle_yz", "halo pileup theta yz", 200 , -5, 5);
+
+  TH1D *halo_pileup_number_particles = new TH1D("halo_pileup_number_particles","Momentum after quality flag",20,0,20);
 
   // ## looping once to find Beamline center ##
 
@@ -355,7 +394,7 @@ void ProtonXsec::AnalyzeFromNtuples(){
 
           double ParticleMass = -9999999.;
 
-          bool isProton = BS->MassCut(wctrk_momentum[0], tofObject[0], ParticleMass, UI->MassCutMin, UI->MassCutMax);
+          bool isProton = BS->MassCut(wctrk_momentum[0], tofObject[0], UI->beamLength, UI->tofOffset, ParticleMass, UI->MassCutMin, UI->MassCutMax);
 
           if(applyMassCut){
             if(!isProton){continue;}
@@ -414,7 +453,7 @@ void ProtonXsec::AnalyzeFromNtuples(){
     double ParticleMass = -9999999.;
     wctrkNumHist->Fill(num_wctracks);
 
-    bool isProton = BS->MassCut(wctrk_momentum[0], tofObject[0], ParticleMass, UI->MassCutMin, UI->MassCutMax);
+    bool isProton = BS->MassCut(wctrk_momentum[0], tofObject[0], UI->beamLength, UI->tofOffset, ParticleMass, UI->MassCutMin, UI->MassCutMax);
 
     BeamMassHist->Fill(ParticleMass);
 
@@ -435,7 +474,25 @@ void ProtonXsec::AnalyzeFromNtuples(){
       
       BeamMomentumQual->Fill(wctrk_momentum[0]);
       BeamMassQual->Fill(ParticleMass);
+
+      if(isProton){
+        std::vector <double> projVector = BS->backProjections(wctrk_XFace[0],wctrk_YFace[0],wctrk_momentum[0],wctrk_theta[0],wctrk_phi[0]);
       
+        beam_x->Fill(projVector[0]);
+        beam_y->Fill(projVector[1]);
+        beam_z->Fill(projVector[2]);
+
+        beamXtpc0->Fill(wctrk_XFace[0]);
+        beamYtpc0->Fill(wctrk_YFace[0]);
+        beamZtpc0->Fill(0);
+
+        wctrk4XY->Fill(projVector[0],projVector[1]);
+        wctrkTpcXY->Fill(wctrk_XFace[0],wctrk_YFace[0]);
+        beam_angle_xz->Fill(projVector[3]);
+        beam_angle_yz->Fill(projVector[4]);}
+
+
+
       if(tofObject[0] < UI->tofMin || tofObject[0] > UI->tofMax){continue;}
       numtofvalid++;
       
@@ -463,6 +520,7 @@ void ProtonXsec::AnalyzeFromNtuples(){
       numShowerCutHist->Fill(BS->ShowerTracksBuffer);
 
 
+
       //if(verbose){std::cout << "ploting delXY" << std::endl;}
 
 
@@ -475,12 +533,15 @@ void ProtonXsec::AnalyzeFromNtuples(){
         BeamMassMatch->Fill(ParticleMass);
         if (verbose){std::cout << "Primary Found" << std::endl;}
       }
+      if(found_primary){halo_pileup_number_particles->Fill(BS->PileupTracksBuffer -1);}
+      else{halo_pileup_number_particles->Fill(BS->PileupTracksBuffer);}
 
       if (verbose){std::cout << "Num Entering Tracks : " << numEnteringTracks << std::endl;}
       if(!found_primary){if(verbose){std::cout << "No Valid Primary \n" << std::endl;}}
       
       for (int i = 0;  i < numEnteringTracks; i++){
           int inTrackID = BS->EnteringTrkID[i];
+          int inSecond = BS->EnteringTrkSecond[i];
           int inStart =  BS->EnteringTrkStart[i];
           int inEnd = BS->EnteringTrkEnd[i];
           double trackAlpha = BS->EnteringTrkAlpha[i];
@@ -506,6 +567,34 @@ void ProtonXsec::AnalyzeFromNtuples(){
               BadTrackLength->Fill((*track_length)[inTrackID]);
               BadTrackStartZ->Fill((*track_zpos)[inTrackID][inStart]);
               zProjBadTrack->Fill((*track_zpos)[inTrackID][inEnd] -  (*track_zpos)[inTrackID][inStart]);
+
+
+              double yproj  = (-1 - (*track_zpos)[inTrackID][inStart]) 
+                              *( (*track_ypos)[inTrackID][inSecond] - (*track_ypos)[inTrackID][inStart])
+                              /( (*track_zpos)[inTrackID][inSecond] - (*track_zpos)[inTrackID][inStart])
+                              + (*track_ypos)[inTrackID][inStart];
+
+              double xproj  = (-1 - (*track_zpos)[inTrackID][inStart]) 
+                              *( (*track_xpos)[inTrackID][inSecond] - (*track_xpos)[inTrackID][inStart])
+                              /( (*track_zpos)[inTrackID][inSecond] - (*track_zpos)[inTrackID][inStart])
+                              + (*track_xpos)[inTrackID][inStart];
+
+              halo_pileup_x->Fill(xproj);
+              halo_pileup_y->Fill(yproj);
+              halo_pileup_z->Fill(-1);
+
+              double angle_yz = atan2((*track_ypos)[inTrackID][inSecond] - (*track_ypos)[inTrackID][inStart],
+                                      (*track_zpos)[inTrackID][inSecond] - (*track_zpos)[inTrackID][inStart]);
+
+              double angle_xz = atan2((*track_xpos)[inTrackID][inSecond] - (*track_xpos)[inTrackID][inStart],
+                                      (*track_zpos)[inTrackID][inSecond] - (*track_zpos)[inTrackID][inStart]);
+
+              
+              halo_pileup_angle_xz->Fill(angle_xz);
+              halo_pileup_angle_yz->Fill(angle_yz);
+              
+
+
             }
           }
       }
@@ -906,6 +995,12 @@ void ProtonXsec::AnalyzeFromNtuples(){
       // ## EventSelector histos ##
       BranchDistHist->Write();
       ClusterDistHist->Write();
+      beamXtpc0 ->Write();
+      beamYtpc0 ->Write();
+      beamZtpc0 ->Write();
+
+      wctrk4XY->Write();
+      wctrkTpcXY->Write();
       
       //if(UI->plotIndividualSet){gtotal_res_dedx->Write();}
       if(verbose){std::cout << "Writing xs histos" << std::endl;}
@@ -913,7 +1008,51 @@ void ProtonXsec::AnalyzeFromNtuples(){
       hreco_initialKE->Write();
       hreco_incke->Write();
       hreco_intke->Write();
+
+      //beam_x->Write();
+      //beam_y->Write();
+      //beam_z->Write();
+      
+      //beam_angle_xz->Write();
+      //beam_angle_yz->Write();
+      //beam_momentum->Write();
+
+      //halo_pileup_x->Write();
+      //halo_pileup_y->Write();
+      //halo_pileup_z->Write();
+      
+      //halo_pileup_angle_xz->Write();
+      //halo_pileup_angle_yz->Write();
+      //halo_pileup_number_particles->Write();
+
     }
+    if(UI->beamCharFileSet){
+
+      beamPlotFile->cd();
+
+      beam_x->Write();
+      beam_y->Write();
+      beam_z->Write();
+      
+      beam_angle_xz->Write();
+      beam_angle_yz->Write();
+      beam_momentum->Write();
+      }
+
+    if(UI->haloCharFileSet){
+
+      haloPlotFile->cd();
+
+      halo_pileup_x->Write();
+      halo_pileup_y->Write();
+      halo_pileup_z->Write();
+      
+      halo_pileup_angle_xz->Write();
+      halo_pileup_angle_yz->Write();
+      halo_pileup_number_particles->Write();
+
+      }
+
   }
   if(UI->SelEventListSet){IDfile.close();}
 

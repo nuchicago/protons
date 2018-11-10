@@ -29,6 +29,13 @@ class UserInputs {
   bool rootOutputFileSet;
   char *psOutputFile;
   bool psOutputFileSet;
+
+  char *beamCharFile;
+  bool beamCharFileSet;
+
+  char *haloCharFile;
+  bool haloCharFileSet;
+
   char *outputFileName;
   bool outputFileNameSet;
   char *SelEventList;
@@ -95,6 +102,11 @@ class UserInputs {
   int skipEventSelection;
   int pickyTracksWC;
   int qualityTracksWC;
+
+  double beamLength;
+  bool beamLengthSet;
+  double tofOffset;
+  bool tofOffsetSet;
 
   // pion inclusive analysis cuts
 

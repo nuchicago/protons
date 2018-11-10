@@ -344,7 +344,7 @@ void BendStudy::AnalyzeFromNtuples(){
           numtofvalid++;
           ParticleMass = -9999999. ;
 
-          bool isProton = BS->MassCut(wctrk_momentum[0], tofObject[0], ParticleMass, UI->MassCutMin, UI->MassCutMax);
+          bool isProton = BS->MassCut(wctrk_momentum[0], tofObject[0], UI->beamLength, UI->tofOffset, ParticleMass, UI->MassCutMin, UI->MassCutMax);
 
           BeamMassHist->Fill(ParticleMass);
           if(!isProton){
