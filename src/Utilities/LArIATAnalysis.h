@@ -208,6 +208,24 @@ class LArIATAnalysis {
   Double_t electron_lifetime;
   Int_t wctrk_quality;
 
+
+  Double_t wctrk_wc1_x[max_num_wctracks];
+  Double_t wctrk_wc1_y[max_num_wctracks];
+  Double_t wctrk_wc1_z[max_num_wctracks];
+
+  Double_t wctrk_wc2_x[max_num_wctracks];
+  Double_t wctrk_wc2_y[max_num_wctracks];
+  Double_t wctrk_wc2_z[max_num_wctracks];
+
+  Double_t wctrk_wc3_x[max_num_wctracks];
+  Double_t wctrk_wc3_y[max_num_wctracks];
+  Double_t wctrk_wc3_z[max_num_wctracks];
+
+  Double_t wctrk_wc4_x[max_num_wctracks];
+  Double_t wctrk_wc4_y[max_num_wctracks];
+  Double_t wctrk_wc4_z[max_num_wctracks];
+
+
   std::vector<int> nhits;
   std::vector<float> hit_time;
   std::vector<float> hit_amp;
@@ -327,6 +345,21 @@ class LArIATAnalysis {
   TBranch        *b_electron_lifetime;
   TBranch        *b_wctrk_quality;
 
+  TBranch        *b_wctrk_wc1_x;
+  TBranch        *b_wctrk_wc1_y;
+  TBranch        *b_wctrk_wc1_z;
+
+  TBranch        *b_wctrk_wc2_x;
+  TBranch        *b_wctrk_wc2_y;
+  TBranch        *b_wctrk_wc2_z;
+
+  TBranch        *b_wctrk_wc3_x;
+  TBranch        *b_wctrk_wc3_y;
+  TBranch        *b_wctrk_wc3_z;
+
+  TBranch        *b_wctrk_wc4_x;
+  TBranch        *b_wctrk_wc4_y;
+  TBranch        *b_wctrk_wc4_z;
 
   //TBranch        *b_hit_view;
 

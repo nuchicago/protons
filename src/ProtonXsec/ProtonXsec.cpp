@@ -681,7 +681,7 @@ void ProtonXsec::AnalyzeFromNtuples(){
       }
 
       halo_pileup_number_particles =  pileup_counter;
-      if (pileup_counter > 0){halo_pileup_tree->Fill();}
+      halo_pileup_tree->Fill();
 
       halo_pileup_x.clear();
       halo_pileup_y.clear();

@@ -308,6 +308,19 @@ void LArIATAnalysis::bookNtuple( TChain* tuple, bool isMC ){
     tuple->SetBranchAddress("wctrk_picky", &wctrk_picky, &b_wctrk_picky);
     tuple->SetBranchAddress("electron_lifetime", &electron_lifetime, &b_electron_lifetime);
     tuple->SetBranchAddress("wctrk_quality", &wctrk_quality, &b_wctrk_quality);
+    tuple->SetBranchAddress("wctrk_wc1_x", &wctrk_wc1_x, &b_wctrk_wc1_x);
+    tuple->SetBranchAddress("wctrk_wc1_y", &wctrk_wc1_y, &b_wctrk_wc1_y);
+    tuple->SetBranchAddress("wctrk_wc1_z", &wctrk_wc1_z, &b_wctrk_wc1_z);
+    tuple->SetBranchAddress("wctrk_wc2_x", &wctrk_wc2_x, &b_wctrk_wc2_x);
+    tuple->SetBranchAddress("wctrk_wc2_y", &wctrk_wc2_y, &b_wctrk_wc2_y);
+    tuple->SetBranchAddress("wctrk_wc2_z", &wctrk_wc2_z, &b_wctrk_wc2_z);
+    tuple->SetBranchAddress("wctrk_wc3_x", &wctrk_wc3_x, &b_wctrk_wc3_x);
+    tuple->SetBranchAddress("wctrk_wc3_y", &wctrk_wc3_y, &b_wctrk_wc3_y);
+    tuple->SetBranchAddress("wctrk_wc3_z", &wctrk_wc3_z, &b_wctrk_wc3_z);
+    tuple->SetBranchAddress("wctrk_wc4_x", &wctrk_wc4_x, &b_wctrk_wc4_x);
+    tuple->SetBranchAddress("wctrk_wc4_y", &wctrk_wc4_y, &b_wctrk_wc4_y);
+    tuple->SetBranchAddress("wctrk_wc4_z", &wctrk_wc4_z, &b_wctrk_wc4_z);
+
      }
 
   
