@@ -308,6 +308,10 @@ void ProtonXsec::AnalyzeFromNtuples(){
   TH1D *PrimaryLength =  new TH1D("PrimaryLength","Selected Entering Track Length",250, 0, 100);
   TH1D *BadTrackLength =  new TH1D("BadTrackLength","non-selected Entering Track Length",250, 0, 100);
   TH1D *inTracksNumHist = new TH1D("inTracksNumHist","Number of Entering Tracks TPC",100,0,10);
+
+
+  TH1D *electronLifetimeHist = new TH1D("electronLifetimeHist","electron lifetime",300,0, 3000);
+
   
   TH1D *wctrkNumHist = new TH1D("wctrkNumHist","Number of Entering Tracks TPC",40,0,10);
   TH1D *BeamToF = new TH1D("BeamToF","Incoming Particle ToF",100,0,100);
@@ -499,6 +503,7 @@ void ProtonXsec::AnalyzeFromNtuples(){
     bool isProton = BS->MassCut(wctrk_momentum[0], tofObject[0], UI->beamLength, UI->tofOffset, ParticleMass, UI->MassCutMin, UI->MassCutMax);
 
     BeamMassHist->Fill(ParticleMass);
+    electronLifetimeHist->Fill(electron_lifetime);
 
     if(!isMC){
       if (num_wctracks !=1){continue;}
@@ -1019,7 +1024,8 @@ void ProtonXsec::AnalyzeFromNtuples(){
     if(UI->rootOutputFileSet){
       if(verbose){std::cout << "Writing to outputFile" << std::endl;}
       outputFile->cd();
-        
+
+      electronLifetimeHist->Write();
     
       PrimaryLength->Write();
       PrimaryStartZ->Write();
