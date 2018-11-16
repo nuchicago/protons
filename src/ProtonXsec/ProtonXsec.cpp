@@ -201,6 +201,49 @@ void ProtonXsec::AnalyzeFromNtuples(){
   //TGraph * gtotal_res_dedx;
 
 
+  // #### Data Driven MC 
+
+  double beam_x;
+  double beam_y;
+  double beam_z;
+  double beam_angle_xz;
+  double beam_angle_yz;
+  double beam_momentum;
+
+  std::vector< double > halo_pileup_x;
+  std::vector< double > halo_pileup_y;
+  std::vector< double > halo_pileup_z;
+  std::vector< double > halo_pileup_angle_xz;
+  std::vector< double > halo_pileup_angle_yz;
+  //std::vector< double > halo_pileup_momentum;
+  int halo_pileup_number_particles;
+
+
+  beamPlotFile->cd();
+    TTree * beam_tree = new TTree("beam", "beam");
+
+  beam_tree->Branch("beam_x", &beam_x, "beam_x/D");
+  beam_tree->Branch("beam_y", &beam_y, "beam_y/D");
+  beam_tree->Branch("beam_z", &beam_z, "beam_z/D");
+  beam_tree->Branch("beam_angle_xz", &beam_angle_xz, "beam_angle_xz/D");
+  beam_tree->Branch("beam_angle_yz", &beam_angle_yz, "beam_angle_yz/D");
+  beam_tree->Branch("beam_momentum", &beam_momentum, "beam_momentum/D");
+
+  haloPlotFile->cd();
+
+  TTree * halo_pileup_tree = new TTree("halo_pileup", "halo_pileup");
+
+  halo_pileup_tree->Branch("halo_pileup_x", &halo_pileup_x);
+  halo_pileup_tree->Branch("halo_pileup_y", &halo_pileup_y);
+  halo_pileup_tree->Branch("halo_pileup_z", &halo_pileup_z);
+  halo_pileup_tree->Branch("halo_pileup_angle_xz", &halo_pileup_angle_xz);
+  halo_pileup_tree->Branch("halo_pileup_angle_yz", &halo_pileup_angle_yz);
+  //halo_pileup_tree->Branch("halo_pileup_momentum", &halo_pileup_momentum);
+  halo_pileup_tree->Branch("halo_pileup_number_particles", &halo_pileup_number_particles, "halo_pileup_number_particles/I");
+
+
+
+
 
   // ### some variables that are needed for the xs calc ###
   double z2 = UI->zSlabSize; //<-- slab size. need to move this to jobOptions
@@ -344,23 +387,23 @@ void ProtonXsec::AnalyzeFromNtuples(){
   TH1D *beamZtpc0 = new TH1D("beamZtpc0","beam Z at tpc face", 160, -140 , -60);
   // Plots for data driven MC
 
-  TH1D *beam_x = new TH1D("beam_x","beam X position, z = -100 cm", 160, -20, 60);
-  TH1D *beam_y = new TH1D("beam_y","beam Y position, z = -100 cm", 160, -40, 40);
-  TH1D *beam_z = new TH1D("beam_z","beam Z start", 160, -140 , -60);
+  //TH1D *beam_x = new TH1D("beam_x","beam X position, z = -100 cm", 160, -20, 60);
+  //TH1D *beam_y = new TH1D("beam_y","beam Y position, z = -100 cm", 160, -40, 40);
+  //TH1D *beam_z = new TH1D("beam_z","beam Z start", 160, -140 , -60);
 
-  TH1D *beam_angle_xz =  new TH1D("beam_angle_xz", "beam theta xz", 200, -10, 10);
-  TH1D *beam_angle_yz = new TH1D("beam_angle_yz", "beam theta yz", 200 , -10, 10);
-  TH1D *beam_momentum = new TH1D("beam_momentum","beam momentum after quality flag",200,0,2000);
+  //TH1D *beam_angle_xz =  new TH1D("beam_angle_xz", "beam theta xz", 200, -10, 10);
+  //TH1D *beam_angle_yz = new TH1D("beam_angle_yz", "beam theta yz", 200 , -10, 10);
+  //TH1D *beam_momentum = new TH1D("beam_momentum","beam momentum after quality flag",200,0,2000);
 
 
-  TH1D *halo_pileup_x = new TH1D("halo_pileup_x","halo pileup X position, z = -1 cm", 160, -20, 60);
-  TH1D *halo_pileup_y = new TH1D("halo_pileup_y","halo pileup Y position, z = -1 cm", 160, -40, 40);
-  TH1D *halo_pileup_z = new TH1D("halo_pileup_z","halo pileup Z start", 160, -40 , -40);
+  //TH1D *halo_pileup_x = new TH1D("halo_pileup_x","halo pileup X position, z = -1 cm", 160, -20, 60);
+  //TH1D *halo_pileup_y = new TH1D("halo_pileup_y","halo pileup Y position, z = -1 cm", 160, -40, 40);
+  //TH1D *halo_pileup_z = new TH1D("halo_pileup_z","halo pileup Z start", 160, -40 , -40);
 
-  TH1D *halo_pileup_angle_xz =  new TH1D("halo_pileup_angle_xz", "halo pileup theta xz", 200, -5, 5);
-  TH1D *halo_pileup_angle_yz = new TH1D("halo_pileup_angle_yz", "halo pileup theta yz", 200 , -5, 5);
+  //TH1D *halo_pileup_angle_xz =  new TH1D("halo_pileup_angle_xz", "halo pileup theta xz", 200, -5, 5);
+  //TH1D *halo_pileup_angle_yz = new TH1D("halo_pileup_angle_yz", "halo pileup theta yz", 200 , -5, 5);
 
-  TH1D *halo_pileup_number_particles = new TH1D("halo_pileup_number_particles","Momentum after quality flag",20,0,20);
+  //TH1D *halo_pileup_number_particles = new TH1D("halo_pileup_number_particles","Momentum after quality flag",20,0,20);
 
   // ## looping once to find Beamline center ##
 
@@ -478,18 +521,35 @@ void ProtonXsec::AnalyzeFromNtuples(){
       if(isProton){
         std::vector <double> projVector = BS->backProjections(wctrk_XFace[0],wctrk_YFace[0],wctrk_momentum[0],wctrk_theta[0],wctrk_phi[0]);
       
-        beam_x->Fill(projVector[0]);
-        beam_y->Fill(projVector[1]);
-        beam_z->Fill(projVector[2]);
+        //beam_x->Fill(projVector[0]);
+        //beam_y->Fill(projVector[1]);
+        //beam_z->Fill(projVector[2]);
 
-        beamXtpc0->Fill(wctrk_XFace[0]);
-        beamYtpc0->Fill(wctrk_YFace[0]);
-        beamZtpc0->Fill(0);
+        //beamXtpc0->Fill(wctrk_XFace[0]);
+        //beamYtpc0->Fill(wctrk_YFace[0]);
+        //beamZtpc0->Fill(0);
 
-        wctrk4XY->Fill(projVector[0],projVector[1]);
-        wctrkTpcXY->Fill(wctrk_XFace[0],wctrk_YFace[0]);
-        beam_angle_xz->Fill(projVector[3]);
-        beam_angle_yz->Fill(projVector[4]);}
+        //wctrk4XY->Fill(projVector[0],projVector[1]);
+        //wctrkTpcXY->Fill(wctrk_XFace[0],wctrk_YFace[0]);
+        //beam_angle_xz->Fill(projVector[3]);
+        //beam_angle_yz->Fill(projVector[4]);}
+
+        /////////
+
+        //beamPlotFile->cd()
+
+
+        beam_x = projVector[0];
+        beam_y = projVector[1];
+        beam_z = projVector[2];
+        beam_angle_xz = projVector[3];
+        beam_angle_yz = projVector[4];
+        beam_momentum = wctrk_momentum[0];
+
+        beam_tree->Fill();
+
+
+      }
 
 
 
@@ -533,11 +593,13 @@ void ProtonXsec::AnalyzeFromNtuples(){
         BeamMassMatch->Fill(ParticleMass);
         if (verbose){std::cout << "Primary Found" << std::endl;}
       }
-      if(found_primary){halo_pileup_number_particles->Fill(BS->PileupTracksBuffer -1);}
-      else{halo_pileup_number_particles->Fill(BS->PileupTracksBuffer);}
+      //if(found_primary){halo_pileup_number_particles->Fill(BS->PileupTracksBuffer -1);}
+      //else{halo_pileup_number_particles->Fill(BS->PileupTracksBuffer);}
 
       if (verbose){std::cout << "Num Entering Tracks : " << numEnteringTracks << std::endl;}
       if(!found_primary){if(verbose){std::cout << "No Valid Primary \n" << std::endl;}}
+
+      int pileup_counter = 0;
       
       for (int i = 0;  i < numEnteringTracks; i++){
           int inTrackID = BS->EnteringTrkID[i];
@@ -579,25 +641,49 @@ void ProtonXsec::AnalyzeFromNtuples(){
                               /( (*track_zpos)[inTrackID][inSecond] - (*track_zpos)[inTrackID][inStart])
                               + (*track_xpos)[inTrackID][inStart];
 
-              halo_pileup_x->Fill(xproj);
-              halo_pileup_y->Fill(yproj);
-              halo_pileup_z->Fill(-1);
-
-              double angle_yz = atan2((*track_ypos)[inTrackID][inSecond] - (*track_ypos)[inTrackID][inStart],
-                                      (*track_zpos)[inTrackID][inSecond] - (*track_zpos)[inTrackID][inStart]);
-
-              double angle_xz = atan2((*track_xpos)[inTrackID][inSecond] - (*track_xpos)[inTrackID][inStart],
-                                      (*track_zpos)[inTrackID][inSecond] - (*track_zpos)[inTrackID][inStart]);
 
               
-              halo_pileup_angle_xz->Fill(angle_xz);
-              halo_pileup_angle_yz->Fill(angle_yz);
+
+
+              //halo_pileup_x->Fill(xproj);
+              //halo_pileup_y->Fill(yproj);
+              //halo_pileup_z->Fill(-1);
+
+              double angle_yz = atan2((*track_ypos)[inTrackID][3] - (*track_ypos)[inTrackID][inStart],
+                                      (*track_zpos)[inTrackID][3] - (*track_zpos)[inTrackID][inStart]);
+
+              double angle_xz = atan2((*track_xpos)[inTrackID][3] - (*track_xpos)[inTrackID][inStart],
+                                      (*track_zpos)[inTrackID][3] - (*track_zpos)[inTrackID][inStart]);
+
+              
+              //halo_pileup_angle_xz->Fill(angle_xz);
+              //halo_pileup_angle_yz->Fill(angle_yz);
+
+              halo_pileup_x.push_back(xproj);
+              halo_pileup_y.push_back(yproj);
+              halo_pileup_z.push_back(-1.0);
+              halo_pileup_angle_xz.push_back(angle_xz);
+              halo_pileup_angle_yz.push_back(angle_yz);
+              pileup_counter++;
+              //halo_pileup_momentum.push_back(trandom_->Landau(1200, 50));
+
+              
               
 
 
             }
           }
       }
+
+      halo_pileup_number_particles =  pileup_counter;
+      if (pileup_counter > 0){halo_pileup_tree->Fill();}
+
+      halo_pileup_x.clear();
+      halo_pileup_y.clear();
+      halo_pileup_z.clear();
+      halo_pileup_angle_xz.clear();
+      halo_pileup_angle_yz.clear();
+      //halo_pileup_momentum.clear();
 
 
 
@@ -1029,27 +1115,31 @@ void ProtonXsec::AnalyzeFromNtuples(){
     if(UI->beamCharFileSet){
 
       beamPlotFile->cd();
+      beam_tree->Write();
+      beamPlotFile->Close();
 
-      beam_x->Write();
-      beam_y->Write();
-      beam_z->Write();
+      //beam_x->Write();
+      //beam_y->Write();
+      //beam_z->Write();
       
-      beam_angle_xz->Write();
-      beam_angle_yz->Write();
-      beam_momentum->Write();
+      //beam_angle_xz->Write();
+      //beam_angle_yz->Write();
+      //beam_momentum->Write();
       }
 
     if(UI->haloCharFileSet){
 
       haloPlotFile->cd();
+      halo_pileup_tree->Write();
+      haloPlotFile->Close();
 
-      halo_pileup_x->Write();
-      halo_pileup_y->Write();
-      halo_pileup_z->Write();
+      //halo_pileup_x->Write();
+      //halo_pileup_y->Write();
+      //halo_pileup_z->Write();
       
-      halo_pileup_angle_xz->Write();
-      halo_pileup_angle_yz->Write();
-      halo_pileup_number_particles->Write();
+      //halo_pileup_angle_xz->Write();
+      //halo_pileup_angle_yz->Write();
+      //halo_pileup_number_particles->Write();
 
       }
 

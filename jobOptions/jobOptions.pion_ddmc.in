@@ -9,9 +9,9 @@ inputFiles files/100An_ntuples.dat
 Output File Lists - .root and PostScript
 ----------------------------------------------------- 
 
-rootOutputFile /lariat/data/users/cevallos/XsecAnalysis/output/negative_100a_pion.root 
+rootOutputFile /lariat/data/users/cevallos/XSecAnalysis/output/100An_pion.root
 beamCharFile /lariat/data/users/cevallos/data_driven_mc_inputs/negative_100a_beam_pion.root
-haloCharFile /lariat/data/users/data_driven_mc_inputs/negative_100a_pileup.root
+haloCharFile /lariat/data/users/cevallos/data_driven_mc_inputs/negative_100a_pileup.root
 
 
 
@@ -30,7 +30,7 @@ skipEventSelection 1
  number of event to process
 -----------------------------------------------------
 events 6000000
-
+centeringEvents 60000
 -----------------------------------------------------
  Data Set description
 -----------------------------------------------------
