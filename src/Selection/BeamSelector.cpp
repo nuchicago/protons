@@ -17,7 +17,7 @@ const double BeamSelector::massPion = 0.140;            // piplus/minus mass GeV
 const double BeamSelector::massElectron = 0.000511;     // electron mass GeV
 const double BeamSelector::massKaon = 0.494;            // kplus/kminus mass GeV
 const double BeamSelector::c_light = 29.9792458;        // cm/ns - speed of light in vacuum
-const double BeamSelector::tofLength = 665.2;           // cm
+//const double BeamSelector::tofLength = 665.2;           // cm
 
 
 //=============================================================================
@@ -137,6 +137,7 @@ std::vector<double> BeamSelector::BeamMatching(double wc_x, double wc_y, double 
         bool showerConditionMet = false;
 
         EnteringTrkStart.clear();
+        EnteringTrkSecond.clear();
         EnteringTrkID.clear();
         EnteringTrkEnd.clear();
         EnteringTrkAlpha.clear();
@@ -165,6 +166,7 @@ std::vector<double> BeamSelector::BeamMatching(double wc_x, double wc_y, double 
             zConditionMet = true;
 
             EnteringTrkStart.push_back(zIndices[0]);
+            EnteringTrkSecond.push_back(zIndices[1]);
             EnteringTrkID.push_back(itrack);
             EnteringTrkEnd.push_back(zIndices[2]);
 
@@ -426,14 +428,69 @@ double BeamSelector::getDataInitialKE(double initial_ke, double wctrk_momentum, 
     return initial_ke; 
 }
 
-bool BeamSelector::MassCut(double wctrk_momentum, double tofObject, double& ParticleMass,
+bool BeamSelector::MassCut(double wctrk_momentum, double tofObject, double tofLength, double tofOffset, double& ParticleMass,
   double MassCutMin, double MassCutMax){
   
-  ParticleMass  = wctrk_momentum * sqrt(abs((pow(tofObject * c_light,2))/pow( tofLength ,2) - 1));
+  //ParticleMass  = wctrk_momentum * sqrt(abs((pow(tofObject * c_light,2))/pow( tofLength ,2) - 1));
+
+
+// ======================================================================
+// Calculate particle mass [MeV/c^2] from beamline momentum and TOF
+// (TOF offset calculated externally from best fit to proton band)
+
+  double adjustedToF = tofObject + tofOffset;
+  double radical = (pow(adjustedToF,2)*pow(c_light,2))/(pow(tofLength,2)) - 1;
+
+  //if( radical >= 0. ) {ParticleMass = wctrk_momentum * sqrt( radical );}
+  //else{ParticleMass = -wctrk_momentum * sqrt( -radical );}
+
+  ParticleMass = wctrk_momentum * sqrt( abs(radical));
+
+
   if (ParticleMass < MassCutMax && ParticleMass > MassCutMin){return true;}
   else{return false;}
 
 }
+
+
+std::vector <double> BeamSelector::backProjections(double wctrk_XFace, double wctrk_YFace, double wctrk_momentum,
+                                                    double wctrk_theta, double wctrk_phi){
+
+    //////////////////////////////////////////////////////////
+  //  Calculates key beamline variables for data-driven beam Monte Carlo
+  //  projecting back X Y at the face of tpc to wc 4 (z = -100)
+  //
+  //
+  //
+  //
+  //
+  //  Returns: vector of doubles made up of
+  //      {Xproj_wc4, Yproj_wc4, Z_proj_wc4, theta_xz, theta yz, momentum}
+  /////////////////////////////////////////////////////////
+
+  double phi_2pi;
+
+  if (wctrk_phi < 0 ){
+    phi_2pi = 2 * pi + wctrk_phi;
+  } 
+  else{phi_2pi = wctrk_phi;}
+
+  double theta_xz = asin(sin(wctrk_theta) * cos(phi_2pi)) * (180/pi);
+  double theta_yz = asin(sin(wctrk_theta) * sin(phi_2pi)) * (180/pi);
+  double Yproj_wc4 =  (sin(wctrk_theta) * sin(phi_2pi)) / (cos(wctrk_theta)) * (-100) + wctrk_YFace;
+  double Xproj_wc4 =  (sin(wctrk_theta) * cos(phi_2pi)) / (cos(wctrk_theta)) * (-100) + wctrk_XFace;
+  double Z_proj_wc4 = -100;
+
+  std::vector<double> output  = { Xproj_wc4, Yproj_wc4, Z_proj_wc4, theta_xz, theta_yz, wctrk_momentum};
+
+  return output;
+
+
+
+
+
+}
+
 
 
 //#############################################################################

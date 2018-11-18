@@ -29,6 +29,7 @@ class BeamSelector {
 
   // Beam Matching containers
   std::vector<int> EnteringTrkStart;
+  std::vector<int> EnteringTrkSecond;
   std::vector<int> EnteringTrkID;
   std::vector<int> EnteringTrkEnd;
   std::vector<double> EnteringTrkAlpha;
@@ -77,8 +78,12 @@ class BeamSelector {
   double getDataInitialKE(double initial_ke, double wctrk_momentum, double ParticleMass);
 
 
-  bool MassCut(double wctrk_momentum, double tofObject, double& ParticleMass,
+  bool MassCut(double wctrk_momentum, double tofObject, double tofLength, double tofOffset, double& ParticleMass,
   double MassCutMin, double MassCutMax);
+
+
+  std::vector <double> backProjections(double wctrk_XFace, double wctrk_YFace, double wctrk_momentum,
+                                                    double wctrk_theta, double wctrk_phi);
  protected:
 
   static const double pi;                  // the beloved constant  
@@ -87,7 +92,7 @@ class BeamSelector {
   static const double massElectron;        // electron mass GeV
   static const double massKaon;            // kplus/kminus mass GeV
   static const double c_light;             // cm/ns - speed of light in vacuum
-  static const double tofLength;            // cm distance between wc
+  //static const double tofLength;            // cm distance between wc
 
  private:
 

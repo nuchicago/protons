@@ -94,6 +94,8 @@ void UserInputs::initialize( ){
   correctionFileSet = false;
   rootOutputFileSet = false;
   psOutputFileSet = false;
+  beamCharFileSet = false;
+  haloCharFileSet = false;
   outputFileNameSet = false;
   SelEventListSet = false;
   modelSet = false;
@@ -166,6 +168,11 @@ void UserInputs::initialize( ){
   pickyTracksWC = 1;
   qualityTracksWC = 0;
 
+  beamLength = 662.5; //cm
+  beamLengthSet = false;
+  tofOffset = 0;
+  tofOffsetSet = false;
+
 
 
 }
@@ -221,6 +228,18 @@ void UserInputs::readIoFiles( ifstream *jobOptionsFile ){
     *jobOptionsFile >> psOutputFile;
     psOutputFileSet = true;
   }
+  if( paramLookUp( jobOptionsFile, (char*)"beamCharFile" ) ){
+    beamCharFile = new char[1000];
+    *jobOptionsFile >> beamCharFile;
+    beamCharFileSet = true;
+  }
+
+    if( paramLookUp( jobOptionsFile, (char*)"haloCharFile" ) ){
+    haloCharFile = new char[1000];
+    *jobOptionsFile >> haloCharFile;
+    haloCharFileSet = true;
+  }
+
 
   if( paramLookUp( jobOptionsFile, (char*)"outputFileName" ) ){
     outputFileName = new char[1000];
@@ -670,10 +689,20 @@ void UserInputs::readAnalysisCuts( ifstream *jobOptionsFile ){
 
   }
 
-    if( paramLookUp( jobOptionsFile, (char*)"branchMaxDist" ) ){
+  if( paramLookUp( jobOptionsFile, (char*)"branchMaxDist" ) ){
     *jobOptionsFile >> branchMaxDist;
     branchMaxDistSet = true;
 
+  }
+
+  if( paramLookUp( jobOptionsFile, (char*)"beamLength" ) ){
+    *jobOptionsFile >> beamLength;
+    beamLengthSet = true;
+  }
+
+  if( paramLookUp( jobOptionsFile, (char*)"tofOffset" ) ){
+    *jobOptionsFile >> tofOffset;
+    tofOffsetSet = true;
   }
   //if( paramLookUp( jobOptionsFile, (char*)"chi2Vertex4MatchCut" ) ){
   //  *jobOptionsFile >> chi2Vertex4MatchCut;

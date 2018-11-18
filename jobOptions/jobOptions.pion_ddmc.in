@@ -1,0 +1,65 @@
+
+-----------------------------------------------------
+ Input File Lists - these are ASCII files that 
+  contain lists of ntuple files to be processed.
+-----------------------------------------------------
+inputFiles files/100An_ntuples.dat
+
+-----------------------------------------------------
+Output File Lists - .root and PostScript
+----------------------------------------------------- 
+
+rootOutputFile /lariat/data/users/cevallos/XSecAnalysis/output/100An_pion.root
+beamCharFile /lariat/data/users/cevallos/data_driven_mc_inputs/negative_100a_beam_pion.root
+haloCharFile /lariat/data/users/cevallos/data_driven_mc_inputs/negative_100a_pileup.root
+
+
+
+
+
+-----------------------------------------------------
+ verbosity
+-----------------------------------------------------
+verbose 0
+applyMassCut 0
+pickyTracksWC 0
+qualityTracksWC 1
+skipEventSelection 1
+
+-----------------------------------------------------
+ number of event to process
+-----------------------------------------------------
+events 6000000
+centeringEvents 60000
+-----------------------------------------------------
+ Data Set description
+-----------------------------------------------------
+DataMC data
+ParticleType proton
+
+------------------------------------------------------
+ Beamline and Event Selection 
+------------------------------------------------------
+
+zTPCCutoff 4
+rCircleCut 5
+ZSlabSize 0.5
+MassCutMin 0
+MassCutMax 350
+tofMin 0
+tofMax 200
+branchMaxDist 5
+dedxNoBraggMax 13
+clusterMaxDist 5
+alphaCut 13
+
+
+------------------------------------------------------
+Pion inclusive data cuts
+------------------------------------------------------
+pionCuts 0
+numPileupCut 4
+pcPileupDist 14
+numTracksShower 2
+lenTracksShower 5
+
