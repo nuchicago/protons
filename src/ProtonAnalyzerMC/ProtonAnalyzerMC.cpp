@@ -223,6 +223,9 @@ void ProtonAnalyzerMC::AnalyzeFromNtuples() {
   TH2D *hreco_unfolding_matrix_normalized=new TH2D("hreco_unfolding_matrix_normalized","energy unfolding matrix",20,0,1000,20,0,1000);
   TH1D *hreco_xs = new TH1D("hreco_xs", "p-ar inelastic xs", 20, 0, 1000);
 
+  //// ## some throwaway histos for viz ##
+  //TH1D *hreco_intke_single = new TH1D("hreco_intke_single", "int ke", 20, 0, 1000);
+  //TH1D *hreco_incke_single = new TH1D("hreco_incke_single", "inc ke", 20, 0, 1000);
 
   // ## diagnostics for signal region ##
   TH1D *hmc_numDaughters = new TH1D("hmc_numDaughters", "# daughters", 40, 0, 40);
@@ -273,7 +276,8 @@ void ProtonAnalyzerMC::AnalyzeFromNtuples() {
   TCanvas *d = new TCanvas("d","d",1000, 1000);
    
   // ## event loop ##
-  for(Long64_t jentry=0; jentry < numEventsToProcess && jentry < nentries; jentry++) {
+  for(Long64_t jentry=10; jentry < numEventsToProcess && jentry < nentries; jentry++) {
+  //for(Long64_t jentry=0; jentry < numEventsToProcess && jentry < nentries; jentry++) {
     
     Long64_t ientry = tuple->LoadTree(jentry);
     if (ientry < 0){continue;}
@@ -744,12 +748,27 @@ void ProtonAnalyzerMC::AnalyzeFromNtuples() {
 
     // ## incident slabs ## 
     int ninc_entries = 0;
+
+
+    if(event == 21) {
+      std::cout<<"\t\t\t\t\t\t\tevent 23\n";
+      std::cout<<"calo_slab_KE.size(): "<<calo_slab_KE.size()<<std::endl;
+      std::cout<<"calo_int_slab: "<<calo_int_slab<<std::endl;
+
+    }
+
     for(unsigned int calo_slab = 1; calo_slab < calo_slab_KE.size(); calo_slab++){
       if(calo_slab > calo_int_slab){continue;}//<--stop after interaction slab 
       //std::cout<<"\tincident entry: "<<std::endl;
       //std::cout<<"\t\tke: "<<calo_slab_KE[calo_slab]<<std::endl;
       //std::cout<<"\t\tsignal? "<<calo_slab_signal[calo_slab]<<std::endl;
       hreco_incke->Fill(calo_slab_KE[calo_slab]);
+
+      //// ## throwaway histos evts for data viz ##
+      //if(event == 23) {
+      //  hreco_incke_single->Fill(calo_slab_KE[calo_slab]);
+      //}
+
       if(calo_slab_signal[calo_slab]){
         hreco_incke_signal->Fill(calo_slab_KE[calo_slab]); 
         hreco_unfolding_matrix->Fill(calo_slab_KE[calo_slab], true_slab_ke[calo_slab-1]);
@@ -764,9 +783,26 @@ void ProtonAnalyzerMC::AnalyzeFromNtuples() {
         // ###### likely a feature of differences between reco spts and calo objs :/
         // ## also need to check on non-physical entries (negative ?)
         // ### should probably also just grab any non terminating protons as interactions...
+
+        // ## evt display hunting.. ##
+
+        std::cout<<"\t\t\t\t\tfound an interaction candidate: #: "<<event<<std::endl;
+        if(signal) {
+          std::cout<<"\t\t\t\t\tit's actually inelastic!\n";
+        }
+        //if(){}
+        // ## end evt display hunting .. ##
+
         hreco_intke->Fill(calo_slab_KE[calo_slab]);
         numInteractions++;
         hreco_intke_sr->Fill(calo_slab_KE[calo_slab]);
+
+        //// ## throwaway histos evts for data viz ##
+        //if(event == 23) {
+        //  hreco_intke_single->Fill(calo_slab_KE[calo_slab]);
+        //}
+
+
         if(signal){
           hreco_intke_signal->Fill(calo_slab_KE[calo_slab]); 
         }
@@ -1055,6 +1091,12 @@ void ProtonAnalyzerMC::AnalyzeFromNtuples() {
     double total = hreco_intke->GetBinContent(iBin);
     double background = hreco_intke_background->GetBinContent(iBin);
     hreco_folded_intke_signal->SetBinContent(iBin, total-background); 
+
+    // background (statistical) subtraction uncertainty 
+    std::cout<<"total: "<<total<<std::endl;
+    std::cout<<"background: "<<background<<std::endl;
+    double err = sqrt((total-background)*(1 - background / total)/total);
+    hreco_folded_intke_signal->SetBinError(iBin, err); 
   }
   for(int iBin = 0; iBin < hreco_intke->GetNbinsX(); iBin++){
     double total = hreco_intke_sr->GetBinContent(iBin);
@@ -1065,6 +1107,12 @@ void ProtonAnalyzerMC::AnalyzeFromNtuples() {
     double total = hreco_incke->GetBinContent(iBin);
     double background = hreco_incke_background->GetBinContent(iBin);
     hreco_folded_incke_signal->SetBinContent(iBin, total-background); 
+
+    // background (statistical) subtraction uncertainty 
+    std::cout<<"total: "<<total<<std::endl;
+    std::cout<<"background: "<<background<<std::endl;
+    double err = sqrt((total-background)*(1 - background / total)/total);
+    hreco_folded_incke_signal->SetBinError(iBin, err); 
   }
 
   // ## unfolding matrix normalization ##
@@ -1099,12 +1147,24 @@ void ProtonAnalyzerMC::AnalyzeFromNtuples() {
   // ## epsilon curves ##
   for(int iBin = 0; iBin < hreco_intke->GetNbinsX(); iBin++){
     if(sintke->GetBinContent(iBin)){
+      double reco_int = hreco_unfolded_intke_signal->GetBinContent(iBin);
+      double true_int = sintke->GetBinContent(iBin);
+      // eff value
       double int_eff = hreco_unfolded_intke_signal->GetBinContent(iBin) / sintke->GetBinContent(iBin);
       hreco_intke_eff->SetBinContent(iBin, int_eff);
+      // eff statistical uncertainty 
+      double int_err = (1/true_int)*sqrt(reco_int*(1-(reco_int/true_int)));
+      hreco_intke_eff->SetBinError(iBin, int_err); 
     }
     if(sincke->GetBinContent(iBin)){
+      double reco_inc = hreco_unfolded_incke_signal->GetBinContent(iBin);
+      double true_inc = sincke->GetBinContent(iBin);
+      // eff value
       double inc_eff = hreco_unfolded_incke_signal->GetBinContent(iBin) / sincke->GetBinContent(iBin);
       hreco_incke_eff->SetBinContent(iBin, inc_eff);
+      // eff statistical uncertainty 
+      double inc_err = (1/true_inc)*sqrt(reco_inc*(1-(reco_inc/true_inc)));
+      hreco_incke_eff->SetBinError(iBin, inc_err); 
     }
     // ## this is not super accurate...
     if(sintke_sr->GetBinContent(iBin)){
@@ -1136,15 +1196,48 @@ void ProtonAnalyzerMC::AnalyzeFromNtuples() {
       double dem_err = pow(sincke->GetBinContent(iBin), .5);
       double term2 = dem_err/dem;
       double totalError = temp_xs*pow(pow(term1,2) + pow(term2,2), 0.5)/barn;//*recip_num_density*barn;
+      double totalError_temp = pow(pow(term1,2) + pow(term2,2), 0.5);//*recip_num_density*barn;
+
+      // # real error calculation #
+      double num_background = hreco_intke_background->GetBinContent(iBin);
+      double dem_background = hreco_incke_background->GetBinContent(iBin);
+      double num_eff = hreco_intke_eff->GetBinContent(iBin);
+      double dem_eff = hreco_incke_eff->GetBinContent(iBin);
+      double num_background_err = hreco_folded_intke_signal->GetBinError(iBin);
+      double dem_background_err = hreco_folded_incke_signal->GetBinError(iBin);
+      double num_eff_err = hreco_intke_eff->GetBinError(iBin);
+      double dem_eff_err = hreco_incke_eff->GetBinError(iBin);
+
+      double ratio_term1 = (1/dem)*sqrt(num*(1-num/dem));
+      double ratio_term2 = num_background_err/num;
+      double ratio_term3 = dem_background_err/dem;
+
+      double ratio_err = sqrt( pow(ratio_term1,2) + pow(ratio_term2,2) + pow(ratio_term3,2) ); 
+      //double ratio_err = sqrt( ratio*sqrt(pow(dem_background_err/dem_background,2) + pow(num_background_err/num_background,2))
+      //                          + pow(((1/dem)*sqrt(dem*( 1 - num/dem))),2) );
+
+      double total_error = sqrt(  (pow(num_eff_err, 2)/num_eff) + (pow(dem_eff_err, 2)/dem_eff)
+                                + (pow(ratio_err, 2)/ratio) );
+      double total_error_final = temp_xs*total_error/barn;
 
       std::cout<<"iBin: "<<iBin<<std::endl;
       std::cout<<"\tnum: "<<num<<std::endl;
       std::cout<<"\tdem: "<<dem<<std::endl;
       std::cout<<"\tratio: "<<ratio<<std::endl;
       std::cout<<"\txs: "<<xs<<" +- "<<totalError<<std::endl;
+      std::cout<<"\t\told error: "<<totalError<<std::endl;
+      std::cout<<"\t\tnew error: "<<total_error_final<<std::endl;
+      //std::cout<<"\t\t\tnum_background: "<<num_background<<" +/- "<<num_background_err<<std::endl;
+      //std::cout<<"\t\t\tdem_background: "<<dem_background<<" +/- "<<dem_background_err<<std::endl;
+      //std::cout<<"\t\t\tnum_eff: "<<num_eff<<" +/- "<<num_eff_err<<std::endl;
+      //std::cout<<"\t\t\tdem_eff: "<<dem_eff<<" +/- "<<dem_eff_err<<std::endl;
+      //std::cout<<"\t\t\tratio: "<<ratio<<" +/- "<<ratio_err<<std::endl;
+      //std::cout<<"\t\t\t\tratio term 1: "<<ratio_term1<<std::endl;
+      //std::cout<<"\t\t\t\tratio term 2: "<<ratio_term2<<std::endl;
+      //std::cout<<"\t\t\t\tratio term 3: "<<ratio_term3<<std::endl;
 
       hreco_xs->SetBinContent(iBin, xs); 
-      hreco_xs->SetBinError(iBin,totalError);
+      hreco_xs->SetBinError(iBin,total_error_final);
     }
 
     // ## signal region study ##
@@ -1236,6 +1329,10 @@ void ProtonAnalyzerMC::AnalyzeFromNtuples() {
     hreco_unfolding_matrix->Write();
     hreco_unfolding_matrix_normalized->Write();
     hreco_xs->Write();
+
+
+    //hreco_intke_single->Write();
+    //hreco_incke_single->Write();
 
     hmc_numDaughters->Write();
     hmc_daughterPDG->Write();
