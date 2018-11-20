@@ -602,7 +602,10 @@ void ProtonXsec::AnalyzeFromNtuples(){
       //else{halo_pileup_number_particles->Fill(BS->PileupTracksBuffer);}
 
       if (verbose){std::cout << "Num Entering Tracks : " << numEnteringTracks << std::endl;}
-      if(!found_primary){if(verbose){std::cout << "No Valid Primary \n" << std::endl;}}
+      if(!found_primary){
+        if(verbose){std::cout << "No Valid Primary \n" << std::endl;}
+        //continue;
+      }
 
       int pileup_counter = 0;
       
@@ -628,48 +631,52 @@ void ProtonXsec::AnalyzeFromNtuples(){
               zProjPrimaryTrack->Fill((*track_zpos)[inTrackID][inEnd] -  (*track_zpos)[inTrackID][inStart]);
             }
             else{
-              BadTrackHist->Fill((*track_xpos)[inTrackID][inStart],(*track_ypos)[inTrackID][inStart]);
-              delBadTrackHist->Fill(wctrk_x_proj_3cm[0] - (*track_xpos)[inTrackID][inStart],
-                  wctrk_y_proj_3cm[0] - (*track_ypos)[inTrackID][inStart]);
-              BadTrackLength->Fill((*track_length)[inTrackID]);
-              BadTrackStartZ->Fill((*track_zpos)[inTrackID][inStart]);
-              zProjBadTrack->Fill((*track_zpos)[inTrackID][inEnd] -  (*track_zpos)[inTrackID][inStart]);
-
-
-              double yproj  = (-1 - (*track_zpos)[inTrackID][inStart]) 
-                              *( (*track_ypos)[inTrackID][inSecond] - (*track_ypos)[inTrackID][inStart])
-                              /( (*track_zpos)[inTrackID][inSecond] - (*track_zpos)[inTrackID][inStart])
-                              + (*track_ypos)[inTrackID][inStart];
-
-              double xproj  = (-1 - (*track_zpos)[inTrackID][inStart]) 
-                              *( (*track_xpos)[inTrackID][inSecond] - (*track_xpos)[inTrackID][inStart])
-                              /( (*track_zpos)[inTrackID][inSecond] - (*track_zpos)[inTrackID][inStart])
-                              + (*track_xpos)[inTrackID][inStart];
-
-
               
 
+              if((*track_length)[inTrackID] > 70){
 
-              //halo_pileup_x->Fill(xproj);
-              //halo_pileup_y->Fill(yproj);
-              //halo_pileup_z->Fill(-1);
+                BadTrackHist->Fill((*track_xpos)[inTrackID][inStart],(*track_ypos)[inTrackID][inStart]);
+                delBadTrackHist->Fill(wctrk_x_proj_3cm[0] - (*track_xpos)[inTrackID][inStart],
+                    wctrk_y_proj_3cm[0] - (*track_ypos)[inTrackID][inStart]);
+                BadTrackLength->Fill((*track_length)[inTrackID]);
+                BadTrackStartZ->Fill((*track_zpos)[inTrackID][inStart]);
+                zProjBadTrack->Fill((*track_zpos)[inTrackID][inEnd] -  (*track_zpos)[inTrackID][inStart]);
 
-              double angle_yz = atan2((*track_ypos)[inTrackID][3] - (*track_ypos)[inTrackID][inStart],
-                                      (*track_zpos)[inTrackID][3] - (*track_zpos)[inTrackID][inStart]);
+                double yproj  = (-1 - (*track_zpos)[inTrackID][inStart]) 
+                                *( (*track_ypos)[inTrackID][inSecond] - (*track_ypos)[inTrackID][inStart])
+                                /( (*track_zpos)[inTrackID][inSecond] - (*track_zpos)[inTrackID][inStart])
+                                + (*track_ypos)[inTrackID][inStart];
 
-              double angle_xz = atan2((*track_xpos)[inTrackID][3] - (*track_xpos)[inTrackID][inStart],
-                                      (*track_zpos)[inTrackID][3] - (*track_zpos)[inTrackID][inStart]);
+                double xproj  = (-1 - (*track_zpos)[inTrackID][inStart]) 
+                                *( (*track_xpos)[inTrackID][inSecond] - (*track_xpos)[inTrackID][inStart])
+                                /( (*track_zpos)[inTrackID][inSecond] - (*track_zpos)[inTrackID][inStart])
+                                + (*track_xpos)[inTrackID][inStart];
 
-              
-              //halo_pileup_angle_xz->Fill(angle_xz);
-              //halo_pileup_angle_yz->Fill(angle_yz);
 
-              halo_pileup_x.push_back(xproj);
-              halo_pileup_y.push_back(yproj);
-              halo_pileup_z.push_back(-1.0);
-              halo_pileup_angle_xz.push_back(angle_xz);
-              halo_pileup_angle_yz.push_back(angle_yz);
-              pileup_counter++;
+                
+
+
+                //halo_pileup_x->Fill(xproj);
+                //halo_pileup_y->Fill(yproj);
+                //halo_pileup_z->Fill(-1);
+
+                double angle_yz = atan2((*track_ypos)[inTrackID][3] - (*track_ypos)[inTrackID][inStart],
+                                        (*track_zpos)[inTrackID][3] - (*track_zpos)[inTrackID][inStart]);
+
+                double angle_xz = atan2((*track_xpos)[inTrackID][3] - (*track_xpos)[inTrackID][inStart],
+                                        (*track_zpos)[inTrackID][3] - (*track_zpos)[inTrackID][inStart]);
+
+                
+                //halo_pileup_angle_xz->Fill(angle_xz);
+                //halo_pileup_angle_yz->Fill(angle_yz);
+
+                halo_pileup_x.push_back(xproj);
+                halo_pileup_y.push_back(yproj);
+                halo_pileup_z.push_back(-1.0);
+                halo_pileup_angle_xz.push_back(angle_xz);
+                halo_pileup_angle_yz.push_back(angle_yz);
+                pileup_counter++;
+              }
               //halo_pileup_momentum.push_back(trandom_->Landau(1200, 50));
 
               
