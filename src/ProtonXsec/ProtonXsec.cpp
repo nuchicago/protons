@@ -312,7 +312,8 @@ void ProtonXsec::AnalyzeFromNtuples(){
   TH1D *BadTrackStartZ =  new TH1D("BadTrackStartZ","non-selected track start in Z",25, 0, 10);
   TH1D *InTrackLength =  new TH1D("InTrackLength","Entering Track Length",250, 0, 100);
   TH1D *PrimaryLength =  new TH1D("PrimaryLength","Selected Entering Track Length",250, 0, 100);
-  TH1D *BadTrackLength =  new TH1D("BadTrackLength","non-selected Entering Track Length",250, 0, 100);
+  TH1D *BadTrackLength =  new TH1D("BadTrackLength"," Pileup Track Length",250, 0, 100);
+  TH1D *BadTrackLength_m =  new TH1D("BadTrackLength_m","Pileup Track Length - match found",250, 0, 100);
   TH1D *inTracksNumHist = new TH1D("inTracksNumHist","Number of Entering Tracks TPC",100,0,10);
 
 
@@ -336,7 +337,12 @@ void ProtonXsec::AnalyzeFromNtuples(){
   TH1D * delXYHistPyMatch =  new TH1D("delXYHistPyMatch","tpc to wc delta x",200,-100,100);
 
   TH2D *BadTrackHist =  new TH2D("BadTrackHist","non-selected tracks",200,-100,100,200,-100,100);
-  TH2D *delBadTrackHist =  new TH2D("delBadTrackHist","non-selected tracks",200,-100,100,200,-100,100);
+
+
+  TH2D *delBadTrackHist_mlen =  new TH2D("delBadTrackHist_mlen","pileup - match found, L > 70",200,-100,100,200,-100,100);
+  TH2D *delBadTrackHist_len =  new TH2D("delBadTrackHist_len","pileup - L > 70",200,-100,100,200,-100,100);
+  TH2D *delBadTrackHist_m =  new TH2D("delBadTrackHist_m","pileup - match found",200,-100,100,200,-100,100);
+  TH2D *delBadTrackHist_nocut =  new TH2D("delBadTrackHist_nocut","pileup - no cuts",200,-100,100,200,-100,100);
 
 //  TH1D * delThetaHist =  new TH1D("delThetaHist","tpc to wc delta Theta",100,-1,1);
 //  TH1D * tpcThetaHist =  new TH1D("tpcThetaHist","Tpc #theta",100,-1,1);
@@ -608,7 +614,10 @@ void ProtonXsec::AnalyzeFromNtuples(){
       //else{halo_pileup_number_particles->Fill(BS->PileupTracksBuffer);}
 
       if (verbose){std::cout << "Num Entering Tracks : " << numEnteringTracks << std::endl;}
-      if(!found_primary){if(verbose){std::cout << "No Valid Primary \n" << std::endl;}}
+      if(!found_primary){
+        if(verbose){std::cout << "No Valid Primary \n" << std::endl;}
+        //continue;
+      }
 
       int pileup_counter = 0;
       
@@ -622,6 +631,22 @@ void ProtonXsec::AnalyzeFromNtuples(){
           tpcInTrackEndZ->Fill((*track_zpos)[inTrackID][inStart]);
           InTrackLength->Fill((*track_length)[inTrackID]);
           alphaHist->Fill(trackAlpha);
+
+          if(inTrackID != reco_primary){
+
+            delBadTrackHist_nocut->Fill(wctrk_x_proj_3cm[0] - (*track_xpos)[inTrackID][inStart],
+                    wctrk_y_proj_3cm[0] - (*track_ypos)[inTrackID][inStart]);
+            BadTrackLength->Fill((*track_length)[inTrackID]);
+            if((*track_length)[inTrackID] > 70){
+              delBadTrackHist_len->Fill(wctrk_x_proj_3cm[0] - (*track_xpos)[inTrackID][inStart],
+                    wctrk_y_proj_3cm[0] - (*track_ypos)[inTrackID][inStart]);
+            }
+
+
+
+          }
+
+
           if(found_primary){
             if(inTrackID == reco_primary){
             delXYHistMatch->Fill(wctrk_x_proj_3cm[0] - (*track_xpos)[inTrackID][inStart],
@@ -634,48 +659,51 @@ void ProtonXsec::AnalyzeFromNtuples(){
               zProjPrimaryTrack->Fill((*track_zpos)[inTrackID][inEnd] -  (*track_zpos)[inTrackID][inStart]);
             }
             else{
-              BadTrackHist->Fill((*track_xpos)[inTrackID][inStart],(*track_ypos)[inTrackID][inStart]);
-              delBadTrackHist->Fill(wctrk_x_proj_3cm[0] - (*track_xpos)[inTrackID][inStart],
-                  wctrk_y_proj_3cm[0] - (*track_ypos)[inTrackID][inStart]);
-              BadTrackLength->Fill((*track_length)[inTrackID]);
-              BadTrackStartZ->Fill((*track_zpos)[inTrackID][inStart]);
-              zProjBadTrack->Fill((*track_zpos)[inTrackID][inEnd] -  (*track_zpos)[inTrackID][inStart]);
-
-
-              double yproj  = (-1 - (*track_zpos)[inTrackID][inStart]) 
-                              *( (*track_ypos)[inTrackID][inSecond] - (*track_ypos)[inTrackID][inStart])
-                              /( (*track_zpos)[inTrackID][inSecond] - (*track_zpos)[inTrackID][inStart])
-                              + (*track_ypos)[inTrackID][inStart];
-
-              double xproj  = (-1 - (*track_zpos)[inTrackID][inStart]) 
-                              *( (*track_xpos)[inTrackID][inSecond] - (*track_xpos)[inTrackID][inStart])
-                              /( (*track_zpos)[inTrackID][inSecond] - (*track_zpos)[inTrackID][inStart])
-                              + (*track_xpos)[inTrackID][inStart];
-
-
+              delBadTrackHist_m->Fill(wctrk_x_proj_3cm[0] - (*track_xpos)[inTrackID][inStart],
+                    wctrk_y_proj_3cm[0] - (*track_ypos)[inTrackID][inStart]);
+              BadTrackLength_m->Fill((*track_length)[inTrackID]);
               
 
+              if((*track_length)[inTrackID] > 70){
 
-              //halo_pileup_x->Fill(xproj);
-              //halo_pileup_y->Fill(yproj);
-              //halo_pileup_z->Fill(-1);
+                BadTrackHist->Fill((*track_xpos)[inTrackID][inStart],(*track_ypos)[inTrackID][inStart]);
+                delBadTrackHist_mlen->Fill(wctrk_x_proj_3cm[0] - (*track_xpos)[inTrackID][inStart],
+                    wctrk_y_proj_3cm[0] - (*track_ypos)[inTrackID][inStart]);
+                
+                BadTrackStartZ->Fill((*track_zpos)[inTrackID][inStart]);
+                zProjBadTrack->Fill((*track_zpos)[inTrackID][inEnd] -  (*track_zpos)[inTrackID][inStart]);
 
-              double angle_yz = atan2((*track_ypos)[inTrackID][3] - (*track_ypos)[inTrackID][inStart],
-                                      (*track_zpos)[inTrackID][3] - (*track_zpos)[inTrackID][inStart]);
+                double yproj  = (-1 - (*track_zpos)[inTrackID][inStart]) 
+                                *( (*track_ypos)[inTrackID][inSecond] - (*track_ypos)[inTrackID][inStart])
+                                /( (*track_zpos)[inTrackID][inSecond] - (*track_zpos)[inTrackID][inStart])
+                                + (*track_ypos)[inTrackID][inStart];
 
-              double angle_xz = atan2((*track_xpos)[inTrackID][3] - (*track_xpos)[inTrackID][inStart],
-                                      (*track_zpos)[inTrackID][3] - (*track_zpos)[inTrackID][inStart]);
+                double xproj  = (-1 - (*track_zpos)[inTrackID][inStart]) 
+                                *( (*track_xpos)[inTrackID][inSecond] - (*track_xpos)[inTrackID][inStart])
+                                /( (*track_zpos)[inTrackID][inSecond] - (*track_zpos)[inTrackID][inStart])
+                                + (*track_xpos)[inTrackID][inStart];
 
-              
-              //halo_pileup_angle_xz->Fill(angle_xz);
-              //halo_pileup_angle_yz->Fill(angle_yz);
+                //halo_pileup_x->Fill(xproj);
+                //halo_pileup_y->Fill(yproj);
+                //halo_pileup_z->Fill(-1);
 
-              halo_pileup_x.push_back(xproj);
-              halo_pileup_y.push_back(yproj);
-              halo_pileup_z.push_back(-1.0);
-              halo_pileup_angle_xz.push_back(angle_xz);
-              halo_pileup_angle_yz.push_back(angle_yz);
-              pileup_counter++;
+                double angle_yz = atan2((*track_ypos)[inTrackID][3] - (*track_ypos)[inTrackID][inStart],
+                                        (*track_zpos)[inTrackID][3] - (*track_zpos)[inTrackID][inStart]);
+
+                double angle_xz = atan2((*track_xpos)[inTrackID][3] - (*track_xpos)[inTrackID][inStart],
+                                        (*track_zpos)[inTrackID][3] - (*track_zpos)[inTrackID][inStart]);
+
+                
+                //halo_pileup_angle_xz->Fill(angle_xz);
+                //halo_pileup_angle_yz->Fill(angle_yz);
+
+                halo_pileup_x.push_back(xproj);
+                halo_pileup_y.push_back(yproj);
+                halo_pileup_z.push_back(-1.0);
+                halo_pileup_angle_xz.push_back(angle_xz);
+                halo_pileup_angle_yz.push_back(angle_yz);
+                pileup_counter++;
+              }
               //halo_pileup_momentum.push_back(trandom_->Landau(1200, 50));
 
               
@@ -696,70 +724,6 @@ void ProtonXsec::AnalyzeFromNtuples(){
       halo_pileup_angle_yz.clear();
       //halo_pileup_momentum.clear();
 
-
-
-
-
-
-
-//        if (isProton){numZcutoff++;}//
-
-//          if((sqrt(pow((MinVector[1] - xMeanTPCentry),2) + pow((MinVector[2] - yMeanTPCentry),2)))> UI-> rCircleCut) {
-//              if(verbose){std::cout << "No Valid Primary \n" << std::endl;}
-//              passed_geo_cuts = false;
-//              if(!(applyMassCut)){continue;}
-//            }
-//          else{
-//            if(isProton){
-//              xyDeltaCut++;
-//              int numTracksSel = 0;
-//              for (int inTrack = 0; inTrack < ntracks_reco; inTrack++ ){
-//                if((*track_zpos)[inTrack][0] < UI->zTPCCutoff){
-//                  numTracksSel++;
-//                  tpcInTracksZ->Fill((*track_zpos)[inTrack][0]);
-//                  InTrackLength->Fill((*track_length)[inTrack]);
-//                  
-//                  if (inTrack != reco_primary){
-//                    BadTrackHist->Fill((*track_xpos)[inTrack][0],(*track_ypos)[inTrack][0]);
-//                    delBadTrackHist->Fill(wctrk_x_proj_3cm[0] - (*track_xpos)[inTrack][0],
-//                        wctrk_y_proj_3cm[0] - (*track_ypos)[inTrack][0]);
-//                    BadTrackLength->Fill((*track_length)[inTrack]);
-//                    BadTrackStartZ->Fill((*track_zpos)[inTrack][0]);
-//                  }
-//                  if(inTrack == reco_primary){
-//                    PrimaryLength->Fill((*track_length)[inTrack]);
-//                    PrimaryStartZ->Fill((*track_zpos)[inTrack][0]);
-//                  }
-//                }
-//              }
-//              numTracksSelHist->Fill(numTracksSel);
-//              tpcPhiHist->Fill(UtilityFunctions::getTrackPhi(reco_primary,track_xpos,track_ypos));//
-
-//              if (wctrk_phi[0] < 0){
-//                wcPhiHist->Fill((wctrk_phi[0]+ 8 * atan(1)));
-//              }
-//              else{wcPhiHist->Fill(wctrk_phi[0]);}
-//              
-//              tpcThetaHist->Fill(UtilityFunctions::getTrackTheta(reco_primary,track_xpos,track_ypos,track_zpos));
-//              wcThetaHist->Fill(wctrk_theta[0]);
-//              delThetaHist->Fill(MinVector[3]);
-//              delPhiHist->Fill(MinVector[4]);
-//            }
-//            if(MinVector[3] > UI->ThetaCut){
-//              passed_geo_cuts = false;
-//              if(!(applyMassCut)){continue;}
-//            }
-//            else{
-//              if (isProton){numThetaCut++;}
-//              if(MinVector[4] > UI->PhiCut){
-//                passed_geo_cuts = false;
-//                if (!(applyMassCut)){continue;}
-//              }
-//              else{
-//                if(isProton){numPhiCut++;}
-//              }
-//            }
-//          }
       
     }
 
@@ -1060,8 +1024,14 @@ void ProtonXsec::AnalyzeFromNtuples(){
 //      delPhiHist->Write();
       BadTrackHist->Write();
       BadTrackLength->Write();
+      BadTrackLength_m->Write();
+
       BadTrackStartZ->Write();
-      delBadTrackHist->Write();
+
+      delBadTrackHist_mlen->Write();
+      delBadTrackHist_m->Write();
+      delBadTrackHist_len->Write();
+      delBadTrackHist_nocut->Write();
 
       BeamMassHist->Write();
       BeamMassInit->Write();
