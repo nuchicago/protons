@@ -1154,6 +1154,13 @@ void ProtonAnalyzerMC::AnalyzeFromNtuples() {
       hreco_intke_eff->SetBinContent(iBin, int_eff);
       // eff statistical uncertainty 
       double int_err = (1/true_int)*sqrt(reco_int*(1-(reco_int/true_int)));
+      double twoint_err = (1/(2*true_int))*sqrt((2*reco_int)*(1-((2*reco_int)/(2*true_int))));
+      std::cout<<"iBin: "<<iBin<<std::endl;;
+      std::cout<<"\treco_int: "<<reco_int<<std::endl;
+      std::cout<<"\ttrue_int: "<<true_int<<std::endl;
+      std::cout<<"\tint error: "<<int_err<<std::endl;
+      std::cout<<"\ttwoint error: "<<twoint_err<<std::endl;
+      std::cout<<std::endl;
       hreco_intke_eff->SetBinError(iBin, int_err); 
     }
     if(sincke->GetBinContent(iBin)){
@@ -1216,25 +1223,38 @@ void ProtonAnalyzerMC::AnalyzeFromNtuples() {
       //double ratio_err = sqrt( ratio*sqrt(pow(dem_background_err/dem_background,2) + pow(num_background_err/num_background,2))
       //                          + pow(((1/dem)*sqrt(dem*( 1 - num/dem))),2) );
 
-      double total_error = sqrt(  (pow(num_eff_err, 2)/num_eff) + (pow(dem_eff_err, 2)/dem_eff)
-                                + (pow(ratio_err, 2)/ratio) );
+      //double total_error = sqrt(  (pow(num_eff_err, 2)/num_eff) + (pow(dem_eff_err, 2)/dem_eff)
+      //                          + (pow(ratio_err, 2)/ratio) );
+      //double correction_error = sqrt(  (pow(num_eff_err, 2)/num_eff) + (pow(dem_eff_err, 2)/dem_eff) );
+      double total_error = sqrt(  pow(num_eff_err/num_eff,2) + pow(dem_eff_err/dem_eff,2)
+                                + pow(ratio_err/ratio,2) );
+
+      double correction_error = sqrt(  pow(num_eff_err/num_eff,2) + pow(dem_eff_err/dem_eff,2) );
+
       double total_error_final = temp_xs*total_error/barn;
+      double correction_error_final = temp_xs*correction_error/barn;
+      double only_inteff_error_final = temp_xs*num_eff_err/barn;
 
       std::cout<<"iBin: "<<iBin<<std::endl;
       std::cout<<"\tnum: "<<num<<std::endl;
       std::cout<<"\tdem: "<<dem<<std::endl;
       std::cout<<"\tratio: "<<ratio<<std::endl;
       std::cout<<"\txs: "<<xs<<" +- "<<totalError<<std::endl;
+
       std::cout<<"\t\told error: "<<totalError<<std::endl;
       std::cout<<"\t\tnew error: "<<total_error_final<<std::endl;
-      //std::cout<<"\t\t\tnum_background: "<<num_background<<" +/- "<<num_background_err<<std::endl;
-      //std::cout<<"\t\t\tdem_background: "<<dem_background<<" +/- "<<dem_background_err<<std::endl;
-      //std::cout<<"\t\t\tnum_eff: "<<num_eff<<" +/- "<<num_eff_err<<std::endl;
-      //std::cout<<"\t\t\tdem_eff: "<<dem_eff<<" +/- "<<dem_eff_err<<std::endl;
-      //std::cout<<"\t\t\tratio: "<<ratio<<" +/- "<<ratio_err<<std::endl;
-      //std::cout<<"\t\t\t\tratio term 1: "<<ratio_term1<<std::endl;
-      //std::cout<<"\t\t\t\tratio term 2: "<<ratio_term2<<std::endl;
-      //std::cout<<"\t\t\t\tratio term 3: "<<ratio_term3<<std::endl;
+      std::cout<<"\t\tcorrection error: "<<correction_error_final<<std::endl;
+      std::cout<<"\t\tonly inteff error: "<<only_inteff_error_final<<std::endl;
+
+      std::cout<<"\t\t\tnum_background: "<<num_background<<" +/- "<<num_background_err<<std::endl;
+      std::cout<<"\t\t\tdem_background: "<<dem_background<<" +/- "<<dem_background_err<<std::endl;
+      std::cout<<"\t\t\tnum_eff: "<<num_eff<<" +/- "<<num_eff_err<<std::endl;
+      std::cout<<"\t\t\tdem_eff: "<<dem_eff<<" +/- "<<dem_eff_err<<std::endl;
+      std::cout<<"\t\t\tratio: "<<ratio<<" +/- "<<ratio_err<<std::endl;
+
+      std::cout<<"\t\t\t\tratio term 1: "<<ratio_term1<<std::endl;
+      std::cout<<"\t\t\t\tratio term 2: "<<ratio_term2<<std::endl;
+      std::cout<<"\t\t\t\tratio term 3: "<<ratio_term3<<std::endl;
 
       hreco_xs->SetBinContent(iBin, xs); 
       hreco_xs->SetBinError(iBin,total_error_final);

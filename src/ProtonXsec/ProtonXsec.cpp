@@ -219,29 +219,35 @@ void ProtonXsec::AnalyzeFromNtuples(){
   int halo_pileup_number_particles;
 
 
-  beamPlotFile->cd();
-    TTree * beam_tree = new TTree("beam", "beam");
+  TTree * beam_tree = new TTree("beam", "beam");
+  if(UI->beamCharFileSet){
+    beamPlotFile->cd();
+    //TTree * beam_tree = new TTree("beam", "beam");
 
-  beam_tree->Branch("beam_x", &beam_x, "beam_x/D");
-  beam_tree->Branch("beam_y", &beam_y, "beam_y/D");
-  beam_tree->Branch("beam_z", &beam_z, "beam_z/D");
-  beam_tree->Branch("beam_angle_xz", &beam_angle_xz, "beam_angle_xz/D");
-  beam_tree->Branch("beam_angle_yz", &beam_angle_yz, "beam_angle_yz/D");
-  beam_tree->Branch("beam_momentum", &beam_momentum, "beam_momentum/D");
-
-  haloPlotFile->cd();
+    beam_tree->Branch("beam_x", &beam_x, "beam_x/D");
+    beam_tree->Branch("beam_y", &beam_y, "beam_y/D");
+    beam_tree->Branch("beam_z", &beam_z, "beam_z/D");
+    beam_tree->Branch("beam_angle_xz", &beam_angle_xz, "beam_angle_xz/D");
+    beam_tree->Branch("beam_angle_yz", &beam_angle_yz, "beam_angle_yz/D");
+    beam_tree->Branch("beam_momentum", &beam_momentum, "beam_momentum/D");
+  }
 
   TTree * halo_pileup_tree = new TTree("halo_pileup", "halo_pileup");
+  if(UI->haloCharFileSet){
 
-  halo_pileup_tree->Branch("halo_pileup_x", &halo_pileup_x);
-  halo_pileup_tree->Branch("halo_pileup_y", &halo_pileup_y);
-  halo_pileup_tree->Branch("halo_pileup_z", &halo_pileup_z);
-  halo_pileup_tree->Branch("halo_pileup_angle_xz", &halo_pileup_angle_xz);
-  halo_pileup_tree->Branch("halo_pileup_angle_yz", &halo_pileup_angle_yz);
-  //halo_pileup_tree->Branch("halo_pileup_momentum", &halo_pileup_momentum);
-  halo_pileup_tree->Branch("halo_pileup_number_particles", &halo_pileup_number_particles, "halo_pileup_number_particles/I");
+    haloPlotFile->cd();
 
+    //TTree * halo_pileup_tree = new TTree("halo_pileup", "halo_pileup");
 
+    halo_pileup_tree->Branch("halo_pileup_x", &halo_pileup_x);
+    halo_pileup_tree->Branch("halo_pileup_y", &halo_pileup_y);
+    halo_pileup_tree->Branch("halo_pileup_z", &halo_pileup_z);
+    halo_pileup_tree->Branch("halo_pileup_angle_xz", &halo_pileup_angle_xz);
+    halo_pileup_tree->Branch("halo_pileup_angle_yz", &halo_pileup_angle_yz);
+    //halo_pileup_tree->Branch("halo_pileup_momentum", &halo_pileup_momentum);
+    halo_pileup_tree->Branch("halo_pileup_number_particles", &halo_pileup_number_particles, "halo_pileup_number_particles/I");
+
+  }
 
 
 
@@ -890,6 +896,7 @@ void ProtonXsec::AnalyzeFromNtuples(){
 
     // ## should probably incorp this into the joboptions in a clever way -- ryan
     TFile *mc_corrections = new TFile("files/corrections/xsCorrectionBinary.root"); 
+    //TFile *mc_corrections = new TFile("files/corrections/xsCorrectionBertini.root"); 
 
     hreco_intke_background = (TH1D*)mc_corrections->Get("hreco_intke_background");
     hreco_incke_background = (TH1D*)mc_corrections->Get("hreco_incke_background");
