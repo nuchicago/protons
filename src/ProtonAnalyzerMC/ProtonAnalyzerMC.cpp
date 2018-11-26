@@ -228,6 +228,8 @@ void ProtonAnalyzerMC::AnalyzeFromNtuples() {
   //TH1D *hreco_incke_single = new TH1D("hreco_incke_single", "inc ke", 20, 0, 1000);
 
   // ## diagnostics for signal region ##
+  TH1D *hreco_primary_angles = new TH1D("hreco_primary_angles", "primary track angles", 100, 0, 20);
+  TH1D *hreco_end_dedx = new TH1D("hreco_end_dedx", "primary end <de/dx>", 100, 0, 40);
   TH1D *hmc_numDaughters = new TH1D("hmc_numDaughters", "# daughters", 40, 0, 40);
   TH1D *hmc_daughterPDG = new TH1D("hmc_daughterPDG", "daughter PDGs", 2600, -250, 2350);
   TH1D *hmc_isCharged = new TH1D("hmc_isCharged", "neutral(0), charged(1)", 2, 0, 2);
@@ -571,6 +573,56 @@ void ProtonAnalyzerMC::AnalyzeFromNtuples() {
     if(reco_primary == -1) {
       continue;
     }//<- skipping events that didn't pass isTPCPrimary 
+
+
+    // ## reproducing some parts of the event selection here to make some plots pre cuts ##
+    // ## looking to plot total angular distribution for reco primary ##
+    // ## looking to plot all mean de/dx for reco primary ##
+
+    for(int rtrack = 0; rtrack < ntracks_reco; rtrack++){
+      if(rtrack == reco_primary){
+        // ## primary spacepoint loop ##
+        for(int rspt = 1; rspt < (*ntrack_hits)[rtrack]-1; rspt++){
+          double prim_x = (*track_xpos)[rtrack][rspt];
+          double prim_y = (*track_ypos)[rtrack][rspt];
+          double prim_z = (*track_zpos)[rtrack][rspt];
+          double prim_prev_x = (*track_xpos)[rtrack][rspt-1];
+          double prim_prev_y = (*track_ypos)[rtrack][rspt-1];
+          double prim_prev_z = (*track_zpos)[rtrack][rspt-1];
+          double prim_next_x = (*track_xpos)[rtrack][rspt+1];
+          double prim_next_y = (*track_ypos)[rtrack][rspt+1];
+          double prim_next_z = (*track_zpos)[rtrack][rspt+1];
+
+          // # calculating angle along the track #
+          double a_vec [] = {prim_x - prim_prev_x, prim_y - prim_prev_y, prim_z - prim_prev_z};
+          double b_vec [] = {prim_next_x - prim_x, prim_next_y - prim_y, prim_next_z - prim_z};
+          double a_dot_b = (a_vec[0]*b_vec[0]) + (a_vec[1]*b_vec[1]) + (a_vec[2]*b_vec[2]);
+          double mag_a = sqrt( pow(a_vec[0],2) + pow(a_vec[1],2) + pow(a_vec[2],2));
+          double mag_b = sqrt( pow(b_vec[0],2) + pow(b_vec[1],2) + pow(b_vec[2],2));
+          double theta = acos(a_dot_b / (mag_a*mag_b)) * (180/3.14);
+          if(TMath::IsNaN(theta)){theta = 0.;}
+          hreco_primary_angles->Fill(theta);
+        }//<---End primary reco space point loop
+
+        // ## calo obj loop looking for brag peak? ##
+        double end_track_dist = 0;
+        double end_track_dedx_sum = 0;
+        double end_track_counter = 0;
+        for(int calo_pt = (*col_track_hits)[rtrack]; calo_pt > 0; calo_pt--){
+          if(end_track_dist > 2.5){continue;}
+          end_track_dist += (*col_track_pitch_hit)[rtrack][calo_pt];
+          end_track_dedx_sum += (*col_track_dedx)[rtrack][calo_pt];
+          end_track_counter++;
+        }
+        double end_track_dedx_mean = end_track_dedx_sum / end_track_counter;
+        hreco_end_dedx->Fill(end_track_dedx_mean);
+      }//<---End if primary  
+    }//<-- End looping over reco tracks
+
+
+    // ## done reproducing some parts of the event selection ##
+
+
 
 
     // ## grabbing interaction point ##
@@ -1354,6 +1406,8 @@ void ProtonAnalyzerMC::AnalyzeFromNtuples() {
     //hreco_intke_single->Write();
     //hreco_incke_single->Write();
 
+    hreco_primary_angles->Write();
+    hreco_end_dedx->Write();
     hmc_numDaughters->Write();
     hmc_daughterPDG->Write();
     hmc_isCharged->Write();
