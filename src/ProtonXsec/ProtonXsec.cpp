@@ -358,10 +358,12 @@ void ProtonXsec::AnalyzeFromNtuples(){
   TH1D * numTracksSelHist =  new TH1D("numTracksSelHist","number of Entering Tracks - Selected Events", 10, 0, 5);
 
   TH2D *tofMomentHist = new TH2D("tofMomentHist","Momentum vs TOF",100,0,2000, 100 , 0,100);
-  TH1D *BeamMassHist = new TH1D("BeamMassHist","Beamline particle Mass", 600, -3000,3000);
+  TH1D *BeamMassHist = new TH1D("BeamMassHist","Beamline particle Mass", 100, -3000,3000);
   TH1D *BeamMassCutHist = new TH1D("BeamMassCutHist","Beamline particle Mass - after Cut", 300, 0,3000);
   //TH1D *primary_dedx = new TH1D("primary_dedx","primary track dE/dx", 400, 0,40);
   TH1D *BeamMomentum = new TH1D("BeamMomentum","Incoming Particle Momentum",200,0,2000);
+
+  TH1D *beamLengthHist =  new TH1D("beamLengthHist","Calculated beam Length",100,550,650);
 
 
   // resolution changes with cuts
@@ -512,7 +514,50 @@ void ProtonXsec::AnalyzeFromNtuples(){
     double ParticleMass = -9999999.;
     wctrkNumHist->Fill(num_wctracks);
 
-    bool isProton = BS->MassCut(wctrk_momentum[0], tofObject[0], UI->beamLength, UI->tofOffset, ParticleMass, UI->MassCutMin, UI->MassCutMax);
+    double tertiaryLength = 0;
+
+    if(!(UI->beamPlanesSet)){tertiaryLength = UI->beamLength;}
+    else{
+
+      std::vector<double> *wc1 = new std::vector<double> {wctrk_wc1_x[0], wctrk_wc1_y[0], wctrk_wc1_z[0]};
+      std::vector<double> *wc2 = new std::vector<double> {wctrk_wc2_x[0], wctrk_wc2_y[0], wctrk_wc2_z[0]};
+      std::vector<double> *wc3 = new std::vector<double> {wctrk_wc3_x[0], wctrk_wc3_y[0], wctrk_wc3_z[0]};
+      std::vector<double> *wc4 = new std::vector<double> {wctrk_wc4_x[0], wctrk_wc4_y[0], wctrk_wc4_z[0]};
+
+
+
+
+      double mg1Zcoef =  cos(UI->mg1Angle * (pi/180))/sin(UI->mg1Angle * (pi/180));
+      double mg2Zcoef =  cos(UI->mg2Angle * (pi/180))/sin(UI->mg2Angle * (pi/180));
+
+      //std::cout << "WC1 : x = " << (*wc1)[0] << "; y = " << (*wc1)[1] << "; z = " << (*wc1)[2] << std::endl;
+      //std::cout << "WC2 : x = " << (*wc2)[0] << "; y = " << (*wc2)[1] << "; z = " << (*wc2)[2] << std::endl;
+
+
+      std::vector<double> magnet1 = UtilityFunctions::pointProjector(wc1, wc2, mg1Zcoef, UI->mg1Const);
+      //std::cout << "magnet 1 intercept { " << magnet1[0]<< ", " << magnet1[1]<< ", " << magnet1[2] << " }" << std::endl;
+
+      //std::cout << "WC3 : x = " << (*wc3)[0] << "; y = " << (*wc3)[1] << "; z = " << (*wc3)[2] << std::endl;
+      //std::cout << "WC4 : x = " << (*wc4)[0] << "; y = " << (*wc4)[1] << "; z = " << (*wc4)[2] << std::endl;
+
+
+      std::vector<double> magnet2 = UtilityFunctions::pointProjector(wc3, wc4, mg2Zcoef, UI->mg2Const);
+      //std::cout << "magnet 2 intercept { " << magnet2[0]<< ", " << magnet2[1]<< ", " << magnet2[2] << " }" << std::endl;
+
+      double d_wc1_mg1 = sqrt(pow((*wc1)[0] - magnet1[0],2) + pow((*wc1)[1] - magnet1[1],2) +pow((*wc1)[2] - magnet1[2],2));
+      //std::cout << "dist wc1-mg1: " << d_wc1_mg1 << "cm" << std::endl;  
+      double d_mg1_mg2 =  sqrt(pow(magnet2[0] - magnet1[0],2) + pow(magnet2[1] - magnet1[1],2) +pow(magnet2[2] - magnet1[2],2));
+      //std::cout << "dist mg1-mg2: " << d_mg1_mg2 << "cm" << std::endl;
+      double d_mg2_wc4 =  sqrt(pow((*wc4)[0] - magnet2[0],2) + pow((*wc4)[1] - magnet2[1],2) +pow((*wc4)[2] - magnet2[2],2));
+      //std::cout << "dist wc4-mg2: " << d_mg2_wc4 << "cm" << std::endl;
+
+      tertiaryLength = d_wc1_mg1 + d_mg1_mg2 + d_mg2_wc4 + 60;
+
+    }
+
+
+    beamLengthHist->Fill(tertiaryLength);
+    bool isProton = BS->MassCut(wctrk_momentum[0], tofObject[0], tertiaryLength, UI->tofOffset, ParticleMass, UI->MassCutMin, UI->MassCutMax);
 
     BeamMassHist->Fill(ParticleMass);
     electronLifetimeHist->Fill(electron_lifetime);
@@ -1055,6 +1100,7 @@ void ProtonXsec::AnalyzeFromNtuples(){
       zProjBadTrack->Write();
       numPileupTracksHist->Write();
       numShowerCutHist->Write();
+      beamLengthHist->Write();
 //      tpcPhiHist->Write();
 //      wcPhiHist->Write();
 //      tpcThetaHist->Write();

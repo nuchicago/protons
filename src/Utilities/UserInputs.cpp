@@ -173,7 +173,7 @@ void UserInputs::initialize( ){
   tofOffset = 0;
   tofOffsetSet = false;
 
-
+  beamPlanesSet = true;
 
 }
 
@@ -704,6 +704,25 @@ void UserInputs::readAnalysisCuts( ifstream *jobOptionsFile ){
     *jobOptionsFile >> tofOffset;
     tofOffsetSet = true;
   }
+
+  if( paramLookUp( jobOptionsFile, (char*)"mg1Angle" ) ){
+    *jobOptionsFile >> mg1Angle;
+  }
+  if( paramLookUp( jobOptionsFile, (char*)"mg2Angle" ) ){
+    *jobOptionsFile >> mg2Angle;
+  }
+  else{beamPlanesSet = false;}
+  if( paramLookUp( jobOptionsFile, (char*)"mg1Const" ) ){
+    *jobOptionsFile >> mg1Const;
+  }
+  else{beamPlanesSet = false;}
+
+  if( paramLookUp( jobOptionsFile, (char*)"mg2Const" ) ){
+    *jobOptionsFile >> mg2Const;
+  }
+  else{beamPlanesSet = false;}
+
+
   //if( paramLookUp( jobOptionsFile, (char*)"chi2Vertex4MatchCut" ) ){
   //  *jobOptionsFile >> chi2Vertex4MatchCut;
   //  chi2Vertex4MatchCutSet = true;

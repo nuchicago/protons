@@ -107,6 +107,24 @@ namespace UtilityFunctions {
 
     return trackInd;
   }
-    
 
+  std::vector<double> pointProjector(std::vector<double> *point0, std::vector<double> *point1, 
+                      double planeCz, double planeC0){
+
+
+  std::cout << "function parameters:" << planeCz << ", " << planeC0 << std::endl; 
+  double t_param = ((*point0)[0] - planeCz * (*point0)[2] - planeC0)/ ( planeCz*((*point1)[2] - (*point0)[2]) - ((*point1)[0] - (*point0)[0]));
+
+
+  //double t_param = (planeCz * (*point0)[2] - (*point0)[0] + planeC0) / (((*point1)[0] - (*point0)[0]) - planeCz * ((*point1)[2] - (*point0)[2]));
+  std::cout << "t parameter : " << t_param << std::endl;
+  double x_intercept = (*point0)[0] + t_param * ((*point1)[0] - (*point0)[0]);
+  double y_intercept = (*point0)[1] + t_param * ((*point1)[1] - (*point0)[1]);
+  double z_intercept = (*point0)[2] + t_param * ((*point1)[2] - (*point0)[2]);
+
+  std::vector<double> output = {x_intercept, y_intercept, z_intercept};
+
+  return output;
+
+  }
 };

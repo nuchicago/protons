@@ -141,7 +141,10 @@ std::vector<double> BeamSelector::BeamMatching(double wc_x, double wc_y, double 
         EnteringTrkID.clear();
         EnteringTrkEnd.clear();
         EnteringTrkAlpha.clear();
-
+        
+        //AllTrkStart.clear();
+        //AllTrkEnd.clear();
+        //AllTrkAlpha.clear();
 
         for (int itrack = 0; itrack < ntracks_reco ;  itrack++ ){
 

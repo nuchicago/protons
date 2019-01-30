@@ -71,7 +71,19 @@ class UserInputs {
   bool isProton;
   bool isPion;
   bool isKaon;
-  
+
+  //magnet and tof plane description
+
+  double mg1Angle;
+  double mg2Angle;
+  double mg1Const;
+  double mg2Const;
+  double tof1Angle;
+  double tof2Angle;
+  double tof1Const;
+  double tof2Const;
+
+  bool beamPlanesSet;
 
   //== BeamSelect Values
   bool zBeamCutoffSet;
