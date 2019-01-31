@@ -142,9 +142,10 @@ std::vector<double> BeamSelector::BeamMatching(double wc_x, double wc_y, double 
         EnteringTrkEnd.clear();
         EnteringTrkAlpha.clear();
         
-        //AllTrkStart.clear();
-        //AllTrkEnd.clear();
-        //AllTrkAlpha.clear();
+        AllTrkStart.clear();
+        AllTrkEnd.clear();
+        AllTrkAlpha.clear();
+        AllTrkRdist.clear();
 
         for (int itrack = 0; itrack < ntracks_reco ;  itrack++ ){
 
@@ -171,7 +172,10 @@ std::vector<double> BeamSelector::BeamMatching(double wc_x, double wc_y, double 
             EnteringTrkStart.push_back(zIndices[0]);
             EnteringTrkSecond.push_back(zIndices[1]);
             EnteringTrkID.push_back(itrack);
-            EnteringTrkEnd.push_back(zIndices[2]);
+            EnteringTrkEnd.push_back(zIndices[2]);}
+
+            AllTrkStart.push_back(zIndices[0]);
+            AllTrkEnd.push_back(zIndices[2]);
 
             
 
@@ -195,10 +199,14 @@ std::vector<double> BeamSelector::BeamMatching(double wc_x, double wc_y, double 
             double wc_dot_tpc = wc_vec[0]*tpc_vec[0]+wc_vec[1]*tpc_vec[1]+wc_vec[2]*tpc_vec[2];
 
             double alpha =  acos(wc_dot_tpc / (tpc_size)) * (180/pi);  
+            if(zConditionMet){
+            EnteringTrkAlpha.push_back(alpha);}
 
-            EnteringTrkAlpha.push_back(alpha);
+            AllTrkAlpha.push_back(alpha);
 
             double rValue = sqrt(pow(delX,2) + pow(delY,2));
+
+            AllTrkRdist.push_back(rValue);
 
             double adjustedR = (sqrt(pow((delX - xMeanTPCentry),2) + pow((delY - yMeanTPCentry),2)));
 
@@ -222,7 +230,7 @@ std::vector<double> BeamSelector::BeamMatching(double wc_x, double wc_y, double 
                 }
               }// end if circle cut
             }//end if alpha cut
-          }//end if ztpc cut
+          //end if ztpc cut
         
       }//end of track loop
 

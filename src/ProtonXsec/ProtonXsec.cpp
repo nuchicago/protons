@@ -303,8 +303,13 @@ void ProtonXsec::AnalyzeFromNtuples(){
   TH2D *wctrkTpcXY =  new TH2D("wctrkTpcXY","Position of Wire Chamber Tracks z = 0, after quality cut",
   200, -100, 100, 200, -100, 100);
   TH1D *tpcInTracksZ =  new TH1D("tpcInTracksZ","Position of TPC entering track start Z",25, 0, 10);
-  //TH1D *tpcAllTrackStartZ = new TH1D("tpcAllTrackStartZ", "Position of TPC track start in Z", 250, 0, 100);
-  //TH1D *tpcAllTrackEndZ = new TH1D("tpcAllTrackEndZ", "Position of TPC track end in Z", 250, 0, 100);
+  TH1D *tpcAllTrackStartZ = new TH1D("tpcAllTrackStartZ", "Position of TPC track start in Z", 250, 0, 100);
+  TH1D *tpcAllTrackEndZ = new TH1D("tpcAllTrackEndZ", "Position of TPC track end in Z", 250, 0, 100);
+  TH1D * allAlphaHist = new TH1D("allAlphaHist","Angle between WC and TPC track",90,0,90);
+  TH1D * allRdistHist = new TH1D("allRdistHist", "Position of TPC track in #Delta XY", 250, 0, 100);
+
+
+
   TH1D *tpcInTrackEndZ = new TH1D("tpcInTrackEndZ","Postion of entering track end in Z", 250, 0, 100);
   TH1D *zProjPrimaryTrack =  new TH1D("zProjPrimaryTrack","Length of primary track - z projection", 250, 0, 100);
   TH1D *zProjBadTrack =  new TH1D("zProjBadTrack","Length of pileup track - z projection", 250, 0, 100);
@@ -636,10 +641,18 @@ void ProtonXsec::AnalyzeFromNtuples(){
                                                              track_xpos, track_ypos, track_zpos, ntracks_reco, ntrack_hits,
                                                              track_length, reco_primary,BSoptions);
 
+      //std::cout << "matching finished" << std::endl;
       numEnteringTracks = BS->EnteringTrkID.size();
       inTracksNumHist->Fill(numEnteringTracks);
       numPileupTracksHist->Fill(BS->PileupTracksBuffer);
       numShowerCutHist->Fill(BS->ShowerTracksBuffer);
+
+      for (int i = 0; i < ntracks_reco ; i++){
+        tpcAllTrackStartZ->Fill(BS->AllTrkStart[i]);
+        tpcAllTrackEndZ->Fill(BS->AllTrkEnd[i]);
+        allAlphaHist->Fill(BS->AllTrkAlpha[i]);
+        allRdistHist->Fill(BS->AllTrkRdist[i]);
+      }
 
 
 
@@ -1093,8 +1106,10 @@ void ProtonXsec::AnalyzeFromNtuples(){
       numTracksSelHist->Write();
       alphaHist->Write();
 
-      //tpcAllTrackStartZ->Write(); 
-      //tpcAllTrackEndZ->Write(); 
+      tpcAllTrackStartZ->Write(); 
+      tpcAllTrackEndZ->Write(); 
+      allRdistHist->Write();
+      allAlphaHist->Write();
       tpcInTrackEndZ->Write();
       zProjPrimaryTrack->Write();
       zProjBadTrack->Write();
