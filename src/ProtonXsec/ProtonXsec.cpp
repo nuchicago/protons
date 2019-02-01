@@ -303,10 +303,20 @@ void ProtonXsec::AnalyzeFromNtuples(){
   TH2D *wctrkTpcXY =  new TH2D("wctrkTpcXY","Position of Wire Chamber Tracks z = 0, after quality cut",
   200, -100, 100, 200, -100, 100);
   TH1D *tpcInTracksZ =  new TH1D("tpcInTracksZ","Position of TPC entering track start Z",25, 0, 10);
-  TH1D *tpcAllTrackStartZ = new TH1D("tpcAllTrackStartZ", "Position of TPC track start in Z", 250, 0, 100);
-  TH1D *tpcAllTrackEndZ = new TH1D("tpcAllTrackEndZ", "Position of TPC track end in Z", 250, 0, 100);
-  TH1D * allAlphaHist = new TH1D("allAlphaHist","Angle between WC and TPC track",90,0,90);
-  TH1D * allRdistHist = new TH1D("allRdistHist", "Position of TPC track in #Delta XY", 250, 0, 100);
+  
+
+  TH1D *tpcAllTrackZmin1 = new TH1D("tpcAllTrackZmin1", "Position of TPC track start in Z", 300, -20, 100);
+  TH1D *tpcAllTrackZmin2 = new TH1D("tpcAllTrackZmin2", "Position of TPC track start in Z", 300, -20, 100);
+  TH1D *tpcAllTrackZmax = new TH1D("tpcAllTrackZmax", "Position of TPC track end in Z", 300, -20, 120);
+  TH1D * allAlphaHist = new TH1D("allAlphaHist","Angle between WC and TPC track",360,0,360);
+  TH1D * tpcAllTrackTheta = new TH1D("tpcAllTrackTheta"," #Theta angle with Z axis",360,0,360);
+  TH1D * tpcAllTrackNhits = new TH1D("tpcAllTrackNhits"," Number of Hits per Track",600,0,600);
+  TH1D * tpcAllTrackLength = new TH1D("tpcAllTrackLength"," Length of All Tracks",600,0,600);
+  TH1D * NtracksTotalHist = new TH1D("NtracksTotalHist"," Number of Tracks per event",600,0,600);
+  TH1D * tpcAllTrackDelX = new TH1D("tpcAllTrackDelX"," #Delta X For All Tracks",300,-60,60);
+  TH1D * tpcAllTrackDelY = new TH1D("tpcAllTrackDelY"," #Delta Y For All Tracks",300,-60,60);
+  TH1D * allRdistHist = new TH1D("allRdistHist", "Position of TPC track in #Delta X #DeltaY", 300, -20, 120);
+
 
 
 
@@ -648,12 +658,19 @@ void ProtonXsec::AnalyzeFromNtuples(){
       numShowerCutHist->Fill(BS->ShowerTracksBuffer);
 
       for (int i = 0; i < ntracks_reco ; i++){
-        tpcAllTrackStartZ->Fill(BS->AllTrkStart[i]);
-        tpcAllTrackEndZ->Fill(BS->AllTrkEnd[i]);
+        tpcAllTrackZmin1->Fill(BS->AllTrkZmin1[i]);
+        tpcAllTrackZmin2->Fill(BS->AllTrkZmin2[i]);
+        tpcAllTrackZmax->Fill(BS->AllTrkZmax[i]);
+        tpcAllTrackDelX->Fill(BS->AllTrkDelX[i]);
+        tpcAllTrackDelY->Fill(BS->AllTrkDelY[i]);
+        tpcAllTrackNhits->Fill(BS->AllTrkNhits[i]);
+        tpcAllTrackLength->Fill(BS->AllTrkLength[i]);
+        tpcAllTrackTheta->Fill(BS->AllTrkTheta[i]);
         allAlphaHist->Fill(BS->AllTrkAlpha[i]);
         allRdistHist->Fill(BS->AllTrkRdist[i]);
       }
 
+      NtracksTotalHist->Fill(ntracks_reco);
 
 
       //if(verbose){std::cout << "ploting delXY" << std::endl;}
@@ -1106,8 +1123,15 @@ void ProtonXsec::AnalyzeFromNtuples(){
       numTracksSelHist->Write();
       alphaHist->Write();
 
-      tpcAllTrackStartZ->Write(); 
-      tpcAllTrackEndZ->Write(); 
+      tpcAllTrackZmin1->Write(); 
+      tpcAllTrackZmin2->Write(); 
+      tpcAllTrackZmax->Write(); 
+      tpcAllTrackTheta->Write(); 
+      tpcAllTrackNhits->Write();
+      tpcAllTrackLength->Write(); 
+      tpcAllTrackDelX->Write();  
+      tpcAllTrackDelY->Write();
+      NtracksTotalHist->Write();
       allRdistHist->Write();
       allAlphaHist->Write();
       tpcInTrackEndZ->Write();
@@ -1115,7 +1139,7 @@ void ProtonXsec::AnalyzeFromNtuples(){
       zProjBadTrack->Write();
       numPileupTracksHist->Write();
       numShowerCutHist->Write();
-      beamLengthHist->Write();
+//      beamLengthHist->Write();
 //      tpcPhiHist->Write();
 //      wcPhiHist->Write();
 //      tpcThetaHist->Write();

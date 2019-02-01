@@ -31,13 +31,27 @@ class BeamSelector {
   std::vector<int> EnteringTrkStart;
   std::vector<int> EnteringTrkSecond;
   std::vector<int> EnteringTrkID;
-  std::vector<double> EnteringTrkEnd;
+  std::vector<int> EnteringTrkEnd;
   std::vector<double> EnteringTrkAlpha;
+  std::vector<double> EnteringTrkDelX;
+  std::vector<double> EnteringTrkDelY;
+  std::vector<double> EnteringTrkRdist;
+  std::vector<double> EnteringTrkTheta;
+  std::vector<double> EnteringTrkNhits;
+  std::vector<double> EnteringTrkLength;
 
-  std::vector<double> AllTrkEnd;
-  std::vector<double> AllTrkStart;
+
+  std::vector<double> AllTrkZmax;
+  std::vector<double> AllTrkZmin2;
+  std::vector<double> AllTrkTheta;
+  std::vector<double> AllTrkDelX;
+  std::vector<double> AllTrkDelY;
+  std::vector<double> AllTrkZmin1;
   std::vector<double> AllTrkAlpha;
   std::vector<double> AllTrkRdist;
+  std::vector<double> AllTrkNhits;
+  std::vector<double> AllTrkLength;
+  
 
 
   int ShowerTracksBuffer;

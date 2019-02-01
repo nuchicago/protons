@@ -141,11 +141,24 @@ std::vector<double> BeamSelector::BeamMatching(double wc_x, double wc_y, double 
         EnteringTrkID.clear();
         EnteringTrkEnd.clear();
         EnteringTrkAlpha.clear();
+        EnteringTrkRdist.clear();
+        EnteringTrkDelX.clear();
+        EnteringTrkDelY.clear();
+        EnteringTrkNhits.clear();
+        EnteringTrkLength.clear();
         
-        AllTrkStart.clear();
-        AllTrkEnd.clear();
+        AllTrkZmin1.clear();
+        AllTrkZmin2.clear();
+        AllTrkZmax.clear();
         AllTrkAlpha.clear();
         AllTrkRdist.clear();
+        AllTrkLength.clear();
+        AllTrkNhits.clear();
+        AllTrkDelX.clear();
+        AllTrkDelY.clear();
+        AllTrkTheta.clear();
+
+
 
         for (int itrack = 0; itrack < ntracks_reco ;  itrack++ ){
 
@@ -172,16 +185,32 @@ std::vector<double> BeamSelector::BeamMatching(double wc_x, double wc_y, double 
             EnteringTrkStart.push_back(zIndices[0]);
             EnteringTrkSecond.push_back(zIndices[1]);
             EnteringTrkID.push_back(itrack);
-            EnteringTrkEnd.push_back(zIndices[2]);}
+            EnteringTrkEnd.push_back(zIndices[2]);
+            EnteringTrkLength.push_back((*track_length)[itrack]);
+            EnteringTrkNhits.push_back((*ntrack_hits)[itrack]);
 
-            AllTrkStart.push_back(zIndices[0]);
-            AllTrkEnd.push_back(zIndices[2]);
 
-            
+          }
+
+
+            AllTrkZmin1.push_back(zmin1);
+            AllTrkZmin2.push_back(zmin2);
+            AllTrkZmax.push_back(zmax);
+            AllTrkLength.push_back((*track_length)[itrack]);
+            AllTrkNhits.push_back((*ntrack_hits)[itrack]);
 
              //std::cout << "Calculating delX : " << itrack << std::endl;
             double delX = wc_x - (*track_xpos)[itrack][zIndices[0]];
             double delY = wc_y - (*track_ypos)[itrack][zIndices[0]];
+
+            
+
+              double xDistTheta = (*track_xpos)[itrack][zIndices[1]]-(*track_xpos)[itrack][zIndices[0]];
+              double yDistTheta = (*track_ypos)[itrack][zIndices[1]]-(*track_ypos)[itrack][zIndices[0]];
+              double zDistTheta = (*track_zpos)[itrack][zIndices[1]]-(*track_zpos)[itrack][zIndices[0]];
+              double d = sqrt(pow(xDistTheta,2)+pow(yDistTheta,2));
+              double Theta = atan(d/zDistTheta) * (180 / pi);
+
 
             double tpc_vec []= { ((*track_xpos)[itrack][zIndices[1]] -(*track_xpos)[itrack][zIndices[0]]),
                               ((*track_ypos)[itrack][zIndices[1]] -(*track_ypos)[itrack][zIndices[0]]),
@@ -199,14 +228,24 @@ std::vector<double> BeamSelector::BeamMatching(double wc_x, double wc_y, double 
             double wc_dot_tpc = wc_vec[0]*tpc_vec[0]+wc_vec[1]*tpc_vec[1]+wc_vec[2]*tpc_vec[2];
 
             double alpha =  acos(wc_dot_tpc / (tpc_size)) * (180/pi);  
-            if(zConditionMet){
-            EnteringTrkAlpha.push_back(alpha);}
+
 
             AllTrkAlpha.push_back(alpha);
+            AllTrkDelX.push_back(delX);
+            AllTrkDelY.push_back(delY);
+            AllTrkTheta.push_back(Theta);
 
             double rValue = sqrt(pow(delX,2) + pow(delY,2));
 
             AllTrkRdist.push_back(rValue);
+
+            if(zConditionMet){
+            EnteringTrkAlpha.push_back(alpha);
+            EnteringTrkDelX.push_back(delX);
+            EnteringTrkDelY.push_back(delY);
+            EnteringTrkRdist.push_back(rValue);
+            EnteringTrkTheta.push_back(Theta);
+            }
 
             double adjustedR = (sqrt(pow((delX - xMeanTPCentry),2) + pow((delY - yMeanTPCentry),2)));
 
