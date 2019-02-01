@@ -130,7 +130,7 @@ std::vector<double> BeamSelector::BeamMatching(double wc_x, double wc_y, double 
         int numPileupTracks = 0;
         int foundMatch = 0;
 
-        bool zConditionMet = false;
+        zConditionMet = false;
         bool angleConditionMet = false;
         bool circleConditionMet = false;
         bool pileupConditionMet = false;
