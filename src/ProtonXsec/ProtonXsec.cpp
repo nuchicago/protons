@@ -233,7 +233,6 @@ void ProtonXsec::AnalyzeFromNtuples(){
   }
 
   TTree * halo_pileup_tree = new TTree("halo_pileup", "halo_pileup");
-
   if(UI->haloCharFileSet){
 
     haloPlotFile->cd();
@@ -673,11 +672,7 @@ void ProtonXsec::AnalyzeFromNtuples(){
 
       NtracksTotalHist->Fill(ntracks_reco);
 
-      if(BS->zConditionMet){
-        if(UI->SelEventListSet){
-          IDfile << run << "\t" << subrun << "\t" << event << "\n";
-        }
-      }
+
       //if(verbose){std::cout << "ploting delXY" << std::endl;}
 
 
@@ -895,10 +890,10 @@ void ProtonXsec::AnalyzeFromNtuples(){
 
   double truthIntKE = -1;
 
-//  if(UI->SelEventListSet){IDfile << jentry << "\t" << reco_primary << "\t" << candidate_info[0] << 
-//    "\t" << candidate_info[1]  << "\t" << candidate_info[2]  << "\t" << candidate_info[3] << "\t " <<
-//    candidate_info[4] << "\t"<< candidate_info[5] << "\t" << initial_ke << "\t" << intKE <<"\t" << truthIntKE
-//    << "\t" << ParticleMass << "\n";}
+  if(UI->SelEventListSet){IDfile << jentry << "\t" << reco_primary << "\t" << candidate_info[0] << 
+    "\t" << candidate_info[1]  << "\t" << candidate_info[2]  << "\t" << candidate_info[3] << "\t " <<
+    candidate_info[4] << "\t"<< candidate_info[5] << "\t" << initial_ke << "\t" << intKE <<"\t" << truthIntKE
+    << "\t" << ParticleMass << "\n";}
 
   
   }//end of event Loop

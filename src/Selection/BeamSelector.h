@@ -28,8 +28,6 @@ class BeamSelector {
   double yMeanTPCentry = 0;
 
   // Beam Matching containers
-  bool zConditionMet;
-
   std::vector<int> EnteringTrkStart;
   std::vector<int> EnteringTrkSecond;
   std::vector<int> EnteringTrkID;
