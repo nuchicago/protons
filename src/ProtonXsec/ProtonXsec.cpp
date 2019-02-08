@@ -138,7 +138,7 @@ ProtonXsec::ProtonXsec( char* jobOptionsFile ) : LArIATAnalysis( jobOptionsFile 
   }
 
   if (UI->MultiMatchEventListSet){
-    multiMatchFile.open(UI->SelEventList, ios::trunc);
+    multiMatchFile.open(UI->MultiMatchEventList, ios::trunc);
     multiMatchFile.close();
 
   }
@@ -208,7 +208,7 @@ void ProtonXsec::AnalyzeFromNtuples(){
 
 
     if (UI->MultiMatchEventListSet){
-    multiMatchFile.open(UI->SelEventList, ios::out);
+    multiMatchFile.open(UI->MultiMatchEventList, ios::out);
     multiMatchFile << "RUN\tSUBRUN\tEVENT\tNUM_MATCHES\n";
     multiMatchFile.close();
 
