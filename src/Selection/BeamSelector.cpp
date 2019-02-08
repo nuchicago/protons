@@ -127,6 +127,7 @@ std::vector<double> BeamSelector::BeamMatching(double wc_x, double wc_y, double 
 
         numEventsStart++;
         std::vector<double> matchInfo {0,-1, -1, -1, -1,-1, -1, -1,-1};
+        std::vector<int> possibleMatches;
         int numMatchesFound = 0;
         int numShortTracks = 0;
         int numPileupTracks = 0;
@@ -288,7 +289,7 @@ std::vector<double> BeamSelector::BeamMatching(double wc_x, double wc_y, double 
             EnteringTrkDelY.push_back(delY);
             EnteringTrkRdist.push_back(rValue);
             EnteringTrkTheta.push_back(Theta);
-            }
+            
 
             double adjustedR = (sqrt(pow((delX - xMeanTPCentry),2) + pow((delY - yMeanTPCentry),2)));
 
@@ -300,22 +301,23 @@ std::vector<double> BeamSelector::BeamMatching(double wc_x, double wc_y, double 
               if(alpha < BSoptions[2]){
                 if(!angleConditionMet){numAlphaCut++;}
                 angleConditionMet = true;
-                
+                possibleMatches.push_back(itrack);
+                numMatchesFound++;
 
-                if (rValue < rValueMin){
+                if(adjustedR < rValueMin){
 
                   matchInfo = {1., static_cast <double> (itrack), static_cast <double> (zIndices[0]),
                     static_cast <double> (zIndices[1]),static_cast <double> (zIndices[2]), delX, delY,alpha,-1.};
-                  rValueMin = rValue;
+                  rValueMin = adjustedR;
                   alphaMin = alpha;
                   delXMin = delX;
                   delYMin = delY;
                   best_candidate = itrack;
-                  numMatchesFound++;
+                  
                 }
-              }// end if circle cut
-            }//end if alpha cut
-          //end if ztpc cut
+              }// end if alpha cut
+            }//end if circle cut
+          }//end if ztpc cut
         
       }//end of track loop
 
@@ -326,6 +328,16 @@ std::vector<double> BeamSelector::BeamMatching(double wc_x, double wc_y, double 
       if(matchInfo[0]){
         if(BSoptions[9]){
           if(numMatchesFound > 1){matchInfo[0] = 0;}
+          /*else if(numMatchesFound == 2){
+            for (int i = 0 ; i < numMatchesFound; i++){
+              if(possibleMatches[i] != matchInfo[1]){
+                if((*track_length)[possibleMatches[i]] > 70){
+                  numUniqueMatch++;
+                }
+                else{matchInfo[0] = 0;}
+              }
+            }
+          }*/
           else{numUniqueMatch++;}
         }
       }

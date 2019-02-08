@@ -179,6 +179,7 @@ void ProtonXsec::AnalyzeFromNtuples(){
   double numEventsStart = 0;
   double numMassCut = 0;
   int numtofsingle = 0;
+  int  numMatchedMain = 0;
   double numtofvalid = 0;
   double numZcutoff = 0;
   double numWCTrack = 0;
@@ -189,6 +190,8 @@ void ProtonXsec::AnalyzeFromNtuples(){
   double numThetaCut = 0;
   double numPhiCut = 0;
   bool intHistFilled = false;
+
+
 
 
   const double wc_zpos_val = 0.1;
@@ -401,7 +404,7 @@ void ProtonXsec::AnalyzeFromNtuples(){
 //  TH1D * tpcPhiHist =  new TH1D("tpcPhiHist","Tpc #phi",100,0,7);
 //  TH1D * wcPhiHist =  new TH1D("wcPhiHist","Wire chamber #phi",100,0,7);
 
-  TH1D * alphaHist = new TH1D("alphaHist","Angle between WC and TPC track",90,0,90);
+  TH1D * alphaHist = new TH1D("alphaHist","Angle between WC and TPC track",360,0,360);
   TH1D * numPileupTracksHist = new TH1D("numPileupTracksHist","number of Tracks for Pileup Filter",30,0,30);
   TH1D * numShowerCutHist = new TH1D("numShowerCutHist", "number of short tracks - EM shower cut",30,0,30);
 
@@ -653,7 +656,7 @@ void ProtonXsec::AnalyzeFromNtuples(){
 
         //beamPlotFile->cd()
 
-
+        
         beam_x = projVector[0];
         beam_y = projVector[1];
         beam_z = projVector[2];
@@ -751,6 +754,7 @@ void ProtonXsec::AnalyzeFromNtuples(){
       
 
       if (matchCandidate[0]){
+        numMatchedMain++;
         found_primary = true;
         wctrkSelectedXY->Fill(wctrk_x_proj_3cm[0],wctrk_y_proj_3cm[0]);
         BeamMomentumMatch->Fill(wctrk_momentum[0]);
@@ -863,6 +867,7 @@ void ProtonXsec::AnalyzeFromNtuples(){
           }
       }
 
+      if(found_primary){
       halo_pileup_number_particles =  pileup_counter;
       halo_pileup_run = run;
       halo_pileup_subrun = subrun;
@@ -873,7 +878,7 @@ void ProtonXsec::AnalyzeFromNtuples(){
       halo_pileup_y.clear();
       halo_pileup_z.clear();
       halo_pileup_angle_xz.clear();
-      halo_pileup_angle_yz.clear();
+      halo_pileup_angle_yz.clear();}
       //halo_pileup_momentum.clear();
 
       
@@ -1103,7 +1108,8 @@ void ProtonXsec::AnalyzeFromNtuples(){
     if (UI->qualityTracksWC){std::cout << "Events passing quality flag: " << numQualityTrack << std::endl;}
     std::cout << "Events with unique ToF value: " << numtofsingle << std::endl;
     std::cout << "Events with ToF value in range (" << UI->tofMin << " , " << UI->tofMax<< ") [ns]: " << numtofvalid << std::endl;
-    std::cout << "Events passing mass cut (" << UI->MassCutMin << " , " << UI->MassCutMax << ") [GeV/c^2]: "<< numMassCut << std::endl;  
+    std::cout << "Events passing mass cut (" << UI->MassCutMin << " , " << UI->MassCutMax << ") [GeV/c^2]: "<< numMassCut << std::endl;
+    //std::cout << "Number of Matched Events (According to ProtonXsec): " << numMatchedMain << std::endl;  
 
     BS->printSummary(BSoptions);
   }

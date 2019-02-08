@@ -185,8 +185,8 @@ void LArIATAnalysis::bookNtuple( TChain* tuple, bool isMC ){
   DMidPosZ = 0;
   InteractionPoint = 0;
   InteractionPointType = 0;
-  num_wctracks = 0;
-  num_tof_objects = 0;
+  
+  
 
 
   

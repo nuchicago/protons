@@ -199,7 +199,7 @@ class LArIATAnalysis {
   Double_t  wctrk_YFace[max_num_wctracks];
   Double_t  wctrk_theta[max_num_wctracks];
   Double_t  wctrk_phi[max_num_wctracks];
-  Int_t     num_tof_objects;  
+  Int_t     num_tof_objects;
   Double_t  tofObject[max_num_wctracks];
   Double_t wctrk_x_proj_3cm[max_num_wctracks];
   Double_t wctrk_y_proj_3cm[max_num_wctracks];
