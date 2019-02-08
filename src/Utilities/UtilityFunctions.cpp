@@ -108,6 +108,41 @@ namespace UtilityFunctions {
     return trackInd;
   }
 
+    std::vector<int> zOrderedTrack2(std::vector<std::vector<double>> *track_zpos, int trackId,
+                                    std::vector<int> *ntrack_hits){
+
+
+    /////////////////////////////////////////////////////////////////////
+    //
+    //  Orders track by z position, using endpoints of vector
+    //  
+    //  Inputs: track_zpos: vector of vectors with reconsted track z position points
+    //          trackId: position of target track in vector of track points
+    //          ntrack_hits: vector, number of hit points per reconstructed track
+    //
+    //  Returns: vector with indices of first, second, last point ordered by z value
+    //
+    /////////////////////////////////////////////////////////////////////
+
+    int index1, index2, indexLast;
+
+    if((*track_zpos)[trackId][0]  > (*track_zpos)[trackId][(*ntrack_hits)[trackId]-1]){
+      index1 = (*ntrack_hits)[trackId] - 1;
+      index2 = (*ntrack_hits)[trackId] - 2;
+      indexLast = 0;
+    }
+    else{
+      index1 = 0;
+      index2 = 1;
+      indexLast = (*ntrack_hits)[trackId] - 1;
+    }
+
+    std::vector<int> trackInd = {index1, index2, indexLast};
+
+
+    return trackInd;
+  }
+
   std::vector<double> pointProjector(std::vector<double> *point0, std::vector<double> *point1, 
                       double planeCz, double planeC0){
 

@@ -40,12 +40,15 @@ class UserInputs {
   bool outputFileNameSet;
   char *SelEventList;
   bool SelEventListSet;
+  char *MultiMatchEventList;
+  bool MultiMatchEventListSet;
   char *plotIndividual;
   bool plotIndividualSet;
 
   int printMod;
 
   int verbose;
+  int uniqueMatch;
   int BendDirFilter;
   int numberIterations;
   bool multiplePass;

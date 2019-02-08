@@ -11,13 +11,13 @@
 
 #include "BeamSelector.h"
 
-const double BeamSelector::pi = 3.14159;                // the beloved constant  
+const double BeamSelector::pi = 3.14159;                // the beloved constant
 const double BeamSelector::massProton = 0.938;          // proton mass GeV
 const double BeamSelector::massPion = 0.140;            // piplus/minus mass GeV
 const double BeamSelector::massElectron = 0.000511;     // electron mass GeV
 const double BeamSelector::massKaon = 0.494;            // kplus/kminus mass GeV
 const double BeamSelector::c_light = 29.9792458;        // cm/ns - speed of light in vacuum
-//const double BeamSelector::tofLength = 665.2;           // cm
+//const double BeamSelector::tofLength = 665.2;         // cm
 
 
 //=============================================================================
@@ -56,11 +56,12 @@ std::vector<double> BeamSelector::BeamCentering(double wc_x, double wc_y,// doub
 
 
         std::vector<double> centeringMatch;
+        double rValueMin = 999.;
 
         for (int itrack = 0; itrack < ntracks_reco ;  itrack++ ){
           //std::cout << "track : " << itrack  <<"ntrack_hits" << (*ntrack_hits)[itrack]<< std::endl;
 
-          std::vector<int> zIndices = UtilityFunctions::zOrderedTrack(track_zpos,itrack, ntrack_hits);
+          std::vector<int> zIndices = UtilityFunctions::zOrderedTrack2(track_zpos,itrack, ntrack_hits);
 
           //std::cout << "loading zmin1 : "<< zIndices[0 ]<< std::endl;
           double zmin1 = (*track_zpos)[itrack][zIndices[0]];
@@ -69,7 +70,7 @@ std::vector<double> BeamSelector::BeamCentering(double wc_x, double wc_y,// doub
           //std::cout << "loading zlast : "<< zIndices[2] << std::endl;
           double zmax = (*track_zpos)[itrack][zIndices[2]];
 
-          double rValueMin = 999.;
+          
           
           double delXMin;
           double delYMin;
@@ -120,15 +121,17 @@ std::vector<double> BeamSelector::BeamMatching(double wc_x, double wc_y, double 
           //
           //  Returns: vector of doubles made up of
           //      {isMatch(1 or 0), trackID, 1st Z point index, 2nd Z point index, Last Z point Index,
-          //      ,delX, delY, angle between WC track and TPC track}
+          //      ,delX, delY, angle between WC track and TPC track, uniqueMatch(1 or 0)}
           /////////////////////////////////////////////////////////
+        //if(BSoptions[0]){std::cout << "Launching Beam Matching" << std::endl;}
 
         numEventsStart++;
-        std::vector<double> matchInfo {0,-1, -1, -1, -1,-1, -1, -1};
+        std::vector<double> matchInfo {0,-1, -1, -1, -1,-1, -1, -1,-1};
         int numMatchesFound = 0;
         int numShortTracks = 0;
         int numPileupTracks = 0;
         int foundMatch = 0;
+        double rValueMin = 999.;
 
         bool zConditionMet = false;
         bool angleConditionMet = false;
@@ -158,17 +161,30 @@ std::vector<double> BeamSelector::BeamMatching(double wc_x, double wc_y, double 
         AllTrkDelY.clear();
         AllTrkTheta.clear();
 
+        AllTrkAlphaEnd.clear();
+        AllTrkDirCompare.clear();
+
+        EnteringTrkAlphaEnd.clear();
+        EnteringTrkDirCompare.clear();
+
+        CircleTrkAlpha.clear();
+        
+
 
 
         for (int itrack = 0; itrack < ntracks_reco ;  itrack++ ){
 
-          std::vector<int> zIndices = UtilityFunctions::zOrderedTrack(track_zpos,itrack, ntrack_hits);
+          //if(BSoptions[0]){std::cout << "ordering Z points" << std::endl;}
+
+          std::vector<int> zIndices = UtilityFunctions::zOrderedTrack2(track_zpos,itrack, ntrack_hits);
 
           double zmin1 = (*track_zpos)[itrack][zIndices[0]];
           double zmin2 = (*track_zpos)[itrack][zIndices[1]];
           double zmax = (*track_zpos)[itrack][zIndices[2]];
 
-          double rValueMin = 999.;
+          //if(BSoptions[0]){std::cout << "finished ordering" << std::endl;}
+
+          
           double delXMin;
           double delYMin;
           double alphaMin;
@@ -199,6 +215,8 @@ std::vector<double> BeamSelector::BeamMatching(double wc_x, double wc_y, double 
             AllTrkLength.push_back((*track_length)[itrack]);
             AllTrkNhits.push_back((*ntrack_hits)[itrack]);
 
+            //if(BSoptions[0]){std::cout << "calculating delX" << std::endl;}
+
              //std::cout << "Calculating delX : " << itrack << std::endl;
             double delX = wc_x - (*track_xpos)[itrack][zIndices[0]];
             double delY = wc_y - (*track_ypos)[itrack][zIndices[0]];
@@ -215,6 +233,11 @@ std::vector<double> BeamSelector::BeamMatching(double wc_x, double wc_y, double 
             double tpc_vec []= { ((*track_xpos)[itrack][zIndices[1]] -(*track_xpos)[itrack][zIndices[0]]),
                               ((*track_ypos)[itrack][zIndices[1]] -(*track_ypos)[itrack][zIndices[0]]),
                               ((*track_zpos)[itrack][zIndices[1]] -(*track_zpos)[itrack][zIndices[0]])};
+
+
+            double tpc_vec_end []= { ((*track_xpos)[itrack][zIndices[2]] -(*track_xpos)[itrack][zIndices[0]]),
+                              ((*track_ypos)[itrack][zIndices[2]] -(*track_ypos)[itrack][zIndices[0]]),
+                              ((*track_zpos)[itrack][zIndices[2]] -(*track_zpos)[itrack][zIndices[0]])};
             
             double tpc_size = UtilityFunctions::pointDistance((*track_xpos)[itrack][zIndices[1]],
                                                               (*track_ypos)[itrack][zIndices[1]],
@@ -223,23 +246,43 @@ std::vector<double> BeamSelector::BeamMatching(double wc_x, double wc_y, double 
                                                               (*track_ypos)[itrack][zIndices[0]],
                                                               (*track_zpos)[itrack][zIndices[0]]);
 
+            double tpc_end_size = UtilityFunctions::pointDistance((*track_xpos)[itrack][zIndices[2]],
+                                                              (*track_ypos)[itrack][zIndices[2]],
+                                                              (*track_zpos)[itrack][zIndices[2]], 
+                                                              (*track_xpos)[itrack][zIndices[0]],
+                                                              (*track_ypos)[itrack][zIndices[0]],
+                                                              (*track_zpos)[itrack][zIndices[0]]);
+
             double wc_vec []= { sin(wc_theta)*cos(wc_phi), sin(wc_theta)* sin(wc_phi), cos(wc_theta)};
 
             double wc_dot_tpc = wc_vec[0]*tpc_vec[0]+wc_vec[1]*tpc_vec[1]+wc_vec[2]*tpc_vec[2];
 
+            double wc_dot_tpc_end = wc_vec[0]*tpc_vec_end[0]+wc_vec[1]*tpc_vec_end[1]+wc_vec[2]*tpc_vec_end[2];
+
+            double tpc_dot_tpc_end = tpc_vec[0]*tpc_vec_end[0]+tpc_vec[1]*tpc_vec_end[1]+tpc_vec[2]*tpc_vec_end[2];
+
             double alpha =  acos(wc_dot_tpc / (tpc_size)) * (180/pi);  
+            double alpha_end = acos(wc_dot_tpc_end / (tpc_end_size)) * (180/pi);
+            double dir_vector_angle = acos(tpc_dot_tpc_end / (tpc_end_size * tpc_size)) * (180/pi);
 
-
+            AllTrkAlphaEnd.push_back(alpha_end);
+            AllTrkDirCompare.push_back(dir_vector_angle);
             AllTrkAlpha.push_back(alpha);
             AllTrkDelX.push_back(delX);
             AllTrkDelY.push_back(delY);
             AllTrkTheta.push_back(Theta);
+
+          //if(BSoptions[0]){std::cout << "calculated angles" << std::endl;}
+
+
 
             double rValue = sqrt(pow(delX,2) + pow(delY,2));
 
             AllTrkRdist.push_back(rValue);
 
             if(zConditionMet){
+            EnteringTrkAlphaEnd.push_back(alpha_end);
+            EnteringTrkDirCompare.push_back(dir_vector_angle);
             EnteringTrkAlpha.push_back(alpha);
             EnteringTrkDelX.push_back(delX);
             EnteringTrkDelY.push_back(delY);
@@ -249,17 +292,20 @@ std::vector<double> BeamSelector::BeamMatching(double wc_x, double wc_y, double 
 
             double adjustedR = (sqrt(pow((delX - xMeanTPCentry),2) + pow((delY - yMeanTPCentry),2)));
 
-            if(alpha < BSoptions[2]){
-            if(!angleConditionMet){numAlphaCut++;}
-            angleConditionMet = true;
-              if(adjustedR < BSoptions[3]){
-                if(!circleConditionMet){numXYdeltaCut++;}
-                circleConditionMet = true;
+            if(adjustedR < BSoptions[3]){
+              if(!circleConditionMet){numXYdeltaCut++;}
+              circleConditionMet = true;
+              CircleTrkAlpha.push_back(alpha);
+
+              if(alpha < BSoptions[2]){
+                if(!angleConditionMet){numAlphaCut++;}
+                angleConditionMet = true;
+                
 
                 if (rValue < rValueMin){
 
                   matchInfo = {1., static_cast <double> (itrack), static_cast <double> (zIndices[0]),
-                    static_cast <double> (zIndices[1]),static_cast <double> (zIndices[2]), delX, delY,alpha};
+                    static_cast <double> (zIndices[1]),static_cast <double> (zIndices[2]), delX, delY,alpha,-1.};
                   rValueMin = rValue;
                   alphaMin = alpha;
                   delXMin = delX;
@@ -273,6 +319,17 @@ std::vector<double> BeamSelector::BeamMatching(double wc_x, double wc_y, double 
         
       }//end of track loop
 
+
+      //if(BSoptions[0]){std::cout << "### Done with track loop\n" << std::endl;}
+
+      matchInfo[8] = static_cast<double>(numMatchesFound);
+      if(matchInfo[0]){
+        if(BSoptions[9]){
+          if(numMatchesFound > 1){matchInfo[0] = 0;}
+          else{numUniqueMatch++;}
+        }
+      }
+
       PileupTracksBuffer = numPileupTracks;
       ShowerTracksBuffer = numShortTracks;
       if(matchInfo[0]){
@@ -284,8 +341,7 @@ std::vector<double> BeamSelector::BeamMatching(double wc_x, double wc_y, double 
             if(numShortTracks > BSoptions[7]){matchInfo[0] = 0;}
             else{
               numShowerCut++;
-                if(numMatchesFound > 1){matchInfo[0] = 0;}
-                else{numUniqueMatch++;}
+                
              } 
           }
         }
@@ -299,14 +355,14 @@ void BeamSelector::printSummary(std::vector <double> BSoptions){
 
   std::cout << "Events Passed through Matching: "<< numEventsStart << std::endl; 
   std::cout << "Events with at least one TPC track Z < " << BSoptions[1] << ": "<< numZcutoff << std::endl;
-  std::cout << "Events passing alpha angle cut a < "  << BSoptions[2] << ": " << numAlphaCut << std::endl;
   std::cout << "Events passing circular distance cut r < " << BSoptions[3] << ": "<< numXYdeltaCut << std::endl;
-
+  std::cout << "Events passing alpha angle cut a < "  << BSoptions[2] << ": " << numAlphaCut << std::endl;
+  if (BSoptions[9]){std::cout << "Events with unique matched track: " << numUniqueMatch << std::endl;}
   if(BSoptions[4]){
   std::cout << "\n------- Additional Data Selection-------\n"<< std::endl;
   std::cout << "Events passing pileup cut ( > " << BSoptions[5] << " tracks in first "<< BSoptions[6]<<" cm): " << numPileupCut << std::endl;
   std::cout << "Events passing EM shower cut ( "  << BSoptions[7] <<" or more tracks < " << BSoptions[8] <<" cm long): " << numShowerCut << std::endl;
-  std::cout << "Events with unique matched track: " << numUniqueMatch << std::endl;
+  
   }
 }
 

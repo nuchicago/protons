@@ -40,6 +40,9 @@ class BeamSelector {
   std::vector<double> EnteringTrkNhits;
   std::vector<double> EnteringTrkLength;
 
+  std::vector<double> EnteringTrkAlphaEnd;
+  std::vector<double> EnteringTrkDirCompare;
+
 
   std::vector<double> AllTrkZmax;
   std::vector<double> AllTrkZmin2;
@@ -51,7 +54,12 @@ class BeamSelector {
   std::vector<double> AllTrkRdist;
   std::vector<double> AllTrkNhits;
   std::vector<double> AllTrkLength;
+
+  std::vector<double> AllTrkAlphaEnd;
+  std::vector<double> AllTrkDirCompare;
   
+  std::vector<double> CircleTrkAlpha;
+
 
 
   int ShowerTracksBuffer;

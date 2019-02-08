@@ -334,6 +334,7 @@ class LArIATAnalysis {
   TBranch        *b_wctrk_phi;  
   TBranch        *b_num_wctracks;  //!
   TBranch        *b_tofObject;   //!
+  TBranch        *b_num_tof_objects;
   TBranch        *b_nhits;
   TBranch        *b_hit_wire;
   TBranch        *b_hit_time;

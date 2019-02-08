@@ -22,6 +22,9 @@ namespace UtilityFunctions {
                         double x2, double y2, double z2);
   std::vector<int> zOrderedTrack(std::vector<std::vector<double>> *track_zpos, int trackId,
                                     std::vector<int> *ntrack_hits);
+  std::vector<int> zOrderedTrack2(std::vector<std::vector<double>> *track_zpos, int trackId,
+                                    std::vector<int> *ntrack_hits);
+
   std::vector<double> pointProjector(std::vector<double> *point0, std::vector<double> *point1, 
                       double planeCz, double planeC0);
 

@@ -132,10 +132,15 @@ ProtonXsec::ProtonXsec( char* jobOptionsFile ) : LArIATAnalysis( jobOptionsFile 
   }
 
   //output list of selected primary particle IDs
-
   if (UI->SelEventListSet){
-    
     IDfile.open(UI->SelEventList, ios::trunc);
+    IDfile.close();
+  }
+
+  if (UI->MultiMatchEventListSet){
+    multiMatchFile.open(UI->SelEventList, ios::trunc);
+    multiMatchFile.close();
+
   }
 
   // output for data driven monte carlo
@@ -173,6 +178,7 @@ void ProtonXsec::AnalyzeFromNtuples(){
 
   double numEventsStart = 0;
   double numMassCut = 0;
+  int numtofsingle = 0;
   double numtofvalid = 0;
   double numZcutoff = 0;
   double numWCTrack = 0;
@@ -201,8 +207,19 @@ void ProtonXsec::AnalyzeFromNtuples(){
   //TGraph * gtotal_res_dedx;
 
 
+    if (UI->MultiMatchEventListSet){
+    multiMatchFile.open(UI->SelEventList, ios::out);
+    multiMatchFile << "RUN\tSUBRUN\tEVENT\tNUM_MATCHES\n";
+    multiMatchFile.close();
+
+  }
+
   // #### Data Driven MC 
 
+
+  int beam_run;
+  int beam_subrun;
+  int beam_event;
   double beam_x;
   double beam_y;
   double beam_z;
@@ -215,14 +232,22 @@ void ProtonXsec::AnalyzeFromNtuples(){
   std::vector< double > halo_pileup_z;
   std::vector< double > halo_pileup_angle_xz;
   std::vector< double > halo_pileup_angle_yz;
+  int halo_pileup_run;
+  int halo_pileup_subrun;
+  int halo_pileup_event;
   //std::vector< double > halo_pileup_momentum;
   int halo_pileup_number_particles;
 
 
-  TTree * beam_tree = new TTree("beam", "beam");
+
+  TTree * beam_tree;
   if(UI->beamCharFileSet){
     beamPlotFile->cd();
-    //TTree * beam_tree = new TTree("beam", "beam");
+    beam_tree = new TTree("beam", "beam");
+
+    beam_tree->Branch("beam_run", &beam_run, "beam_run/I");
+    beam_tree->Branch("beam_subrun", &beam_subrun, "beam_subrun/I");
+    beam_tree->Branch("beam_event", &beam_event, "beam_event/I");
 
     beam_tree->Branch("beam_x", &beam_x, "beam_x/D");
     beam_tree->Branch("beam_y", &beam_y, "beam_y/D");
@@ -232,13 +257,15 @@ void ProtonXsec::AnalyzeFromNtuples(){
     beam_tree->Branch("beam_momentum", &beam_momentum, "beam_momentum/D");
   }
 
-  TTree * halo_pileup_tree = new TTree("halo_pileup", "halo_pileup");
+  TTree * halo_pileup_tree;
   if(UI->haloCharFileSet){
 
     haloPlotFile->cd();
 
-    //TTree * halo_pileup_tree = new TTree("halo_pileup", "halo_pileup");
-
+    halo_pileup_tree = new TTree("halo_pileup", "halo_pileup");
+    halo_pileup_tree->Branch("halo_pileup_run", &halo_pileup_run, "halo_pileup_run/I");
+    halo_pileup_tree->Branch("halo_pileup_subrun", &halo_pileup_subrun, "halo_pileup_subrun/I");
+    halo_pileup_tree->Branch("halo_pileup_event", &halo_pileup_event, "halo_pileup_event/I");
     halo_pileup_tree->Branch("halo_pileup_x", &halo_pileup_x);
     halo_pileup_tree->Branch("halo_pileup_y", &halo_pileup_y);
     halo_pileup_tree->Branch("halo_pileup_z", &halo_pileup_z);
@@ -246,6 +273,7 @@ void ProtonXsec::AnalyzeFromNtuples(){
     halo_pileup_tree->Branch("halo_pileup_angle_yz", &halo_pileup_angle_yz);
     //halo_pileup_tree->Branch("halo_pileup_momentum", &halo_pileup_momentum);
     halo_pileup_tree->Branch("halo_pileup_number_particles", &halo_pileup_number_particles, "halo_pileup_number_particles/I");
+
 
   }
 
@@ -257,7 +285,7 @@ void ProtonXsec::AnalyzeFromNtuples(){
   // Selector Options in a vector
   std::vector<double> ESoptions = {static_cast<double> (verbose), UI->dedxNoBraggMax,UI->branchMaxDist, UI->clusterMaxDist};
   std::vector<double> BSoptions = {static_cast<double> (verbose), UI->zTPCCutoff, UI->alphaCut, UI->rCircleCut,
-    static_cast<double>(UI->pionCuts), UI->numPileupCut, UI->pcPileupDist, UI->numTracksShower, UI->lenTracksShower};
+    static_cast<double>(UI->pionCuts), UI->numPileupCut, UI->pcPileupDist, UI->numTracksShower, UI->lenTracksShower,static_cast<double>(UI->uniqueMatch) };
 
 
   
@@ -309,6 +337,13 @@ void ProtonXsec::AnalyzeFromNtuples(){
   TH1D *tpcAllTrackZmin2 = new TH1D("tpcAllTrackZmin2", "Position of TPC track start in Z", 300, -20, 100);
   TH1D *tpcAllTrackZmax = new TH1D("tpcAllTrackZmax", "Position of TPC track end in Z", 300, -20, 120);
   TH1D * allAlphaHist = new TH1D("allAlphaHist","Angle between WC and TPC track",360,0,360);
+  TH1D * allAlphaHistEnd = new TH1D("allAlphaHistEnd","Angle between WC and TPC track - Using End Point",360,0,360);
+  TH1D * alphaHistEnd = new TH1D("alphaHistEnd","Angle between WC and TPC entering track - Using End Point",360,0,360);
+  TH1D * dirAngleHist = new TH1D("dirAngleHist","Angle between direction vectors - entering tracks",360,0,360);
+  TH1D * allDirAngleHist = new TH1D("allDirAngleHist","Angle between direction vectors - entering tracks",360,0,360);
+  TH1D * circleAlphaHist  = new TH1D("circleAlphaHist","Angle between WC and TPC track - Tracks Within Circle Cut",360,0,360);
+
+
   TH1D * tpcAllTrackTheta = new TH1D("tpcAllTrackTheta"," #Theta angle with Z axis",360,0,360);
   TH1D * tpcAllTrackNhits = new TH1D("tpcAllTrackNhits"," Number of Hits per Track",600,0,600);
   TH1D * tpcAllTrackLength = new TH1D("tpcAllTrackLength"," Length of All Tracks",600,0,600);
@@ -374,11 +409,13 @@ void ProtonXsec::AnalyzeFromNtuples(){
 
   TH2D *tofMomentHist = new TH2D("tofMomentHist","Momentum vs TOF",100,0,2000, 100 , 0,100);
   TH1D *BeamMassHist = new TH1D("BeamMassHist","Beamline particle Mass", 100, -3000,3000);
-  TH1D *BeamMassCutHist = new TH1D("BeamMassCutHist","Beamline particle Mass - after Cut", 300, 0,3000);
+  TH1D *BeamMassCutHist = new TH1D("BeamMassCutHist","Beamline particle Mass - after Cut", 100, -3000,3000);
+  TH1D *BeamToFmassSel =  new  TH1D("BeamToFmassSel","Beamline ToF - after Mass Cut",300, -30, 270);
+  TH1D *BeamMomentumMassSel = new TH1D("BeamMomentumMassSel", "Beam Momentum - after Mass Cut", 200, 0, 2000);
   //TH1D *primary_dedx = new TH1D("primary_dedx","primary track dE/dx", 400, 0,40);
   TH1D *BeamMomentum = new TH1D("BeamMomentum","Incoming Particle Momentum",200,0,2000);
 
-  TH1D *beamLengthHist =  new TH1D("beamLengthHist","Calculated beam Length",100,550,650);
+  TH1D *beamLengthHist =  new TH1D("beamLengthHist","Calculated beam Length",100,500,900);
 
 
   // resolution changes with cuts
@@ -567,11 +604,12 @@ void ProtonXsec::AnalyzeFromNtuples(){
       //std::cout << "dist wc4-mg2: " << d_mg2_wc4 << "cm" << std::endl;
 
       tertiaryLength = d_wc1_mg1 + d_mg1_mg2 + d_mg2_wc4 + 60;
+      beamLengthHist->Fill(tertiaryLength);
 
     }
 
 
-    beamLengthHist->Fill(tertiaryLength);
+    
     bool isProton = BS->MassCut(wctrk_momentum[0], tofObject[0], tertiaryLength, UI->tofOffset, ParticleMass, UI->MassCutMin, UI->MassCutMax);
 
     BeamMassHist->Fill(ParticleMass);
@@ -622,13 +660,19 @@ void ProtonXsec::AnalyzeFromNtuples(){
         beam_angle_xz = projVector[3];
         beam_angle_yz = projVector[4];
         beam_momentum = wctrk_momentum[0];
+        beam_run = run;
+        beam_subrun = subrun;
+        beam_event = event;
 
         beam_tree->Fill();
 
 
       }
 
-
+      //if (verbose){std::cout << "number of ToF objects : " <<num_tof_objects << std::endl;}
+      //if (verbose){std::cout << "ToF object size : " <<  << std::endl;}
+      if(num_tof_objects != 1){continue;}
+      numtofsingle++;
 
       if(tofObject[0] < UI->tofMin || tofObject[0] > UI->tofMax){continue;}
       numtofvalid++;
@@ -643,6 +687,18 @@ void ProtonXsec::AnalyzeFromNtuples(){
       if (isProton){
         BeamMassCutHist->Fill(ParticleMass);
         numMassCut++;
+        BeamMomentumMassSel->Fill(wctrk_momentum[0]);
+        BeamToFmassSel->Fill(tofObject[0]);
+        double mass_const;
+
+        if (UI->isProton){ mass_const = massProton * 1000;}
+        else if(UI->isPion){ mass_const = massPion * 1000;}
+        else{mass_const = 999.999 * 1000;}
+
+
+
+        double calculatedLength =  sqrt((pow(tofObject[0],2) * pow(c_light,2)) / (pow((mass_const/wctrk_momentum[0]),2) +1 ) );
+        beamLengthHist->Fill(calculatedLength);
       }
 
       //if(verbose){std::cout << "matching to tpc" << std::endl;}
@@ -668,9 +724,25 @@ void ProtonXsec::AnalyzeFromNtuples(){
         tpcAllTrackTheta->Fill(BS->AllTrkTheta[i]);
         allAlphaHist->Fill(BS->AllTrkAlpha[i]);
         allRdistHist->Fill(BS->AllTrkRdist[i]);
+        allAlphaHistEnd->Fill(BS->AllTrkAlphaEnd[i]);
+        allDirAngleHist->Fill(BS->AllTrkDirCompare[i]);
       }
 
       NtracksTotalHist->Fill(ntracks_reco);
+
+      for (int  i = 0; i < BS->CircleTrkAlpha.size() ; i++ ){
+        circleAlphaHist->Fill(BS->CircleTrkAlpha[i]);
+      }
+
+      if(matchCandidate[8] > 1){
+        if(UI->MultiMatchEventListSet){
+          multiMatchFile.open(UI->MultiMatchEventList, ios::app);
+          if(multiMatchFile){
+            multiMatchFile << run << "\t"<< subrun << "\t" << event << "\t" << matchCandidate[8] << "\n";
+          }
+          multiMatchFile.close();
+        }
+      }
 
 
       //if(verbose){std::cout << "ploting delXY" << std::endl;}
@@ -706,6 +778,8 @@ void ProtonXsec::AnalyzeFromNtuples(){
           tpcInTrackEndZ->Fill((*track_zpos)[inTrackID][inStart]);
           InTrackLength->Fill((*track_length)[inTrackID]);
           alphaHist->Fill(trackAlpha);
+          alphaHistEnd->Fill(BS->EnteringTrkAlphaEnd[i]);
+          dirAngleHist->Fill(BS->EnteringTrkDirCompare[i]);
 
           if(inTrackID != reco_primary){
 
@@ -790,6 +864,9 @@ void ProtonXsec::AnalyzeFromNtuples(){
       }
 
       halo_pileup_number_particles =  pileup_counter;
+      halo_pileup_run = run;
+      halo_pileup_subrun = subrun;
+      halo_pileup_event = event;
       halo_pileup_tree->Fill();
 
       halo_pileup_x.clear();
@@ -890,10 +967,17 @@ void ProtonXsec::AnalyzeFromNtuples(){
 
   double truthIntKE = -1;
 
-  if(UI->SelEventListSet){IDfile << jentry << "\t" << reco_primary << "\t" << candidate_info[0] << 
-    "\t" << candidate_info[1]  << "\t" << candidate_info[2]  << "\t" << candidate_info[3] << "\t " <<
-    candidate_info[4] << "\t"<< candidate_info[5] << "\t" << initial_ke << "\t" << intKE <<"\t" << truthIntKE
-    << "\t" << ParticleMass << "\n";}
+  if(UI->SelEventListSet){
+
+
+    IDfile.open(UI->SelEventList,ios::app);
+    if(IDfile){
+      IDfile << jentry << "\t" << reco_primary << "\t" << candidate_info[0] << 
+      "\t" << candidate_info[1]  << "\t" << candidate_info[2]  << "\t" << candidate_info[3] << "\t " <<
+      candidate_info[4] << "\t"<< candidate_info[5] << "\t" << initial_ke << "\t" << intKE <<"\t" << truthIntKE
+      << "\t" << ParticleMass << "\n";}
+    IDfile.close();
+  }
 
   
   }//end of event Loop
@@ -1017,6 +1101,7 @@ void ProtonXsec::AnalyzeFromNtuples(){
     std::cout << "Events with 4-point wc track: " << num4PointTrack << std::endl;
     if (UI->pickyTracksWC){std::cout << "Events with picky tracks: " << numPickyTrack << std::endl;}
     if (UI->qualityTracksWC){std::cout << "Events passing quality flag: " << numQualityTrack << std::endl;}
+    std::cout << "Events with unique ToF value: " << numtofsingle << std::endl;
     std::cout << "Events with ToF value in range (" << UI->tofMin << " , " << UI->tofMax<< ") [ns]: " << numtofvalid << std::endl;
     std::cout << "Events passing mass cut (" << UI->MassCutMin << " , " << UI->MassCutMax << ") [GeV/c^2]: "<< numMassCut << std::endl;  
 
@@ -1119,6 +1204,9 @@ void ProtonXsec::AnalyzeFromNtuples(){
 
 
       BeamMassCutHist->Write();
+      BeamToFmassSel->Write();
+      BeamMomentumMassSel->Write();
+
       tofMomentHist->Write();
       numTracksSelHist->Write();
       alphaHist->Write();
@@ -1134,12 +1222,17 @@ void ProtonXsec::AnalyzeFromNtuples(){
       NtracksTotalHist->Write();
       allRdistHist->Write();
       allAlphaHist->Write();
+      allAlphaHistEnd->Write();
+      allDirAngleHist->Write();
+      dirAngleHist->Write();
+      circleAlphaHist->Write();
+      alphaHistEnd->Write();
       tpcInTrackEndZ->Write();
       zProjPrimaryTrack->Write();
       zProjBadTrack->Write();
       numPileupTracksHist->Write();
       numShowerCutHist->Write();
-//      beamLengthHist->Write();
+      beamLengthHist->Write();
 //      tpcPhiHist->Write();
 //      wcPhiHist->Write();
 //      tpcThetaHist->Write();
@@ -1181,6 +1274,7 @@ void ProtonXsec::AnalyzeFromNtuples(){
 
     }
     if(UI->beamCharFileSet){
+      if(verbose){std::cout << "Writing Beam DDMC file" << std::endl;}
 
       beamPlotFile->cd();
       beam_tree->Write();
@@ -1196,6 +1290,7 @@ void ProtonXsec::AnalyzeFromNtuples(){
       }
 
     if(UI->haloCharFileSet){
+      if(verbose){std::cout << "Writing Halo DDMC file" << std::endl;}
 
       haloPlotFile->cd();
       halo_pileup_tree->Write();
@@ -1212,7 +1307,7 @@ void ProtonXsec::AnalyzeFromNtuples(){
       }
 
   }
-  if(UI->SelEventListSet){IDfile.close();}
+  if(verbose){std::cout << "Done" << std::endl;}
 
 }
 

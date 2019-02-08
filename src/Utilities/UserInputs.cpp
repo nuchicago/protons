@@ -98,6 +98,7 @@ void UserInputs::initialize( ){
   haloCharFileSet = false;
   outputFileNameSet = false;
   SelEventListSet = false;
+  MultiMatchEventListSet = false;
   modelSet = false;
   plotIndividualSet = false;
   RawWireVar = 0;
@@ -119,8 +120,6 @@ void UserInputs::initialize( ){
   dedxNoBraggMaxSet = false;
   clusterMaxDist =  99.;
   clusterMaxDistSet = false;
-
-
 
   zBeamCutoffSet = false;
   zBeamCutoff = 2;
@@ -164,16 +163,21 @@ void UserInputs::initialize( ){
   applyMassCut = 1;
   skipEventSelection = 0;
   verbose = 0;
+  uniqueMatch = 0;
   BendDirFilter = 0;
   pickyTracksWC = 1;
   qualityTracksWC = 0;
 
-  beamLength = 662.5; //cm
+  beamLength = 665.2; //cm
   beamLengthSet = false;
   tofOffset = 0;
   tofOffsetSet = false;
 
   beamPlanesSet = true;
+
+  isProton = false;
+  isPion = false;
+  isKaon = false;
 
 }
 
@@ -222,6 +226,11 @@ void UserInputs::readIoFiles( ifstream *jobOptionsFile ){
     *jobOptionsFile >> SelEventList;
     SelEventListSet = true;
   } 
+  if( paramLookUp( jobOptionsFile, (char*)"MultiMatchEventList" ) ){
+    MultiMatchEventList = new char[1000];
+    *jobOptionsFile >> MultiMatchEventList;
+    MultiMatchEventListSet = true;
+  } 
 
   if( paramLookUp( jobOptionsFile, (char*)"psOutputFile" ) ){
     psOutputFile = new char[1000];
@@ -229,13 +238,13 @@ void UserInputs::readIoFiles( ifstream *jobOptionsFile ){
     psOutputFileSet = true;
   }
   if( paramLookUp( jobOptionsFile, (char*)"beamCharFile" ) ){
-    beamCharFile = new char[1000];
+    beamCharFile = new char[1500];
     *jobOptionsFile >> beamCharFile;
     beamCharFileSet = true;
   }
 
     if( paramLookUp( jobOptionsFile, (char*)"haloCharFile" ) ){
-    haloCharFile = new char[1000];
+    haloCharFile = new char[1500];
     *jobOptionsFile >> haloCharFile;
     haloCharFileSet = true;
   }
@@ -282,7 +291,7 @@ void UserInputs::readDataSetParams( ifstream *jobOptionsFile ){
     if( strcmp( PIDbuffer, "KAON" ) == 0 || strcmp( PIDbuffer, "Kaon" ) == 0 || strcmp( PIDbuffer, "kaon" ) == 0 )
       isKaon = true;
     if( strcmp( PIDbuffer, "PION" ) == 0 || strcmp( PIDbuffer, "Pion" ) == 0 || strcmp( PIDbuffer, "pion" ) == 0 )
-      isKaon = true;
+      isPion = true;
   }
 
   if( paramLookUp( jobOptionsFile, (char*)"events" ) ){
@@ -351,7 +360,6 @@ void UserInputs::readDataSetParams( ifstream *jobOptionsFile ){
   if( paramLookUp( jobOptionsFile, (char*)"verbose" ) ){
     *jobOptionsFile >> verbose;
   }
-
   if( paramLookUp( jobOptionsFile, (char*)"pionCuts" ) ){
     *jobOptionsFile >> pionCuts;
   }
@@ -722,7 +730,11 @@ void UserInputs::readAnalysisCuts( ifstream *jobOptionsFile ){
   }
   else{beamPlanesSet = false;}
 
-
+  if( paramLookUp( jobOptionsFile, (char*)"uniqueMatch" ) ){
+    *jobOptionsFile >> uniqueMatch;
+    
+  }
+  
   //if( paramLookUp( jobOptionsFile, (char*)"chi2Vertex4MatchCut" ) ){
   //  *jobOptionsFile >> chi2Vertex4MatchCut;
   //  chi2Vertex4MatchCutSet = true;

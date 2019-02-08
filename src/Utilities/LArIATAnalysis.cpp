@@ -17,7 +17,7 @@ const double LArIATAnalysis::massPion = 0.140;            // piplus/minus mass G
 const double LArIATAnalysis::massElectron = 0.000511;     // electron mass GeV
 const double LArIATAnalysis::massKaon = 0.494;            // kplus/kminus mass GeV
 const double LArIATAnalysis::c_light = 29.9792458;        // cm/ns - speed of light in vacuum
-const double LArIATAnalysis::tofLength = 665.2;           // cm
+//const double LArIATAnalysis::tofLength = 665.2;           // cm
 
 
 //#############################################################################
@@ -186,6 +186,7 @@ void LArIATAnalysis::bookNtuple( TChain* tuple, bool isMC ){
   InteractionPoint = 0;
   InteractionPointType = 0;
   num_wctracks = 0;
+  num_tof_objects = 0;
 
 
   
@@ -302,6 +303,7 @@ void LArIATAnalysis::bookNtuple( TChain* tuple, bool isMC ){
     tuple->SetBranchAddress("wctrk_phi", &wctrk_phi, &b_wctrk_phi);
     tuple->SetBranchAddress("num_wctracks", &num_wctracks, &b_num_wctracks);
     tuple->SetBranchAddress("tofObject", &tofObject, &b_tofObject);
+    tuple->SetBranchAddress("num_tof_objects", &num_tof_objects, &b_num_tof_objects);
     tuple->SetBranchAddress("wctrk_x_proj_3cm", &wctrk_x_proj_3cm, &b_wctrk_x_proj_3cm);
     tuple->SetBranchAddress("wctrk_y_proj_3cm", &wctrk_y_proj_3cm, &b_wctrk_y_proj_3cm);
     tuple->SetBranchAddress("wctrk_missed", &wctrk_missed, &b_wctrk_missed);
