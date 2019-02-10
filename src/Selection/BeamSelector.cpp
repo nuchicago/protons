@@ -281,7 +281,7 @@ std::vector<double> BeamSelector::BeamMatching(double wc_x, double wc_y, double 
 
             AllTrkRdist.push_back(rValue);
 
-            if(zConditionMet){
+            if(zmin1 < BSoptions[1]){
             EnteringTrkAlphaEnd.push_back(alpha_end);
             EnteringTrkDirCompare.push_back(dir_vector_angle);
             EnteringTrkAlpha.push_back(alpha);
