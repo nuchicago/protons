@@ -216,6 +216,12 @@ void ProtonXsec::AnalyzeFromNtuples(){
     multiMatchFile.close();
 
   }
+      if (UI->SelEventListSet){
+    IDfile.open(UI->SelEventList, ios::out);
+    IDfile << "RUN\tSUBRUN\tEVENT\tMATCHED_TRACK\tSTART_X\t START_Y\tSTART_Z\tWCX\tWCY\n";
+    IDfile.close();
+
+  }
 
   // #### Data Driven MC 
 
@@ -731,6 +737,19 @@ void ProtonXsec::AnalyzeFromNtuples(){
         allDirAngleHist->Fill(BS->AllTrkDirCompare[i]);
       }
 
+      if(matchCandidate[0]){
+        if(UI->SelEventListSet){
+          IDfile.open(UI->SelEventList,ios::app);
+          if(IDfile){
+            IDfile << run << "\t" << subrun << "\t" << event << "\t" << reco_primary << "\t" << 
+              (*track_xpos)[reco_primary][matchCandidate[2]] << "\t" <<
+              (*track_ypos)[reco_primary][matchCandidate[2]] << "\t" << 
+              (*track_zpos)[reco_primary][matchCandidate[2]] << "\t" <<
+              wctrk_x_proj_3cm[0] << "\t" << wctrk_y_proj_3cm[0] << "\n";}
+          IDfile.close();
+        }
+      }
+
       NtracksTotalHist->Fill(ntracks_reco);
 
       for (int  i = 0; i < BS->CircleTrkAlpha.size() ; i++ ){
@@ -977,10 +996,17 @@ void ProtonXsec::AnalyzeFromNtuples(){
 
     IDfile.open(UI->SelEventList,ios::app);
     if(IDfile){
+      /*IDfile << run << "\t" << subrun << "\t" << event << "\t" << reco_primary << "\t" << 
+        (*track_xpos)[reco_primary][matchCandidate[2]] << "\t" <<
+        (*track_ypos)[reco_primary][matchCandidate[2]] << "\t" << 
+        (*track_zpos)[reco_primary][matchCandidate[2]] << "\t" <<
+        wctrk_x_proj_3cm[0] << "\t" << wctrk_y_proj_3cm << "\n";
+
+
       IDfile << jentry << "\t" << reco_primary << "\t" << candidate_info[0] << 
       "\t" << candidate_info[1]  << "\t" << candidate_info[2]  << "\t" << candidate_info[3] << "\t " <<
       candidate_info[4] << "\t"<< candidate_info[5] << "\t" << initial_ke << "\t" << intKE <<"\t" << truthIntKE
-      << "\t" << ParticleMass << "\n";}
+      << "\t" << ParticleMass << "\n";*/}
     IDfile.close();
   }
 
@@ -1098,6 +1124,9 @@ void ProtonXsec::AnalyzeFromNtuples(){
 
 
   if (!isMC){
+
+    std::cout << "x Entering Mean :" << xMeanTPCentry<< std::endl;
+    std::cout << "y Entering Mean :" << yMeanTPCentry<< std::endl;
     
     std::cout << "\n------- Particle ID Results -------\n"<< std::endl;
     std::cout << "Number of entries in file  = " << nentries << std::endl;
