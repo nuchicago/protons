@@ -176,6 +176,9 @@ void ProtonXsec::AnalyzeFromNtuples(){
 
   // counters for beam cuts
 
+  double numPos2tof = 0;
+  double numPos1tof = 0;
+  double numPos0tof = 0;
   double numEventsStart = 0;
   double numMassCut = 0;
   int numtofsingle = 0;
@@ -574,6 +577,10 @@ void ProtonXsec::AnalyzeFromNtuples(){
     bool passed_geo_cuts = true;
     double ParticleMass = -9999999.;
     wctrkNumHist->Fill(num_wctracks);
+    if (tofObject[0] != NULL) {numPos0tof++;}
+    if (tofObject[1] != NULL) {numPos1tof++;}
+    if (tofObject[2] != NULL) {numPos2tof++;}
+
 
     double tertiaryLength = 0;
 
@@ -680,7 +687,8 @@ void ProtonXsec::AnalyzeFromNtuples(){
 
       //if (verbose){std::cout << "number of ToF objects : " <<num_tof_objects << std::endl;}
       //if (verbose){std::cout << "ToF object size : " <<  << std::endl;}
-      if(num_tof_objects != 1){continue;}
+      
+      if(tofObject[1] != NULL || tofObject[2] != NULL ){continue;}
       numtofsingle++;
 
       if(tofObject[0] < UI->tofMin || tofObject[0] > UI->tofMax){continue;}
@@ -736,6 +744,8 @@ void ProtonXsec::AnalyzeFromNtuples(){
         allAlphaHistEnd->Fill(BS->AllTrkAlphaEnd[i]);
         allDirAngleHist->Fill(BS->AllTrkDirCompare[i]);
       }
+
+
 
       if(matchCandidate[0]){
         if(UI->SelEventListSet){
@@ -877,10 +887,6 @@ void ProtonXsec::AnalyzeFromNtuples(){
                 pileup_counter++;
               }
               //halo_pileup_momentum.push_back(trandom_->Landau(1200, 50));
-
-              
-              
-
 
             }
           }
@@ -1127,6 +1133,11 @@ void ProtonXsec::AnalyzeFromNtuples(){
 
     std::cout << "x Entering Mean :" << xMeanTPCentry<< std::endl;
     std::cout << "y Entering Mean :" << yMeanTPCentry<< std::endl;
+
+    std::cout  << "Number events with value in tof[0]" << numPos0tof <<std::endl;
+    std::cout  << "Number events with value in tof[1]" << numPos1tof <<std::endl;
+    std::cout  << "Number events with value in tof[2]" << numPos2tof <<std::endl;
+    
     
     std::cout << "\n------- Particle ID Results -------\n"<< std::endl;
     std::cout << "Number of entries in file  = " << nentries << std::endl;
