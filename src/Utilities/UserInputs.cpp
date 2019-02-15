@@ -179,6 +179,14 @@ void UserInputs::initialize( ){
   isPion = false;
   isKaon = false;
 
+  pionDDMCmassMin = 0;
+  pionDDMCmassMax = 350;
+  protonDDMCmassMin = 700;
+  protonDDMCmassMax = 1200;
+  kaonDDMCmassMax = 600;
+  kaonDDMCmassMin = 425;
+
+
 }
 
 
@@ -242,6 +250,26 @@ void UserInputs::readIoFiles( ifstream *jobOptionsFile ){
     *jobOptionsFile >> beamCharFile;
     beamCharFileSet = true;
   }
+
+
+
+  if( paramLookUp( jobOptionsFile, (char*)"beamProtonFile" ) ){
+    beamProtonFile = new char[1500];
+    *jobOptionsFile >> beamProtonFile;
+    beamProtonFileSet = true;
+  }  
+
+  if( paramLookUp( jobOptionsFile, (char*)"beamPionFile" ) ){
+    beamPionFile = new char[1500];
+    *jobOptionsFile >> beamPionFile;
+    beamPionFileSet = true;
+  }  
+  if( paramLookUp( jobOptionsFile, (char*)"beamKaonFile" ) ){
+    beamKaonFile = new char[1500];
+    *jobOptionsFile >> beamKaonFile;
+    beamKaonFileSet = true;
+  }
+
 
     if( paramLookUp( jobOptionsFile, (char*)"haloCharFile" ) ){
     haloCharFile = new char[1500];

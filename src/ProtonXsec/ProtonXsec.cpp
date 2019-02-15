@@ -148,6 +148,15 @@ ProtonXsec::ProtonXsec( char* jobOptionsFile ) : LArIATAnalysis( jobOptionsFile 
   if (UI->beamCharFileSet){
     beamPlotFile = new TFile( UI->beamCharFile, "RECREATE");
   }
+  if (UI->beamPionFileSet){
+    beamPionFile = new TFile( UI->beamPionFile, "RECREATE");
+  }
+  if (UI->beamKaonFileSet){
+    beamKaonFile = new TFile( UI->beamKaonFile, "RECREATE");
+  }
+  if (UI->beamProtonFileSet){
+    beamProtonFile = new TFile( UI->beamProtonFile, "RECREATE");
+  }
   if(UI->haloCharFileSet){
     haloPlotFile = new TFile( UI->haloCharFile, "RECREATE");
   }
@@ -250,8 +259,6 @@ void ProtonXsec::AnalyzeFromNtuples(){
   //std::vector< double > halo_pileup_momentum;
   int halo_pileup_number_particles;
 
-
-
   TTree * beam_tree;
   if(UI->beamCharFileSet){
     beamPlotFile->cd();
@@ -267,6 +274,57 @@ void ProtonXsec::AnalyzeFromNtuples(){
     beam_tree->Branch("beam_angle_xz", &beam_angle_xz, "beam_angle_xz/D");
     beam_tree->Branch("beam_angle_yz", &beam_angle_yz, "beam_angle_yz/D");
     beam_tree->Branch("beam_momentum", &beam_momentum, "beam_momentum/D");
+  }
+
+  TTree * beam_tree_proton;
+  if(UI->beamProtonFileSet){
+    beamProtonFile->cd();
+    beam_tree_proton = new TTree("beam", "beam");
+
+    beam_tree_proton->Branch("beam_run", &beam_run, "beam_run/I");
+    beam_tree_proton->Branch("beam_subrun", &beam_subrun, "beam_subrun/I");
+    beam_tree_proton->Branch("beam_event", &beam_event, "beam_event/I");
+
+    beam_tree_proton->Branch("beam_x", &beam_x, "beam_x/D");
+    beam_tree_proton->Branch("beam_y", &beam_y, "beam_y/D");
+    beam_tree_proton->Branch("beam_z", &beam_z, "beam_z/D");
+    beam_tree_proton->Branch("beam_angle_xz", &beam_angle_xz, "beam_angle_xz/D");
+    beam_tree_proton->Branch("beam_angle_yz", &beam_angle_yz, "beam_angle_yz/D");
+    beam_tree_proton->Branch("beam_momentum", &beam_momentum, "beam_momentum/D");
+  }
+
+  TTree * beam_tree_pion;
+  if(UI->beamPionFileSet){
+    beamPionFile->cd();
+    beam_tree_pion = new TTree("beam", "beam");
+
+    beam_tree_pion->Branch("beam_run", &beam_run, "beam_run/I");
+    beam_tree_pion->Branch("beam_subrun", &beam_subrun, "beam_subrun/I");
+    beam_tree_pion->Branch("beam_event", &beam_event, "beam_event/I");
+
+    beam_tree_pion->Branch("beam_x", &beam_x, "beam_x/D");
+    beam_tree_pion->Branch("beam_y", &beam_y, "beam_y/D");
+    beam_tree_pion->Branch("beam_z", &beam_z, "beam_z/D");
+    beam_tree_pion->Branch("beam_angle_xz", &beam_angle_xz, "beam_angle_xz/D");
+    beam_tree_pion->Branch("beam_angle_yz", &beam_angle_yz, "beam_angle_yz/D");
+    beam_tree_pion->Branch("beam_momentum", &beam_momentum, "beam_momentum/D");
+  }
+
+  TTree * beam_tree_kaon;
+  if(UI->beamKaonFileSet){
+    beamKaonFile->cd();
+    beam_tree_kaon = new TTree("beam", "beam");
+
+    beam_tree_kaon->Branch("beam_run", &beam_run, "beam_run/I");
+    beam_tree_kaon->Branch("beam_subrun", &beam_subrun, "beam_subrun/I");
+    beam_tree_kaon->Branch("beam_event", &beam_event, "beam_event/I");
+
+    beam_tree_kaon->Branch("beam_x", &beam_x, "beam_x/D");
+    beam_tree_kaon->Branch("beam_y", &beam_y, "beam_y/D");
+    beam_tree_kaon->Branch("beam_z", &beam_z, "beam_z/D");
+    beam_tree_kaon->Branch("beam_angle_xz", &beam_angle_xz, "beam_angle_xz/D");
+    beam_tree_kaon->Branch("beam_angle_yz", &beam_angle_yz, "beam_angle_yz/D");
+    beam_tree_kaon->Branch("beam_momentum", &beam_momentum, "beam_momentum/D");
   }
 
   TTree * halo_pileup_tree;
@@ -519,10 +577,10 @@ void ProtonXsec::AnalyzeFromNtuples(){
 
           double ParticleMass = -9999999.;
 
-          bool isProton = BS->MassCut(wctrk_momentum[0], tofObject[0], UI->beamLength, UI->tofOffset, ParticleMass, UI->MassCutMin, UI->MassCutMax);
+          bool massCutPass = BS->MassCut(wctrk_momentum[0], tofObject[0], UI->beamLength, UI->tofOffset, ParticleMass, UI->MassCutMin, UI->MassCutMax);
 
           if(applyMassCut){
-            if(!isProton){continue;}
+            if(!massCutPass){continue;}
           }
 
         std::vector<double> matchCandidate = BS->BeamCentering(wctrk_x_proj_3cm[0], wctrk_y_proj_3cm[0],
@@ -626,7 +684,7 @@ void ProtonXsec::AnalyzeFromNtuples(){
 
 
     
-    bool isProton = BS->MassCut(wctrk_momentum[0], tofObject[0], tertiaryLength, UI->tofOffset, ParticleMass, UI->MassCutMin, UI->MassCutMax);
+    bool massCutPass = BS->MassCut(wctrk_momentum[0], tofObject[0], tertiaryLength, UI->tofOffset, ParticleMass, UI->MassCutMin, UI->MassCutMax);
 
     BeamMassHist->Fill(ParticleMass);
     electronLifetimeHist->Fill(electron_lifetime);
@@ -649,42 +707,76 @@ void ProtonXsec::AnalyzeFromNtuples(){
       BeamMomentumQual->Fill(wctrk_momentum[0]);
       BeamMassQual->Fill(ParticleMass);
 
-      if(isProton){
-        std::vector <double> projVector = BS->backProjections(wctrk_XFace[0],wctrk_YFace[0],wctrk_momentum[0],wctrk_theta[0],wctrk_phi[0]);
-      
-        //beam_x->Fill(projVector[0]);
-        //beam_y->Fill(projVector[1]);
-        //beam_z->Fill(projVector[2]);
+      std::vector <double> projVector = BS->backProjections(wctrk_XFace[0],wctrk_YFace[0],wctrk_momentum[0],wctrk_theta[0],wctrk_phi[0]);
+      if(UI->beamCharFileSet){
+        if(massCutPass){
+          
+          beam_x = projVector[0];
+          beam_y = projVector[1];
+          beam_z = projVector[2];
+          beam_angle_xz = projVector[3];
+          beam_angle_yz = projVector[4];
+          beam_momentum = wctrk_momentum[0];
+          beam_run = run;
+          beam_subrun = subrun;
+          beam_event = event;
 
-        //beamXtpc0->Fill(wctrk_XFace[0]);
-        //beamYtpc0->Fill(wctrk_YFace[0]);
-        //beamZtpc0->Fill(0);
-
-        //wctrk4XY->Fill(projVector[0],projVector[1]);
-        //wctrkTpcXY->Fill(wctrk_XFace[0],wctrk_YFace[0]);
-        //beam_angle_xz->Fill(projVector[3]);
-        //beam_angle_yz->Fill(projVector[4]);}
-
-        /////////
-
-        //beamPlotFile->cd()
-
-        
-        beam_x = projVector[0];
-        beam_y = projVector[1];
-        beam_z = projVector[2];
-        beam_angle_xz = projVector[3];
-        beam_angle_yz = projVector[4];
-        beam_momentum = wctrk_momentum[0];
-        beam_run = run;
-        beam_subrun = subrun;
-        beam_event = event;
-
-        beam_tree->Fill();
+          beam_tree->Fill();
 
 
+        }
       }
+      if(UI->beamPionFileSet){
+        if(ParticleMass > UI->pionDDMCmassMin && ParticleMass < UI->pionDDMCmassMax){
 
+          beam_x = projVector[0];
+          beam_y = projVector[1];
+          beam_z = projVector[2];
+          beam_angle_xz = projVector[3];
+          beam_angle_yz = projVector[4];
+          beam_momentum = wctrk_momentum[0];
+          beam_run = run;
+          beam_subrun = subrun;
+          beam_event = event;
+
+          beam_tree_pion->Fill();
+
+        }
+      }
+      if(UI->beamProtonFileSet){
+        if(ParticleMass > UI->protonDDMCmassMin && ParticleMass < UI->protonDDMCmassMax){
+
+          beam_x = projVector[0];
+          beam_y = projVector[1];
+          beam_z = projVector[2];
+          beam_angle_xz = projVector[3];
+          beam_angle_yz = projVector[4];
+          beam_momentum = wctrk_momentum[0];
+          beam_run = run;
+          beam_subrun = subrun;
+          beam_event = event;
+
+          beam_tree_proton->Fill();
+
+        }
+      }
+      if(UI->beamKaonFile){
+        if(ParticleMass > UI->kaonDDMCmassMin && ParticleMass < UI->kaonDDMCmassMax){
+
+          beam_x = projVector[0];
+          beam_y = projVector[1];
+          beam_z = projVector[2];
+          beam_angle_xz = projVector[3];
+          beam_angle_yz = projVector[4];
+          beam_momentum = wctrk_momentum[0];
+          beam_run = run;
+          beam_subrun = subrun;
+          beam_event = event;
+
+          beam_tree_kaon->Fill();
+
+        }
+      }
       //if (verbose){std::cout << "number of ToF objects : " <<num_tof_objects << std::endl;}
       //if (verbose){std::cout << "ToF object size : " <<  << std::endl;}
       
@@ -699,9 +791,9 @@ void ProtonXsec::AnalyzeFromNtuples(){
       tofMomentHist->Fill(wctrk_momentum[0], tofObject[0]);
 
       if(applyMassCut){
-        if(!isProton){continue;}
+        if(!massCutPass){continue;}
       }
-      if (isProton){
+      if (massCutPass){
         BeamMassCutHist->Fill(ParticleMass);
         numMassCut++;
         BeamMomentumMassSel->Fill(wctrk_momentum[0]);
@@ -1326,13 +1418,32 @@ void ProtonXsec::AnalyzeFromNtuples(){
       beam_tree->Write();
       beamPlotFile->Close();
 
-      //beam_x->Write();
-      //beam_y->Write();
-      //beam_z->Write();
-      
-      //beam_angle_xz->Write();
-      //beam_angle_yz->Write();
-      //beam_momentum->Write();
+      }
+    if(UI->beamProtonFileSet){
+      if(verbose){std::cout << "Writing Beam Proton DDMC file" << std::endl;}
+
+      beamProtonFile->cd();
+      beam_tree_proton->Write();
+      beamProtonFile->Close();
+
+      }
+
+    if(UI->beamPionFileSet){
+      if(verbose){std::cout << "Writing Beam Pion DDMC file" << std::endl;}
+
+      beamPionFile->cd();
+      beam_tree_pion->Write();
+      beamPionFile->Close();
+
+      }
+
+    if(UI->beamKaonFileSet){
+      if(verbose){std::cout << "Writing Beam Kaon DDMC file" << std::endl;}
+
+      beamKaonFile->cd();
+      beam_tree_kaon->Write();
+      beamKaonFile->Close();
+
       }
 
     if(UI->haloCharFileSet){
@@ -1341,14 +1452,6 @@ void ProtonXsec::AnalyzeFromNtuples(){
       haloPlotFile->cd();
       halo_pileup_tree->Write();
       haloPlotFile->Close();
-
-      //halo_pileup_x->Write();
-      //halo_pileup_y->Write();
-      //halo_pileup_z->Write();
-      
-      //halo_pileup_angle_xz->Write();
-      //halo_pileup_angle_yz->Write();
-      //halo_pileup_number_particles->Write();
 
       }
 

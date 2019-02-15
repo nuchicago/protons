@@ -36,6 +36,10 @@ class ProtonXsec : public LArIATAnalysis {
   ofstream multiMatchFile;
   TFile *beamPlotFile;
   TFile *haloPlotFile;
+  TFile *beamPionFile;
+  TFile *beamProtonFile;
+  TFile *beamKaonFile;
+
   //ofstream XSecLog;
   int psPage;
 

@@ -30,11 +30,7 @@ class UserInputs {
   char *psOutputFile;
   bool psOutputFileSet;
 
-  char *beamCharFile;
-  bool beamCharFileSet;
 
-  char *haloCharFile;
-  bool haloCharFileSet;
 
   char *outputFileName;
   bool outputFileNameSet;
@@ -56,6 +52,31 @@ class UserInputs {
   bool correctionMethodSet;
   char *unsmearingMethod;
   bool unsmearingMethodSet;
+
+  //== data driven mc functions
+
+  char *beamCharFile;
+  bool beamCharFileSet;
+
+  char *beamProtonFile;
+  bool beamProtonFileSet;
+  char *beamKaonFile;
+  bool beamKaonFileSet;
+  char *beamPionFile;
+  bool beamPionFileSet;
+
+
+  char *haloCharFile;
+  bool haloCharFileSet;
+
+  double pionDDMCmassMin;
+  double pionDDMCmassMax;
+  double protonDDMCmassMin;
+  double protonDDMCmassMax;
+  double kaonDDMCmassMax;
+  double kaonDDMCmassMin;
+
+
 
   //== data set description
   char *Model;
