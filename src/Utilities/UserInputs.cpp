@@ -95,6 +95,9 @@ void UserInputs::initialize( ){
   rootOutputFileSet = false;
   psOutputFileSet = false;
   beamCharFileSet = false;
+  beamProtonFileSet = false;
+  beamKaonFileSet = false;
+  beamPionFileSet = false;
   haloCharFileSet = false;
   outputFileNameSet = false;
   SelEventListSet = false;

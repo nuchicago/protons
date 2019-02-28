@@ -131,11 +131,11 @@ ProtonXsec::ProtonXsec( char* jobOptionsFile ) : LArIATAnalysis( jobOptionsFile 
     cout << endl << "#### No output files specified!!!!" << endl << endl;
   }
 
-  /*if (UI->logFileSet){
+  if (UI->logFileSet){
     logFile.open(UI->logFile, ios::trunc);
     logFile << "Using Options File: " << jobOptionsFile << std::endl;
     logFile.close();
-  }*/
+  }
   //output list of selected primary particle IDs
   if (UI->SelEventListSet){
     IDfile.open(UI->SelEventList, ios::trunc);
@@ -626,13 +626,13 @@ void ProtonXsec::AnalyzeFromNtuples(){
     std::cout << "x Entering Mean :" << xMeanTPCentry<< std::endl;
     std::cout << "y Entering Mean :" << yMeanTPCentry<< std::endl;
   }
-  /*if(UI->logFileSet){
+  if(UI->logFileSet){
     logFile.open(UI->logFile,ios::app);
     logFile << "########### Centering Results ###########" << std::endl;
     logFile << "x Entering Mean :" << xMeanTPCentry<< std::endl;
     logFile << "y Entering Mean :" << yMeanTPCentry<< std::endl;
     logFile.close();
-  }*/
+  }
   for (Long64_t jentry=0; jentry < numEventsToProcess && jentry < nentries; jentry++){
     
     Long64_t ientry = tuple->LoadTree(jentry); 
@@ -773,7 +773,7 @@ void ProtonXsec::AnalyzeFromNtuples(){
 
         }
       }
-      if(UI->beamKaonFile){
+      if(UI->beamKaonFileSet){
         if(ParticleMass > UI->kaonDDMCmassMin && ParticleMass < UI->kaonDDMCmassMax){
 
           beam_x = projVector[0];
@@ -1264,7 +1264,7 @@ void ProtonXsec::AnalyzeFromNtuples(){
     BS->printSummary(BSoptions);
 
 
-    /*if(UI->logFileSet){
+    if(UI->logFileSet){
     logFile.open(UI->logFile,ios::app);
     logFile << "x Entering Mean :" << xMeanTPCentry<< std::endl;
     logFile << "y Entering Mean :" << yMeanTPCentry<< std::endl;
@@ -1288,7 +1288,7 @@ void ProtonXsec::AnalyzeFromNtuples(){
     logFile.close();
     
 
-    }*/
+    }
   }
 
   if (isMC){

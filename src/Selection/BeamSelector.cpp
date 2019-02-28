@@ -378,7 +378,7 @@ void BeamSelector::printSummary(std::vector <double> BSoptions){
   }
 }
 
-/*void BeamSelector::printSummary(std::vector <double> BSoptions, std::ostream& logFile){
+void BeamSelector::printSummary(std::vector <double> BSoptions, std::ostream& logFile){
   
   logFile << "\n------- Beam Selection Results -------\n"<< std::endl;
 
@@ -393,7 +393,7 @@ void BeamSelector::printSummary(std::vector <double> BSoptions){
   logFile << "Events passing EM shower cut ( "  << BSoptions[7] <<" or more tracks < " << BSoptions[8] <<" cm long): " << numShowerCut << std::endl;
   
   }
-}*/
+}
 
 int BeamSelector::isTPCPrimary(std::vector<std::vector<double>> *track_zpos,int ntracks_reco,bool mc_mode, 
   double zPointCutoff, int& reco_primary, double& first_reco_z, int verbose){
