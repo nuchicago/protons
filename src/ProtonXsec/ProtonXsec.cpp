@@ -635,6 +635,7 @@ void ProtonXsec::AnalyzeFromNtuples(){
     bool passed_geo_cuts = true;
     double ParticleMass = -9999999.;
     wctrkNumHist->Fill(num_wctracks);
+    
     if (tofObject[0] != NULL) {numPos0tof++;}
     if (tofObject[1] != NULL) {numPos1tof++;}
     if (tofObject[2] != NULL) {numPos2tof++;}
@@ -777,10 +778,10 @@ void ProtonXsec::AnalyzeFromNtuples(){
 
         }
       }
-      //if (verbose){std::cout << "number of ToF objects : " <<num_tof_objects << std::endl;}
+      if (verbose){std::cout << "number of ToF objects : " <<num_tof_objects << std::endl;}
       //if (verbose){std::cout << "ToF object size : " <<  << std::endl;}
       
-      if(tofObject[1] != NULL || tofObject[2] != NULL ){continue;}
+      if(tofObject[1] != NULL){continue;}
       numtofsingle++;
 
       if(tofObject[0] < UI->tofMin || tofObject[0] > UI->tofMax){continue;}
@@ -810,13 +811,13 @@ void ProtonXsec::AnalyzeFromNtuples(){
         beamLengthHist->Fill(calculatedLength);
       }
 
-      //if(verbose){std::cout << "matching to tpc" << std::endl;}
+      if(verbose){std::cout << "matching to tpc" << std::endl;}
 
       std::vector <double> matchCandidate = BS->BeamMatching(wctrk_x_proj_3cm[0],wctrk_y_proj_3cm[0], wctrk_theta[0], wctrk_phi[0],
                                                              track_xpos, track_ypos, track_zpos, ntracks_reco, ntrack_hits,
                                                              track_length, reco_primary,BSoptions);
 
-      //std::cout << "matching finished" << std::endl;
+      std::cout << "matching finished" << std::endl;
       numEnteringTracks = BS->EnteringTrkID.size();
       inTracksNumHist->Fill(numEnteringTracks);
       numPileupTracksHist->Fill(BS->PileupTracksBuffer);
@@ -970,32 +971,35 @@ void ProtonXsec::AnalyzeFromNtuples(){
                 
                 //halo_pileup_angle_xz->Fill(angle_xz);
                 //halo_pileup_angle_yz->Fill(angle_yz);
-
-                halo_pileup_x.push_back(xproj);
-                halo_pileup_y.push_back(yproj);
-                halo_pileup_z.push_back(-1.0);
-                halo_pileup_angle_xz.push_back(angle_xz);
-                halo_pileup_angle_yz.push_back(angle_yz);
-                pileup_counter++;
+                if(UI->haloCharFileSet){
+                  halo_pileup_x.push_back(xproj);
+                  halo_pileup_y.push_back(yproj);
+                  halo_pileup_z.push_back(-1.0);
+                  halo_pileup_angle_xz.push_back(angle_xz);
+                  halo_pileup_angle_yz.push_back(angle_yz);
+                  pileup_counter++;
+                }
               }
               //halo_pileup_momentum.push_back(trandom_->Landau(1200, 50));
 
             }
           }
       }
+      if(UI->haloCharFileSet){
+        if(found_primary){
+          halo_pileup_number_particles =  pileup_counter;
+          halo_pileup_run = run;
+          halo_pileup_subrun = subrun;
+          halo_pileup_event = event;
+          halo_pileup_tree->Fill();
 
-      if(found_primary){
-      halo_pileup_number_particles =  pileup_counter;
-      halo_pileup_run = run;
-      halo_pileup_subrun = subrun;
-      halo_pileup_event = event;
-      halo_pileup_tree->Fill();
-
-      halo_pileup_x.clear();
-      halo_pileup_y.clear();
-      halo_pileup_z.clear();
-      halo_pileup_angle_xz.clear();
-      halo_pileup_angle_yz.clear();}
+          halo_pileup_x.clear();
+          halo_pileup_y.clear();
+          halo_pileup_z.clear();
+          halo_pileup_angle_xz.clear();
+          halo_pileup_angle_yz.clear();
+        }
+      }
       //halo_pileup_momentum.clear();
 
       
