@@ -378,6 +378,22 @@ void BeamSelector::printSummary(std::vector <double> BSoptions){
   }
 }
 
+/*void BeamSelector::printSummary(std::vector <double> BSoptions, std::ostream& logFile){
+  
+  logFile << "\n------- Beam Selection Results -------\n"<< std::endl;
+
+  logFile << "Events Passed through Matching: "<< numEventsStart << std::endl; 
+  logFile << "Events with at least one TPC track Z < " << BSoptions[1] << ": "<< numZcutoff << std::endl;
+  logFile << "Events passing circular distance cut r < " << BSoptions[3] << ": "<< numXYdeltaCut << std::endl;
+  logFile << "Events passing alpha angle cut a < "  << BSoptions[2] << ": " << numAlphaCut << std::endl;
+  if (BSoptions[9]){logFile << "Events with unique matched track: " << numUniqueMatch << std::endl;}
+  if(BSoptions[4]){
+  logFile << "\n------- Additional Data Selection-------\n"<< std::endl;
+  logFile << "Events passing pileup cut ( > " << BSoptions[5] << " tracks in first "<< BSoptions[6]<<" cm): " << numPileupCut << std::endl;
+  logFile << "Events passing EM shower cut ( "  << BSoptions[7] <<" or more tracks < " << BSoptions[8] <<" cm long): " << numShowerCut << std::endl;
+  
+  }
+}*/
 
 int BeamSelector::isTPCPrimary(std::vector<std::vector<double>> *track_zpos,int ntracks_reco,bool mc_mode, 
   double zPointCutoff, int& reco_primary, double& first_reco_z, int verbose){

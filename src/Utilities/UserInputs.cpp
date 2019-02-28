@@ -186,6 +186,11 @@ void UserInputs::initialize( ){
   kaonDDMCmassMax = 600;
   kaonDDMCmassMin = 425;
 
+  beamProtonFileSet = false;
+  beamKaonFileSet = false;
+  beamPionFileSet = false;
+  logFileSet = false;
+
 
 }
 
@@ -228,7 +233,11 @@ void UserInputs::readIoFiles( ifstream *jobOptionsFile ){
     *jobOptionsFile >> rootOutputFile;
     rootOutputFileSet = true;
   } 
-
+  if( paramLookUp( jobOptionsFile, (char*)"logFile" ) ){
+    logFile = new char[1000];
+    *jobOptionsFile >> logFile;
+    logFileSet = true;
+  } 
   if( paramLookUp( jobOptionsFile, (char*)"SelEventList" ) ){
     SelEventList = new char[1000];
     *jobOptionsFile >> SelEventList;

@@ -2,6 +2,7 @@
 #define BEAMSELECTOR_H
 #include <vector>
 #include <iostream>
+#include <stdio.h>
 #include "../Utilities/UtilityFunctions.h"
 
 
@@ -82,6 +83,7 @@ class BeamSelector {
                   std::vector<double> *track_length ,int& best_candidate, std::vector<double> BSoptions);
 
   void printSummary(std::vector <double> BSoptions);
+  //void printSummary(std::vector <double> BSoptions, std::ostream& logFile);
  
   int  isTPCPrimary(std::vector< std::vector<double> > *track_zpos, int ntracks_reco,
   				 bool mc_mode, double zPointCutoff, int& reco_primary, double& first_reco_z, int verbose);

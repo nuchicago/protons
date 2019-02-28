@@ -32,6 +32,7 @@ class ProtonXsec : public LArIATAnalysis {
   TChain *tuple;
   TFile *outputFile;
   TPostScript *ps;
+  ofstream logFile;
   ofstream IDfile;
   ofstream multiMatchFile;
   TFile *beamPlotFile;

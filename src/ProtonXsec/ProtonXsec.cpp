@@ -131,9 +131,15 @@ ProtonXsec::ProtonXsec( char* jobOptionsFile ) : LArIATAnalysis( jobOptionsFile 
     cout << endl << "#### No output files specified!!!!" << endl << endl;
   }
 
+  /*if (UI->logFileSet){
+    logFile.open(UI->logFile, ios::trunc);
+    logFile << "Using Options File: " << jobOptionsFile << std::endl;
+    logFile.close();
+  }*/
   //output list of selected primary particle IDs
   if (UI->SelEventListSet){
     IDfile.open(UI->SelEventList, ios::trunc);
+
     IDfile.close();
   }
 
@@ -230,7 +236,7 @@ void ProtonXsec::AnalyzeFromNtuples(){
   }
       if (UI->SelEventListSet){
     IDfile.open(UI->SelEventList, ios::out);
-    IDfile << "RUN\tSUBRUN\tEVENT\tMATCHED_TRACK\tSTART_X\t START_Y\tSTART_Z\tWCX\tWCY\n";
+    //IDfile << "RUN\tSUBRUN\tEVENT\tMATCHED_TRACK\tSTART_X\tSTART_Y\tSTART_Z\tWCX\tWCY\n";
     IDfile.close();
 
   }
@@ -620,6 +626,13 @@ void ProtonXsec::AnalyzeFromNtuples(){
     std::cout << "x Entering Mean :" << xMeanTPCentry<< std::endl;
     std::cout << "y Entering Mean :" << yMeanTPCentry<< std::endl;
   }
+  /*if(UI->logFileSet){
+    logFile.open(UI->logFile,ios::app);
+    logFile << "########### Centering Results ###########" << std::endl;
+    logFile << "x Entering Mean :" << xMeanTPCentry<< std::endl;
+    logFile << "y Entering Mean :" << yMeanTPCentry<< std::endl;
+    logFile.close();
+  }*/
   for (Long64_t jentry=0; jentry < numEventsToProcess && jentry < nentries; jentry++){
     
     Long64_t ientry = tuple->LoadTree(jentry); 
@@ -970,13 +983,14 @@ void ProtonXsec::AnalyzeFromNtuples(){
                 
                 //halo_pileup_angle_xz->Fill(angle_xz);
                 //halo_pileup_angle_yz->Fill(angle_yz);
-
-                halo_pileup_x.push_back(xproj);
-                halo_pileup_y.push_back(yproj);
-                halo_pileup_z.push_back(-1.0);
-                halo_pileup_angle_xz.push_back(angle_xz);
-                halo_pileup_angle_yz.push_back(angle_yz);
-                pileup_counter++;
+                if(UI->haloCharFileSet){
+                  halo_pileup_x.push_back(xproj);
+                  halo_pileup_y.push_back(yproj);
+                  halo_pileup_z.push_back(-1.0);
+                  halo_pileup_angle_xz.push_back(angle_xz);
+                  halo_pileup_angle_yz.push_back(angle_yz);
+                  pileup_counter++;
+                }
               }
               //halo_pileup_momentum.push_back(trandom_->Landau(1200, 50));
 
@@ -985,18 +999,21 @@ void ProtonXsec::AnalyzeFromNtuples(){
       }
 
       if(found_primary){
-      halo_pileup_number_particles =  pileup_counter;
-      halo_pileup_run = run;
-      halo_pileup_subrun = subrun;
-      halo_pileup_event = event;
-      halo_pileup_tree->Fill();
+        if(UI->haloCharFileSet){
 
-      halo_pileup_x.clear();
-      halo_pileup_y.clear();
-      halo_pileup_z.clear();
-      halo_pileup_angle_xz.clear();
-      halo_pileup_angle_yz.clear();}
-      //halo_pileup_momentum.clear();
+          halo_pileup_number_particles =  pileup_counter;
+          halo_pileup_run = run;
+          halo_pileup_subrun = subrun;
+          halo_pileup_event = event;
+          halo_pileup_tree->Fill();
+
+          halo_pileup_x.clear();
+          halo_pileup_y.clear();
+          halo_pileup_z.clear();
+          halo_pileup_angle_xz.clear();
+          halo_pileup_angle_yz.clear();
+        }
+      }
 
       
     }
@@ -1110,6 +1127,7 @@ void ProtonXsec::AnalyzeFromNtuples(){
 
   
   }//end of event Loop
+  if(verbose){std::cout << "End of Event Loop" << std::endl;}
 
     std::vector<double> BranchDistVect = ES->BranchDistVect;
     std::vector<double> ClusterDistVect = ES->ClusterDistVect;
@@ -1240,10 +1258,37 @@ void ProtonXsec::AnalyzeFromNtuples(){
     if (UI->qualityTracksWC){std::cout << "Events passing quality flag: " << numQualityTrack << std::endl;}
     std::cout << "Events with unique ToF value: " << numtofsingle << std::endl;
     std::cout << "Events with ToF value in range (" << UI->tofMin << " , " << UI->tofMax<< ") [ns]: " << numtofvalid << std::endl;
-    std::cout << "Events passing mass cut (" << UI->MassCutMin << " , " << UI->MassCutMax << ") [GeV/c^2]: "<< numMassCut << std::endl;
+    std::cout << "Events passing mass cut (" << UI->MassCutMin << " , " << UI->MassCutMax << ") [MeV/c^2]: "<< numMassCut << std::endl;
     //std::cout << "Number of Matched Events (According to ProtonXsec): " << numMatchedMain << std::endl;  
 
     BS->printSummary(BSoptions);
+
+
+    /*if(UI->logFileSet){
+    logFile.open(UI->logFile,ios::app);
+    logFile << "x Entering Mean :" << xMeanTPCentry<< std::endl;
+    logFile << "y Entering Mean :" << yMeanTPCentry<< std::endl;
+
+    logFile  << "Number events with value in tof[0]" << numPos0tof <<std::endl;
+    logFile  << "Number events with value in tof[1]" << numPos1tof <<std::endl;
+    logFile  << "Number events with value in tof[2]" << numPos2tof <<std::endl;
+    
+    
+    logFile << "\n------- Particle ID Results -------\n"<< std::endl;
+    logFile << "Number of entries in file  = " << nentries << std::endl;
+    logFile << "Total events processed: "<< numEventsStart << std::endl;
+    logFile << "Events with only one wc track: "<< numWCTrack << std::endl;
+    logFile << "Events with 4-point wc track: " << num4PointTrack << std::endl;
+    if (UI->pickyTracksWC){logFile << "Events with picky tracks: " << numPickyTrack << std::endl;}
+    if (UI->qualityTracksWC){logFile << "Events passing quality flag: " << numQualityTrack << std::endl;}
+    logFile << "Events with unique ToF value: " << numtofsingle << std::endl;
+    logFile << "Events with ToF value in range (" << UI->tofMin << " , " << UI->tofMax<< ") [ns]: " << numtofvalid << std::endl;
+    logFile << "Events passing mass cut (" << UI->MassCutMin << " , " << UI->MassCutMax << ") [MeV/c^2]: "<< numMassCut << std::endl;
+    BS->printSummary(BSoptions,logFile);
+    logFile.close();
+    
+
+    }*/
   }
 
   if (isMC){

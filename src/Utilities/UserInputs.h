@@ -29,6 +29,8 @@ class UserInputs {
   bool rootOutputFileSet;
   char *psOutputFile;
   bool psOutputFileSet;
+  char *logFile;
+  bool logFileSet;
 
 
 
