@@ -594,10 +594,10 @@ void ProtonXsec::AnalyzeFromNtuples(){
 
         if(best_candidate != -1){
           int startIndex = static_cast <int> (matchCandidate[1]);
-          delXYHist->Fill(wctrk_x_proj_3cm[0] - (*track_xpos)[best_candidate][startIndex],
-          wctrk_y_proj_3cm[0] - (*track_ypos)[best_candidate][startIndex]);
-          delXYHistPx->Fill(wctrk_x_proj_3cm[0] - (*track_xpos)[best_candidate][startIndex]);
-          delXYHistPy->Fill(wctrk_y_proj_3cm[0] - (*track_ypos)[best_candidate][startIndex]);
+          //delXYHist->Fill(wctrk_x_proj_3cm[0] - (*track_xpos)[best_candidate][startIndex],
+          //wctrk_y_proj_3cm[0] - (*track_ypos)[best_candidate][startIndex]);
+          //delXYHistPx->Fill(wctrk_x_proj_3cm[0] - (*track_xpos)[best_candidate][startIndex]);
+          //delXYHistPy->Fill(wctrk_y_proj_3cm[0] - (*track_ypos)[best_candidate][startIndex]);
           wctrkPositionXY->Fill(wctrk_x_proj_3cm[0],wctrk_y_proj_3cm[0]);
 
 
@@ -913,6 +913,13 @@ void ProtonXsec::AnalyzeFromNtuples(){
           int inEnd = BS->EnteringTrkEnd[i];
           double trackAlpha = BS->EnteringTrkAlpha[i];
           tpcInTracksZ->Fill((*track_zpos)[inTrackID][inStart]);
+          tpcInTracksXY->Fill((*track_xpos)[inTrackID][inStart], (*track_ypos)[inTrackID][inStart]);
+
+          delXYHist->Fill(wctrk_x_proj_3cm[0] - (*track_xpos)[inTrackID][inStart],
+            wctrk_y_proj_3cm[0] - (*track_ypos)[inTrackID][inStart]);
+          delXYHistPx->Fill(wctrk_x_proj_3cm[0] - (*track_xpos)[inTrackID][inStart]);
+          delXYHistPy->Fill(wctrk_y_proj_3cm[0] - (*track_ypos)[inTrackID][inStart]);
+
           tpcInTrackEndZ->Fill((*track_zpos)[inTrackID][inStart]);
           InTrackLength->Fill((*track_length)[inTrackID]);
           alphaHist->Fill(trackAlpha);
