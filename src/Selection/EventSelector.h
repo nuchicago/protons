@@ -15,7 +15,7 @@ class EventSelector {
   std::vector<double> BranchDistVect;
   std::vector<double> ClusterDistVect;
   std::vector<double> dedxNoBraggVect;
-
+  std::vector<int> ClusterIDvect;
 
 
 

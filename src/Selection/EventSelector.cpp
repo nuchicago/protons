@@ -64,6 +64,9 @@ double* EventSelector::findInt(double* candidate_array, int reco_primary, Int_t 
     double branchMaxDist =  UIoptions[2];
     double clusterMaxDist = UIoptions[3];
 
+    // emptying containers
+    ClusterIDvect.clear()
+
 
     // ### Inelastic Event Selection ###
     std::vector<std::vector<double>> branches;
@@ -151,24 +154,48 @@ double* EventSelector::findInt(double* candidate_array, int reco_primary, Int_t 
         double start_other_x = (*track_xpos)[rtrack][0];
         double start_other_y = (*track_ypos)[rtrack][0];
         double start_other_z = (*track_zpos)[rtrack][0];
+
+        double end_other_x = (*track_xpos)[rtrack][-1];
+        double end_other_y = (*track_ypos)[rtrack][-1];
+        double end_other_z = (*track_zpos)[rtrack][-1];
         
         // ## pushing every branching track to a 2d vector ##
         // ## (track#, closest primary spt, distance to that spt) ##
-        double min_dist_prim_spt = 99;
-        double closest_prim_spt = -1;
+        double min_dist_prim_spt_start = 99;
+        double min_dist_prim_spt_end = 99
+        double closest_prim_spt_start = -1;
+        double closest_prim_spt_end = -1;
 
         for(int prim_spt = 0; prim_spt < (*ntrack_hits)[reco_primary]; prim_spt++){
           double prim_xpos = (*track_xpos)[reco_primary][prim_spt];
           double prim_ypos = (*track_ypos)[reco_primary][prim_spt];
           double prim_zpos = (*track_zpos)[reco_primary][prim_spt];
-          double dist_prim_spt = sqrt(pow(start_other_x - prim_xpos, 2) + 
+          double dist_prim_spt_start = sqrt(pow(start_other_x - prim_xpos, 2) + 
                                       pow(start_other_y - prim_ypos, 2) + 
-                                      pow(start_other_z - prim_zpos, 2));  
-          if(dist_prim_spt < min_dist_prim_spt){
-            min_dist_prim_spt = dist_prim_spt;
-            closest_prim_spt = prim_spt;
+                                      pow(start_other_z - prim_zpos, 2));
+
+          if(dist_prim_spt_start < min_dist_prim_spt_start){
+            min_dist_prim_spt_start = dist_prim_spt_start;
+            closest_prim_spt_start = prim_spt;
           }
-        }//<-End primary spt loop
+        }//<-End primary spt loop - start point
+
+        for(int prim_spt = 0; prim_spt < (*ntrack_hits)[reco_primary]; prim_spt++){
+          double prim_xpos = (*track_xpos)[reco_primary][prim_spt];
+          double prim_ypos = (*track_ypos)[reco_primary][prim_spt];
+          double prim_zpos = (*track_zpos)[reco_primary][prim_spt];
+          double dist_prim_spt_end = sqrt(pow(end_other_x - prim_xpos, 2) + 
+                                      pow(end_other_y - prim_ypos, 2) + 
+                                      pow(end_other_z - prim_zpos, 2));
+
+          if(dist_prim_spt_end < min_dist_prim_spt_end){
+            min_dist_prim_spt_end = min_dist_prim_spt_end;
+            closest_prim_spt_end = prim_spt;
+          }
+        }//<-End primary spt loop - end point
+
+        double closest_prim_spt = closest_prim_spt_start; // for now only using the first point to compare
+
         BranchDistVect.push_back(min_dist_prim_spt);
         if(min_dist_prim_spt < branchMaxDist){
           std::vector<double> branch_tuple = {1.*rtrack, closest_prim_spt, min_dist_prim_spt};
@@ -240,17 +267,18 @@ double* EventSelector::findInt(double* candidate_array, int reco_primary, Int_t 
         double num_branches_t4 = 0.;
 
         for (int ibranch = 0 ;  ibranch <  branches.size(); ibranch++){
-          std::cout << "branches " << ibranch << std::endl;
+          if(verbose){std::cout << "branches " << ibranch << std::endl;}
           int branch_track  =  branches[ibranch][0];
-          std::cout << "branch_track ID " << branch_track << std::endl;
+          if(verbose){std::cout << "branch_track ID " << branch_track << std::endl;}
 
           double dist  =  sqrt(pow((*track_xpos)[branch_track][0] - candidate_array[1],2)
             + pow((*track_ypos)[branch_track][0] - candidate_array[2],2)
             + pow((*track_zpos)[branch_track][0] - candidate_array[3],2));
           ClusterDistVect.push_back(dist);
+          ClusterIDvect.push_back(ibranch)
           if(dist < clusterMaxDist){num_branches_t4 += 1.;}
         }
-        std::cout << "num_branches_t4 = " << num_branches_t4 << std::endl;
+        if(verbose){std::cout << "num_branches_type4 = " << num_branches_t4 << std::endl;}
         candidate_array[5] = num_branches_t4;
         if (num_branches_t4 > 1){
           candidate_array[4] = 4.;
