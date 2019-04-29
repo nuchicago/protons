@@ -65,7 +65,47 @@ double* EventSelector::findInt(double* candidate_array, int reco_primary, Int_t 
     double clusterMaxDist = UIoptions[3];
 
     // emptying containers
-    ClusterIDvect.clear()
+    BranchDistVect.clear();
+    ClusterDistVect.clear();
+    ClusterIDvect.clear();
+    // vectors for primary track (in case track is flipped)
+    std::vector<double> primary_xpos;
+    std::vector<double> primary_ypos;
+    std::vector<double> primary_zpos;
+    std::vector<double> col_primary_x;
+    std::vector<double> col_primary_y;
+    std::vector<double> col_primary_z;
+    std::vector<double> col_primary_pitch_hit;
+    std::vector<double> col_primary_dedx;
+    int primary_hits = (*ntrack_hits)[reco_primary];
+    int col_primary_hits =  (*col_track_hits)[reco_primary];
+
+
+    std::vector<int> zIndices = UtilityFunctions::zOrderedTrack2(track_zpos,reco_primary, ntrack_hits);
+    if (zIndices[0] != 0){
+      for (int i = primary_hits; i > 0; i--){
+        primary_xpos.push_back((*track_xpos)[reco_primary][i-1]);
+        primary_ypos.push_back((*track_ypos)[reco_primary][i-1]);
+        primary_zpos.push_back((*track_zpos)[reco_primary][i-1]);
+      }
+      for( int i =  col_primary_hits; i > 0 ; i--){
+        col_primary_x.push_back((*col_track_x)[reco_primary][i-1]);
+        col_primary_y.push_back((*col_track_y)[reco_primary][i-1]);
+        col_primary_z.push_back((*col_track_z)[reco_primary][i-1]);
+        col_primary_pitch_hit.push_back((*col_track_pitch_hit)[reco_primary][i-1]);
+        col_primary_dedx.push_back((*col_track_dedx)[reco_primary][i-1]);
+      }
+    }
+    else{
+    primary_xpos =  (*track_xpos)[reco_primary];
+    primary_ypos =  (*track_ypos)[reco_primary];
+    primary_zpos =  (*track_zpos)[reco_primary];
+    col_primary_x = (*col_track_x)[reco_primary];
+    col_primary_y = (*col_track_y)[reco_primary];
+    col_primary_z = (*col_track_z)[reco_primary];
+    col_primary_pitch_hit = (*col_track_pitch_hit)[reco_primary];
+    col_primary_dedx = (*col_track_dedx)[reco_primary];
+    }
 
 
     // ### Inelastic Event Selection ###
@@ -82,15 +122,15 @@ double* EventSelector::findInt(double* candidate_array, int reco_primary, Int_t 
       if(rtrack == reco_primary){
         // ## primary spacepoint loop ##
         for(int rspt = 1; rspt < (*ntrack_hits)[rtrack]-1; rspt++){
-          double prim_x = (*track_xpos)[rtrack][rspt];
-          double prim_y = (*track_ypos)[rtrack][rspt];
-          double prim_z = (*track_zpos)[rtrack][rspt];
-          double prim_prev_x = (*track_xpos)[rtrack][rspt-1];
-          double prim_prev_y = (*track_ypos)[rtrack][rspt-1];
-          double prim_prev_z = (*track_zpos)[rtrack][rspt-1];
-          double prim_next_x = (*track_xpos)[rtrack][rspt+1];
-          double prim_next_y = (*track_ypos)[rtrack][rspt+1];
-          double prim_next_z = (*track_zpos)[rtrack][rspt+1];
+          double prim_x = primary_xpos[rspt];
+          double prim_y = primary_ypos[rspt];
+          double prim_z = primary_zpos[rspt];
+          double prim_prev_x = primary_xpos[rspt-1];
+          double prim_prev_y = primary_ypos[rspt-1];
+          double prim_prev_z = primary_zpos[rspt-1];
+          double prim_next_x = primary_xpos[rspt+1];
+          double prim_next_y = primary_ypos[rspt+1];
+          double prim_next_z = primary_zpos[rspt+1];
 
           // # calculating angle along the track #
           //double this_pt [] = {prim_x, prim_y, prim_z};
@@ -127,10 +167,10 @@ double* EventSelector::findInt(double* candidate_array, int reco_primary, Int_t 
         double end_track_dist = 0;
         double end_track_dedx_sum = 0;
         double end_track_counter = 0;
-        for(int calo_pt = (*col_track_hits)[rtrack]; calo_pt > 0; calo_pt--){
+        for(int calo_pt = col_primary_hits; calo_pt > 0; calo_pt--){
           if(end_track_dist > 2.5){continue;}
-          end_track_dist += (*col_track_pitch_hit)[rtrack][calo_pt];
-          end_track_dedx_sum += (*col_track_dedx)[rtrack][calo_pt];
+          end_track_dist += col_primary_pitch_hit[calo_pt];
+          end_track_dedx_sum += col_primary_dedx[calo_pt];
           end_track_counter++;
         }
         double end_track_dedx_mean = end_track_dedx_sum / end_track_counter;
@@ -162,14 +202,14 @@ double* EventSelector::findInt(double* candidate_array, int reco_primary, Int_t 
         // ## pushing every branching track to a 2d vector ##
         // ## (track#, closest primary spt, distance to that spt) ##
         double min_dist_prim_spt_start = 99;
-        double min_dist_prim_spt_end = 99
+        double min_dist_prim_spt_end = 99;
         double closest_prim_spt_start = -1;
         double closest_prim_spt_end = -1;
 
-        for(int prim_spt = 0; prim_spt < (*ntrack_hits)[reco_primary]; prim_spt++){
-          double prim_xpos = (*track_xpos)[reco_primary][prim_spt];
-          double prim_ypos = (*track_ypos)[reco_primary][prim_spt];
-          double prim_zpos = (*track_zpos)[reco_primary][prim_spt];
+        for(int prim_spt = 0; prim_spt < primary_hits; prim_spt++){
+          double prim_xpos = primary_xpos[prim_spt];
+          double prim_ypos = primary_ypos[prim_spt];
+          double prim_zpos = primary_zpos[prim_spt];
           double dist_prim_spt_start = sqrt(pow(start_other_x - prim_xpos, 2) + 
                                       pow(start_other_y - prim_ypos, 2) + 
                                       pow(start_other_z - prim_zpos, 2));
@@ -180,21 +220,32 @@ double* EventSelector::findInt(double* candidate_array, int reco_primary, Int_t 
           }
         }//<-End primary spt loop - start point
 
-        for(int prim_spt = 0; prim_spt < (*ntrack_hits)[reco_primary]; prim_spt++){
-          double prim_xpos = (*track_xpos)[reco_primary][prim_spt];
-          double prim_ypos = (*track_ypos)[reco_primary][prim_spt];
-          double prim_zpos = (*track_zpos)[reco_primary][prim_spt];
+        for(int prim_spt = 0; prim_spt < primary_hits; prim_spt++){
+          double prim_xpos = primary_xpos[prim_spt];
+          double prim_ypos = primary_ypos[prim_spt];
+          double prim_zpos = primary_zpos[prim_spt];
           double dist_prim_spt_end = sqrt(pow(end_other_x - prim_xpos, 2) + 
                                       pow(end_other_y - prim_ypos, 2) + 
                                       pow(end_other_z - prim_zpos, 2));
 
           if(dist_prim_spt_end < min_dist_prim_spt_end){
-            min_dist_prim_spt_end = min_dist_prim_spt_end;
+            min_dist_prim_spt_end = dist_prim_spt_end;
             closest_prim_spt_end = prim_spt;
           }
         }//<-End primary spt loop - end point
 
-        double closest_prim_spt = closest_prim_spt_start; // for now only using the first point to compare
+        double closest_prim_spt;
+        double min_dist_prim_spt;
+
+        if(min_dist_prim_spt_start < min_dist_prim_spt_end){
+        closest_prim_spt = closest_prim_spt_start; // for now only using the first point to compare
+        min_dist_prim_spt = min_dist_prim_spt_start;}
+        else{
+        closest_prim_spt = closest_prim_spt_end; // for now only using the first point to compare
+        min_dist_prim_spt = min_dist_prim_spt_end;
+        }
+
+
 
         BranchDistVect.push_back(min_dist_prim_spt);
         if(min_dist_prim_spt < branchMaxDist){
@@ -246,11 +297,11 @@ double* EventSelector::findInt(double* candidate_array, int reco_primary, Int_t 
     for(int i = 0; i < potential_interaction_pts.size(); i++){
       candidate_array[0] = 1;
       std::cout<<"candidate_array[0] = 1\n";
-      if(potential_interaction_pts[i] < candidate_spt){
+      if((*track_zpos)[reco_primary][potential_interaction_pts[i]] < candidate_zpos){
         candidate_spt = potential_interaction_pts[i];
-        candidate_xpos = (*track_xpos)[reco_primary][potential_interaction_pts[i]];
-        candidate_ypos = (*track_ypos)[reco_primary][potential_interaction_pts[i]];
-        candidate_zpos = (*track_zpos)[reco_primary][potential_interaction_pts[i]];
+        candidate_xpos = primary_xpos[potential_interaction_pts[i]];
+        candidate_ypos = primary_ypos[potential_interaction_pts[i]];
+        candidate_zpos = primary_zpos[potential_interaction_pts[i]];
         candidate_array[1] = candidate_xpos;
         candidate_array[2] = candidate_ypos;
         candidate_array[3] = candidate_zpos;
@@ -263,36 +314,50 @@ double* EventSelector::findInt(double* candidate_array, int reco_primary, Int_t 
     }
 
 
-    if(candidate_array[4] == 3.){
+    if(candidate_array[0] == 1.){
         double num_branches_t4 = 0.;
 
-        for (int ibranch = 0 ;  ibranch <  branches.size(); ibranch++){
-          if(verbose){std::cout << "branches " << ibranch << std::endl;}
-          int branch_track  =  branches[ibranch][0];
-          if(verbose){std::cout << "branch_track ID " << branch_track << std::endl;}
+        for (int ibranch = 0 ;  ibranch <  ntracks_reco; ibranch++){
 
-          double dist  =  sqrt(pow((*track_xpos)[branch_track][0] - candidate_array[1],2)
-            + pow((*track_ypos)[branch_track][0] - candidate_array[2],2)
-            + pow((*track_zpos)[branch_track][0] - candidate_array[3],2));
-          ClusterDistVect.push_back(dist);
-          ClusterIDvect.push_back(ibranch)
-          if(dist < clusterMaxDist){num_branches_t4 += 1.;}
+          //if(verbose){std::cout << "branches " << ibranch << std::endl;}
+          if(ibranch != reco_primary){
+
+            double dist_start  =  sqrt(pow((*track_xpos)[ibranch][0] - candidate_array[1],2)
+              + pow((*track_ypos)[ibranch][0] - candidate_array[2],2)
+              + pow((*track_zpos)[ibranch][0] - candidate_array[3],2));
+
+            double dist_end  =  sqrt(pow((*track_xpos)[ibranch][(*ntrack_hits)[ibranch] - 1] - candidate_array[1],2)
+              + pow((*track_ypos)[ibranch][(*ntrack_hits)[ibranch] - 1] - candidate_array[2],2)
+              + pow((*track_zpos)[ibranch][(*ntrack_hits)[ibranch] - 1] - candidate_array[3],2));
+
+            double dist;
+            if(dist_start < dist_end){ dist = dist_start;}
+            else{dist = dist_end;}
+            
+
+            ClusterDistVect.push_back(dist);
+            
+            if(dist < clusterMaxDist){num_branches_t4 += 1.;
+              if(verbose){std::cout << "Branch ID: " << ibranch << std::endl;}
+              ClusterIDvect.push_back(ibranch);
+            }
+          }
         }
         if(verbose){std::cout << "num_branches_type4 = " << num_branches_t4 << std::endl;}
-        candidate_array[5] = num_branches_t4;
-        if (num_branches_t4 > 1){
-          candidate_array[4] = 4.;
-        }
+        //if (num_branches_t4 != 0 ){candidate_array[5] = num_branches_t4;}
+        //if (num_branches_t4 > 1){
+        //  candidate_array[4] = 4.;
+        //}
       }
 
     // # topology 2
     if(!(branches.size() || kinks.size())){
       if(missing_bragg && prim_endz < 88){
         candidate_array[0] = 1;
-        candidate_spt = (*ntrack_hits)[reco_primary] - 1;
-        candidate_xpos = (*col_track_x)[reco_primary][(*col_track_hits)[reco_primary]-1];
-        candidate_ypos = (*col_track_y)[reco_primary][(*col_track_hits)[reco_primary]-1];
-        candidate_zpos = (*col_track_z)[reco_primary][(*col_track_hits)[reco_primary]-1];
+        candidate_spt = col_primary_hits - 1;
+        candidate_xpos = col_primary_x[candidate_spt];
+        candidate_ypos = col_primary_y[candidate_spt];
+        candidate_zpos = col_primary_z[candidate_spt];
         candidate_array[1] = candidate_xpos;
         candidate_array[2] = candidate_ypos;
         candidate_array[3] = candidate_zpos;
@@ -333,26 +398,55 @@ int EventSelector::getSlabInfo(std::vector<double> &calo_slab_xpos, std::vector<
     double proj_distance = 0;
     double next_step = 0;
     int ncalo_slab = 1;
-    for(int calo_pt = 0; calo_pt < (*col_track_hits)[reco_primary] - 1; calo_pt++){
-      proj_distance += (*col_track_pitch_hit)[reco_primary][calo_pt];
-      next_step = proj_distance + (*col_track_pitch_hit)[reco_primary][calo_pt+1];
-      double calo_x = (*col_track_x)[reco_primary][calo_pt]; 
-      double calo_y = (*col_track_y)[reco_primary][calo_pt]; 
-      double calo_z = (*col_track_z)[reco_primary][calo_pt]; 
-      double calo_de = (*col_track_dedx)[reco_primary][calo_pt]*
-                       (*col_track_pitch_hit)[reco_primary][calo_pt];
+
+
+    std::vector<double> col_primary_x;
+    std::vector<double> col_primary_y;
+    std::vector<double> col_primary_z;
+    std::vector<double> col_primary_pitch_hit;
+    std::vector<double> col_primary_dedx;
+    int col_primary_hits =  (*col_track_hits)[reco_primary];
+
+
+    std::vector<int> zIndices = UtilityFunctions::zOrderedTrack2(col_track_z,reco_primary, col_track_hits);
+    if (zIndices[0] != 0){
+      
+      for( int i =  col_primary_hits; i > 0 ; i--){
+        col_primary_x.push_back((*col_track_x)[reco_primary][i-1]);
+        col_primary_y.push_back((*col_track_y)[reco_primary][i-1]);
+        col_primary_z.push_back((*col_track_z)[reco_primary][i-1]);
+        col_primary_pitch_hit.push_back((*col_track_pitch_hit)[reco_primary][i-1]);
+        col_primary_dedx.push_back((*col_track_dedx)[reco_primary][i-1]);
+      }
+    }
+    else{
+    col_primary_x = (*col_track_x)[reco_primary];
+    col_primary_y = (*col_track_y)[reco_primary];
+    col_primary_z = (*col_track_z)[reco_primary];
+    col_primary_pitch_hit = (*col_track_pitch_hit)[reco_primary];
+    col_primary_dedx = (*col_track_dedx)[reco_primary];
+    }
+
+    for(int calo_pt = 0; calo_pt < col_primary_hits - 1; calo_pt++){
+      proj_distance += col_primary_pitch_hit[calo_pt];
+      next_step = proj_distance + col_primary_pitch_hit[calo_pt+1];
+      double calo_x = col_primary_x[calo_pt]; 
+      double calo_y = col_primary_y[calo_pt]; 
+      double calo_z = col_primary_z[calo_pt]; 
+      double calo_de = col_primary_dedx[calo_pt]*
+                       col_primary_pitch_hit[calo_pt];
       double next_ke = calo_ke - calo_de; 
-      double calo_next_x = (*col_track_x)[reco_primary][calo_pt+1]; 
-      double calo_next_y = (*col_track_y)[reco_primary][calo_pt+1]; 
-      double calo_next_z = (*col_track_z)[reco_primary][calo_pt+1]; 
+      double calo_next_x = col_primary_x[calo_pt+1]; 
+      double calo_next_y = col_primary_y[calo_pt+1]; 
+      double calo_next_z = col_primary_z[calo_pt+1]; 
       if(proj_distance < ncalo_slab*z2 && next_step > ncalo_slab*z2){
         // ## 3d parametrization of 2 calo points ##
         // ## using this to calculate the (x,y,z) of the slab pos ##
         double vx = calo_next_x - calo_x;
         double vy = calo_next_y - calo_y;
         double vz = calo_next_z - calo_z;
-        double r = ncalo_slab*z2; 
-        double A = pow(vx,2) + pow(vy,2) + pow(vz,2);  
+        double r = ncalo_slab*z2;
+        double A = pow(vx,2) + pow(vy,2) + pow(vz,2);
         double B = 2*(calo_x*vx + calo_y*vy + calo_z*vz);
         double C = pow(proj_distance,2) - pow(r,2);
         double t = (-1*B + pow( pow(B,2) - 4*A*C, .5))/(2*A);

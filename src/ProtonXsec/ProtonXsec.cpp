@@ -12,6 +12,8 @@
 
 #include "../Selection/EventSelector.h"
 #include "../Selection/BeamSelector.h"
+#include "../Selection/PlotModule.h"
+
 
 
 
@@ -123,9 +125,9 @@ ProtonXsec::ProtonXsec( char* jobOptionsFile ) : LArIATAnalysis( jobOptionsFile 
     //char LogTitle[500];
     //sprintf(LogTitle,"%s.txt", UI->rootOutputFile);
     //RunLog.open()
-    //ps = new TPostScript( UI->psOutputFile, 112 );
-    //ps->Range(26,18); 
-    //psPage = 1; 
+     ps = new TPostScript( UI->psOutputFile, 112 );
+     ps->Range(26,15); 
+     psPage = 1; 
   }
   else{
     cout << endl << "#### No output files specified!!!!" << endl << endl;
@@ -219,6 +221,7 @@ void ProtonXsec::AnalyzeFromNtuples(){
 
 
   int numInteractions = 0;
+  int numIntCandidates = 0;
 
   // For individual event plotting mode (plotIndividual)
 
@@ -384,6 +387,9 @@ void ProtonXsec::AnalyzeFromNtuples(){
   EventSelector *ES = new EventSelector();
 
   BeamSelector *BS = new BeamSelector();
+
+  PlotModule *PM;
+  if(UI->psOutputFileSet){PM = new PlotModule();} 
   
   bookNtuple( tuple , UI->isMC);
   if (tuple == 0) return;
@@ -504,10 +510,14 @@ void ProtonXsec::AnalyzeFromNtuples(){
   TH1D *BeamMassQual = new TH1D("BeamMassQual","Mass after quality flag", 360, -600,3000);
   TH1D *BeamMassMatch = new TH1D("BeamMassMatch","Mass after matching", 360, -600,3000);
 
-  //plots for EventSelection Branches
+  //plots for EventSelection
 
   TH1D * BranchDistHist = new TH1D("BranchDistHist", "Inelastic Event Branch Distance",50, 0,25);
   TH1D * ClusterDistHist = new TH1D("ClusterDistHist", "Additional Branch Distance (Type 4)",50, 0,25);
+  TH1D * interactingLength = new TH1D("interactingLength","Interacting Primary Length", 250, 0, 100);
+  TH2D * intMomentumLength = new TH2D("intMomentumLength", "Momentum vsInteracting Length ",250,0, 2500, 250, 0,100);
+  TH2D * momentumLength = new TH2D("momentumLength", "Primary Length vs Momentum",250,0, 2500, 250, 0,100);
+  TH1D * numBranchesHist =  new TH1D("numBranchesHist","Number of branches from vertex",20, 0, 10);
 
   // ## xs histos ##
   TH1D *hreco_initialKE = new TH1D("hreco_initialKE", "initial ke", 20, 0, 1000);
@@ -558,66 +568,75 @@ void ProtonXsec::AnalyzeFromNtuples(){
 
 
   if(!isMC){
-  for (Long64_t jentry=0;  jentry < UI->numCenteringEvents && jentry < nentries; jentry++) {
-    
-    
-    Long64_t ientry = tuple->LoadTree(jentry);
-    if (ientry < 0){continue;}
-    Long64_t nb = 0;
-    nb = tuple->GetEntry(jentry);
-    
-    
-    int numEnteringTracks = 0;
-    int best_candidate = -1;
-    double xMeanTPCentry = 0;
-    double yMeanTPCentry = 0;
-    bool skipCircleCut = true;
+    if(!UI->beamCenterSet){
+      for (Long64_t jentry=0;  jentry < UI->numCenteringEvents && jentry < nentries; jentry++) {
+        
+        
+        Long64_t ientry = tuple->LoadTree(jentry);
+        if (ientry < 0){continue;}
+        Long64_t nb = 0;
+        nb = tuple->GetEntry(jentry);
+        
+        
+        int numEnteringTracks = 0;
+        int best_candidate = -1;
+        double xMeanTPCentry = 0;
+        double yMeanTPCentry = 0;
+        bool skipCircleCut = true;
 
 
-      if (num_wctracks != 1){continue;}
-      if (wctrk_missed > 0){continue;}
-      else{
-          if(UI->pickyTracksWC){if (  wctrk_picky != 1){continue;}}
-          if(UI->qualityTracksWC){if (wctrk_quality !=1){continue;}}
-          
+          if (num_wctracks != 1){continue;}
+          if (wctrk_missed > 0){continue;}
+          else{
+              if(UI->pickyTracksWC){if (  wctrk_picky != 1){continue;}}
+              if(UI->qualityTracksWC){if (wctrk_quality !=1){continue;}}
+              
 
-          double ParticleMass = -9999999.;
+              double ParticleMass = -9999999.;
 
-          bool massCutPass = BS->MassCut(wctrk_momentum[0], tofObject[0], UI->beamLength, UI->tofOffset, ParticleMass, UI->MassCutMin, UI->MassCutMax);
+              bool massCutPass = BS->MassCut(wctrk_momentum[0], tofObject[0], UI->beamLength, UI->tofOffset, ParticleMass, UI->MassCutMin, UI->MassCutMax);
 
-          if(applyMassCut){
-            if(!massCutPass){continue;}
+              if(applyMassCut){
+                if(!massCutPass){continue;}
+              }
+
+            std::vector<double> matchCandidate = BS->BeamCentering(wctrk_x_proj_3cm[0], wctrk_y_proj_3cm[0],
+             track_xpos, track_ypos, track_zpos, ntracks_reco, ntrack_hits, UI->zTPCCutoff, best_candidate);
+
+            if(best_candidate != -1){
+              int startIndex = static_cast <int> (matchCandidate[1]);
+              //delXYHist->Fill(wctrk_x_proj_3cm[0] - (*track_xpos)[best_candidate][startIndex],
+              //wctrk_y_proj_3cm[0] - (*track_ypos)[best_candidate][startIndex]);
+              //delXYHistPx->Fill(wctrk_x_proj_3cm[0] - (*track_xpos)[best_candidate][startIndex]);
+              //delXYHistPy->Fill(wctrk_y_proj_3cm[0] - (*track_ypos)[best_candidate][startIndex]);
+
+
+              if (matchCandidate[4] < 10 && matchCandidate[5] < BSoptions[2]){
+                delXYHistCenter->Fill(wctrk_x_proj_3cm[0] - (*track_xpos)[best_candidate][startIndex],
+                wctrk_y_proj_3cm[0] - (*track_ypos)[best_candidate][startIndex]);
+                delXYHistPxCenter->Fill(wctrk_x_proj_3cm[0] - (*track_xpos)[best_candidate][startIndex]);
+                delXYHistPyCenter->Fill(wctrk_y_proj_3cm[0] - (*track_ypos)[best_candidate][startIndex]);
+                }
+              }
+            } 
           }
-
-        std::vector<double> matchCandidate = BS->BeamCentering(wctrk_x_proj_3cm[0], wctrk_y_proj_3cm[0],
-         track_xpos, track_ypos, track_zpos, ntracks_reco, ntrack_hits, UI->zTPCCutoff, best_candidate);
-
-        if(best_candidate != -1){
-          int startIndex = static_cast <int> (matchCandidate[1]);
-          delXYHist->Fill(wctrk_x_proj_3cm[0] - (*track_xpos)[best_candidate][startIndex],
-          wctrk_y_proj_3cm[0] - (*track_ypos)[best_candidate][startIndex]);
-          delXYHistPx->Fill(wctrk_x_proj_3cm[0] - (*track_xpos)[best_candidate][startIndex]);
-          delXYHistPy->Fill(wctrk_y_proj_3cm[0] - (*track_ypos)[best_candidate][startIndex]);
-          wctrkPositionXY->Fill(wctrk_x_proj_3cm[0],wctrk_y_proj_3cm[0]);
-
-
-          if (matchCandidate[4] < 10 && matchCandidate[5] < BSoptions[2]){
-            delXYHistCenter->Fill(wctrk_x_proj_3cm[0] - (*track_xpos)[best_candidate][startIndex],
-            wctrk_y_proj_3cm[0] - (*track_ypos)[best_candidate][startIndex]);
-            delXYHistPxCenter->Fill(wctrk_x_proj_3cm[0] - (*track_xpos)[best_candidate][startIndex]);
-            delXYHistPyCenter->Fill(wctrk_y_proj_3cm[0] - (*track_ypos)[best_candidate][startIndex]);
-            }
-          }
-        } 
-      }
-    }
-  // End of beam centering loop
+        }
+      }// End of beam centering loop
 
 
 
     // setting beam center values
-    double xMeanTPCentry = delXYHistCenter->GetMean(1);
-    double yMeanTPCentry = delXYHistCenter->GetMean(2);
+    double xMeanTPCentry;
+    double yMeanTPCentry;
+
+    if(UI->beamCenterSet){
+    xMeanTPCentry = UI->xBeamCenter;
+    yMeanTPCentry = UI->yBeamCenter;
+    }
+    else{
+    xMeanTPCentry = delXYHistCenter->GetMean(1);
+    yMeanTPCentry = delXYHistCenter->GetMean(2);
+    }
 
     BS->SetMeanXY(xMeanTPCentry,yMeanTPCentry);
 
@@ -642,6 +661,7 @@ void ProtonXsec::AnalyzeFromNtuples(){
     nb = tuple->GetEntry(jentry);
     int numEnteringTracks;
     int reco_primary = -1;
+    std::vector <double> matchCandidate {0,-1, -1, -1, -1,-1, -1, -1,-1};
     numEventsStart++;
     if(verbose){printEvent();}
     bool found_primary = false;
@@ -825,7 +845,7 @@ void ProtonXsec::AnalyzeFromNtuples(){
 
       //if(verbose){std::cout << "matching to tpc" << std::endl;}
 
-      std::vector <double> matchCandidate = BS->BeamMatching(wctrk_x_proj_3cm[0],wctrk_y_proj_3cm[0], wctrk_theta[0], wctrk_phi[0],
+      matchCandidate = BS->BeamMatching(wctrk_x_proj_3cm[0],wctrk_y_proj_3cm[0], wctrk_theta[0], wctrk_phi[0],
                                                              track_xpos, track_ypos, track_zpos, ntracks_reco, ntrack_hits,
                                                              track_length, reco_primary,BSoptions);
 
@@ -913,6 +933,13 @@ void ProtonXsec::AnalyzeFromNtuples(){
           int inEnd = BS->EnteringTrkEnd[i];
           double trackAlpha = BS->EnteringTrkAlpha[i];
           tpcInTracksZ->Fill((*track_zpos)[inTrackID][inStart]);
+          tpcInTracksXY->Fill((*track_xpos)[inTrackID][inStart], (*track_ypos)[inTrackID][inStart]);
+
+          delXYHist->Fill(wctrk_x_proj_3cm[0] - (*track_xpos)[inTrackID][inStart],
+            wctrk_y_proj_3cm[0] - (*track_ypos)[inTrackID][inStart]);
+          delXYHistPx->Fill(wctrk_x_proj_3cm[0] - (*track_xpos)[inTrackID][inStart]);
+          delXYHistPy->Fill(wctrk_y_proj_3cm[0] - (*track_ypos)[inTrackID][inStart]);
+
           tpcInTrackEndZ->Fill((*track_zpos)[inTrackID][inStart]);
           InTrackLength->Fill((*track_length)[inTrackID]);
           alphaHist->Fill(trackAlpha);
@@ -942,6 +969,7 @@ void ProtonXsec::AnalyzeFromNtuples(){
             delXYHistPyMatch->Fill(wctrk_y_proj_3cm[0] - (*track_ypos)[inTrackID][inStart]);
 
               PrimaryLength->Fill((*track_length)[inTrackID]);
+              momentumLength->Fill(wctrk_momentum[0],(*track_length)[inTrackID]);
               PrimaryStartZ->Fill((*track_zpos)[inTrackID][inStart]);
               zProjPrimaryTrack->Fill((*track_zpos)[inTrackID][inEnd] -  (*track_zpos)[inTrackID][inStart]);
             }
@@ -1033,6 +1061,7 @@ void ProtonXsec::AnalyzeFromNtuples(){
 
 
 
+
     // ## grabbing interaction point ##
     double temp[6];
     double* candidate_info = ES->findInt(temp, reco_primary, ntracks_reco, 
@@ -1067,7 +1096,8 @@ void ProtonXsec::AnalyzeFromNtuples(){
     // ## getting which slab will be used for interactions ##
     int calo_int_slab = 999;
     if(candidate_info[0]){
-      numInteractions++;
+      if(verbose){std::cout <<  "Inelastic candidate found" << std::endl;}
+      //numInteractions++;
       double int_candidate_x = candidate_info[1];
       double int_candidate_y = candidate_info[2];
       double int_candidate_z = candidate_info[3];
@@ -1087,6 +1117,42 @@ void ProtonXsec::AnalyzeFromNtuples(){
           }
         }//<--End if this slab is upstream of int
       }//<--End calo slab loop
+    
+    // Histograms for branch selection
+      std::vector<double> BranchDistVect = ES->BranchDistVect;
+      std::vector<double> ClusterDistVect = ES->ClusterDistVect;
+
+      for(int i = 0; i < (ES->BranchDistVect.size()) ; i++){
+        BranchDistHist->Fill((ES->BranchDistVect)[i]);
+      }
+      for(int i = 0; i < ClusterDistVect.size(); i++){
+        ClusterDistHist->Fill((ES->ClusterDistVect)[i]);
+      }
+      double numBranch = ES->ClusterIDvect.size();
+      numBranchesHist->Fill(numBranch);
+
+      // naively calculating interaction length
+      int primStart;
+      double initialP;
+
+      if(!isMC){primStart = static_cast <int> (matchCandidate[2]);
+        initialP = wctrk_momentum[0];}
+      else{primStart = 0;
+        initialP = - 999.999;}
+      double intLength = UtilityFunctions::pointDistance((*track_xpos)[reco_primary][primStart],
+                                                         (*track_ypos)[reco_primary][primStart],
+                                                         (*track_zpos)[reco_primary][primStart],
+                                                         int_candidate_x,
+                                                         int_candidate_y,
+                                                         int_candidate_z);
+      
+
+      intMomentumLength->Fill(initialP,intLength);
+      interactingLength->Fill(intLength);
+      numIntCandidates++;
+
+
+
     }//<---End if interaction candidate
 
     double intKE = -1;
@@ -1102,7 +1168,32 @@ void ProtonXsec::AnalyzeFromNtuples(){
       }//<-- End if this is the \ slab
     }//<--End calo slab loop
 
+
+
     // ### end of port work -- ryan ###
+
+    if (UI->psOutputFileSet){
+      if(candidate_info[0]  && numInteractions < UI->numEventSummaries){
+        PM->EventSummary(ps, run, subrun, event, ntracks_reco,
+                    matchCandidate, candidate_info, ES->ClusterIDvect,
+                    initial_ke,  intKE,  ParticleMass, 
+                    track_xpos,
+                    track_ypos,
+                    track_zpos,
+                    ntrack_hits,
+                    col_track_x,
+                    col_track_y,
+                    col_track_z,
+                    col_track_hits,
+                    col_track_dedx,
+                    col_track_pitch_hit,
+                    wctrk_XFace[0], wctrk_YFace[0],
+                    nhits,
+                    hit_time,
+                    hit_amp,
+                    hit_wire);
+      }
+    }
 
   double truthIntKE = -1;
 
@@ -1129,15 +1220,9 @@ void ProtonXsec::AnalyzeFromNtuples(){
   }//end of event Loop
   if(verbose){std::cout << "End of Event Loop" << std::endl;}
 
-    std::vector<double> BranchDistVect = ES->BranchDistVect;
-    std::vector<double> ClusterDistVect = ES->ClusterDistVect;
+    if(UI->psOutputFileSet) {PM->CloseSummary(ps);}
 
-    for(int i = 0; i < ES->BranchDistVect.size(); i++){
-      BranchDistHist->Fill((ES->BranchDistVect)[i]);
-    }
-    for(int i = 0; i < ClusterDistVect.size(); i++){
-      ClusterDistHist->Fill((ES->ClusterDistVect)[i]);
-    }
+
 
 
 
@@ -1262,6 +1347,10 @@ void ProtonXsec::AnalyzeFromNtuples(){
     //std::cout << "Number of Matched Events (According to ProtonXsec): " << numMatchedMain << std::endl;  
 
     BS->printSummary(BSoptions);
+
+    std::cout << "\n------- Inelastic Event Results -------\n"<< std::endl;
+    std::cout << "Number of interacting candidates: " << numIntCandidates << std::endl;
+    std::cout << "Number of interactions in Slab Method: " << numInteractions << std::endl;
 
 
     if(UI->logFileSet){
@@ -1425,6 +1514,10 @@ void ProtonXsec::AnalyzeFromNtuples(){
       // ## EventSelector histos ##
       BranchDistHist->Write();
       ClusterDistHist->Write();
+      interactingLength->Write();
+      numBranchesHist->Write();
+      intMomentumLength->Write();
+      momentumLength->Write();
       beamXtpc0 ->Write();
       beamYtpc0 ->Write();
       beamZtpc0 ->Write();

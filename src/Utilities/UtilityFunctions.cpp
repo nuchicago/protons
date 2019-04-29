@@ -146,6 +146,9 @@ namespace UtilityFunctions {
   std::vector<double> pointProjector(std::vector<double> *point0, std::vector<double> *point1, 
                       double planeCz, double planeC0){
 
+  //projects line between two points to plane defined by x = (planeCz)*z +(planeC0)
+  //returns x, y ,z coordinates of intercept.
+
 
   std::cout << "function parameters:" << planeCz << ", " << planeC0 << std::endl; 
   double t_param = ((*point0)[0] - planeCz * (*point0)[2] - planeC0)/ ( planeCz*((*point1)[2] - (*point0)[2]) - ((*point1)[0] - (*point0)[0]));

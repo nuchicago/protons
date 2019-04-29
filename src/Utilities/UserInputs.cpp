@@ -94,6 +94,8 @@ void UserInputs::initialize( ){
   correctionFileSet = false;
   rootOutputFileSet = false;
   psOutputFileSet = false;
+  numEventSummaries = 20;
+  numEventSummariesSet = false;
   beamCharFileSet = false;
   beamProtonFileSet = false;
   beamKaonFileSet = false;
@@ -124,6 +126,9 @@ void UserInputs::initialize( ){
   clusterMaxDist =  99.;
   clusterMaxDistSet = false;
 
+  beamCenterSet =  true;
+  xBeamCenter = 0;
+  yBeamCenter = 0;
   zBeamCutoffSet = false;
   zBeamCutoff = 2;
   zTPCCutoffSet = false;
@@ -256,6 +261,11 @@ void UserInputs::readIoFiles( ifstream *jobOptionsFile ){
     psOutputFile = new char[1000];
     *jobOptionsFile >> psOutputFile;
     psOutputFileSet = true;
+  }
+
+    if( paramLookUp( jobOptionsFile, (char*)"numEventSummaries" ) ){
+    *jobOptionsFile >> numEventSummaries;
+    numEventSummariesSet = true;
   }
   if( paramLookUp( jobOptionsFile, (char*)"beamCharFile" ) ){
     beamCharFile = new char[1500];
@@ -648,6 +658,16 @@ void UserInputs::readAnalysisCuts( ifstream *jobOptionsFile ){
   //  *jobOptionsFile >> kaonNumGaus;
   //  kaonNumGausSet = true;
   //}
+
+  if( paramLookUp( jobOptionsFile, (char*)"xBeamCenter" ) ){
+    *jobOptionsFile >> xBeamCenter;
+  }
+  else{beamCenterSet = false;}
+  if( paramLookUp( jobOptionsFile, (char*)"yBeamCenter" ) ){
+    *jobOptionsFile >> yBeamCenter;
+  }
+  else{beamCenterSet = false;}
+  
 
   if( paramLookUp( jobOptionsFile, (char*)"zBeamCutoff" ) ){
     *jobOptionsFile >> zBeamCutoff;
@@ -1198,7 +1218,7 @@ void UserInputs::printUserInputs( ){
   cout << "------------- Output Files -----------" << endl;
   if( rootOutputFileSet ) cout << "  Root output file = " << rootOutputFile << endl;
   if( SelEventListSet ) cout << "  Selected Event list file = " << SelEventList << endl;
-  if( psOutputFileSet)    cout << "  PostScript output file = " << psOutputFile << endl;
+  if( psOutputFileSet)    cout << "  pdf output file = " << psOutputFile << endl;
   if( outputFileNameSet ) cout << "  Output files name = " << outputFileName << endl;  
   if( plotIndividualSet ) cout << "  Printing individual event plots to = " << plotIndividual << endl;  
 

@@ -29,6 +29,8 @@ class UserInputs {
   bool rootOutputFileSet;
   char *psOutputFile;
   bool psOutputFileSet;
+  int  numEventSummaries;
+  bool numEventSummariesSet;
   char *logFile;
   bool logFileSet;
 
@@ -112,6 +114,9 @@ class UserInputs {
   bool beamPlanesSet;
 
   //== BeamSelect Values
+  bool beamCenterSet;
+  double xBeamCenter;
+  double yBeamCenter;
   bool zBeamCutoffSet;
   double zBeamCutoff;
   bool zTPCCutoffSet;
