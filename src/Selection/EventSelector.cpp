@@ -201,54 +201,53 @@ double* EventSelector::findInt(double* candidate_array, int reco_primary, Int_t 
         
         // ## pushing every branching track to a 2d vector ##
         // ## (track#, closest primary spt, distance to that spt) ##
-        double min_dist_prim_spt_start = 99;
-        double min_dist_prim_spt_end = 99;
-        double closest_prim_spt_start = -1;
-        double closest_prim_spt_end = -1;
 
-        for(int prim_spt = 0; prim_spt < primary_hits; prim_spt++){
-          double prim_xpos = primary_xpos[prim_spt];
-          double prim_ypos = primary_ypos[prim_spt];
-          double prim_zpos = primary_zpos[prim_spt];
+
+        //double min_dist_prim_spt_start = 99;
+        //double min_dist_prim_spt_end = 99;
+        //double closest_prim_spt_start = -1;
+        //double closest_prim_spt_end = -1;
+
+        
+          double prim_xpos = primary_xpos[-1];
+          double prim_ypos = primary_ypos[-1];
+          double prim_zpos = primary_zpos[-1];
           double dist_prim_spt_start = sqrt(pow(start_other_x - prim_xpos, 2) + 
                                       pow(start_other_y - prim_ypos, 2) + 
                                       pow(start_other_z - prim_zpos, 2));
 
-          if(dist_prim_spt_start < min_dist_prim_spt_start){
-            min_dist_prim_spt_start = dist_prim_spt_start;
-            closest_prim_spt_start = prim_spt;
-          }
-        }//<-End primary spt loop - start point
+          //if(dist_prim_spt_start < min_dist_prim_spt_start){
+            //min_dist_prim_spt_start = dist_prim_spt_start;
+            //closest_prim_spt_start = prim_spt;
+          //}
+        //<-End primary spt loop - start point
 
-        for(int prim_spt = 0; prim_spt < primary_hits; prim_spt++){
-          double prim_xpos = primary_xpos[prim_spt];
-          double prim_ypos = primary_ypos[prim_spt];
-          double prim_zpos = primary_zpos[prim_spt];
           double dist_prim_spt_end = sqrt(pow(end_other_x - prim_xpos, 2) + 
                                       pow(end_other_y - prim_ypos, 2) + 
                                       pow(end_other_z - prim_zpos, 2));
 
-          if(dist_prim_spt_end < min_dist_prim_spt_end){
-            min_dist_prim_spt_end = dist_prim_spt_end;
-            closest_prim_spt_end = prim_spt;
-          }
-        }//<-End primary spt loop - end point
+          //if(dist_prim_spt_end < min_dist_prim_spt_end){
+            //min_dist_prim_spt_end = dist_prim_spt_end;
+            //closest_prim_spt_end = prim_spt;
+          //}
+        //<-End primary spt loop - end point
+
+
 
         double closest_prim_spt;
         double min_dist_prim_spt;
 
-        if(min_dist_prim_spt_start < min_dist_prim_spt_end){
-        closest_prim_spt = closest_prim_spt_start; // for now only using the first point to compare
-        min_dist_prim_spt = min_dist_prim_spt_start;}
+        if(dist_prim_spt_start < dist_prim_spt_end){
+        min_dist_prim_spt = dist_prim_spt_start;}
         else{
-        closest_prim_spt = closest_prim_spt_end; // for now only using the first point to compare
-        min_dist_prim_spt = min_dist_prim_spt_end;
+        min_dist_prim_spt = dist_prim_spt_end;
         }
 
 
 
         BranchDistVect.push_back(min_dist_prim_spt);
         if(min_dist_prim_spt < branchMaxDist){
+          closest_prim_spt = (*ntrack_hits)[rtrack] - 1;
           std::vector<double> branch_tuple = {1.*rtrack, closest_prim_spt, min_dist_prim_spt};
           branches.push_back(branch_tuple);}
       }//<--End if not primary
@@ -275,7 +274,7 @@ double* EventSelector::findInt(double* candidate_array, int reco_primary, Int_t 
       }
       potential_interaction_pts.push_back((int)earliest_branch_spt);
       potential_interaction_type.push_back(3.);
-      potential_interaction_info1.push_back(-1.);
+      potential_interaction_info1.push_back(1.);
       if(verbose){std::cout<<"earliest branch pt: "<<earliest_branch_spt<<std::endl;}
     }//<--End if there were branches
     // # topology 1
@@ -344,7 +343,9 @@ double* EventSelector::findInt(double* candidate_array, int reco_primary, Int_t 
           }
         }
         if(verbose){std::cout << "num_branches_type4 = " << num_branches_t4 << std::endl;}
-        //if (num_branches_t4 != 0 ){candidate_array[5] = num_branches_t4;}
+        if (candidate_array[4] == 3.){candidate_array[5] = num_branches_t4;
+          if (num_branches_t4 > 1){candidate_array[4] = 4.;}
+         }
         //if (num_branches_t4 > 1){
         //  candidate_array[4] = 4.;
         //}

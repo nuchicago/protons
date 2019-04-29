@@ -1176,7 +1176,7 @@ void ProtonXsec::AnalyzeFromNtuples(){
     // ### end of port work -- ryan ###
 
     if (UI->psOutputFileSet){
-      if(candidate_info[0]  && numInteractions < UI->numEventSummaries){
+      if(candidate_info[0]  && (candidate_info[4] != 2) && numInteractions < UI->numEventSummaries){
         PM->EventSummary(ps, run, subrun, event, ntracks_reco,
                     matchCandidate, candidate_info, ES->ClusterIDvect,
                     initial_ke,  intKE,  ParticleMass, 

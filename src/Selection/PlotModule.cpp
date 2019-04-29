@@ -86,10 +86,7 @@ void PlotModule::EventSummary( TPostScript *psOutputFile,int run, int subrun, in
    bool isMC = false;
 
   // stuff for the summary residual plot
-  std::vector<double> total_dedx_v;
-  std::vector<double> total_res_v;
-  TGraph gtotal_res_dedx_item;
-  TGraph * gtotal_res_dedx;
+
 
   
 
