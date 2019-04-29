@@ -247,7 +247,7 @@ double* EventSelector::findInt(double* candidate_array, int reco_primary, Int_t 
 
         BranchDistVect.push_back(min_dist_prim_spt);
         if(min_dist_prim_spt < branchMaxDist){
-          closest_prim_spt = (*ntrack_hits)[rtrack] - 1;
+          closest_prim_spt = primary_hits - 1;
           std::vector<double> branch_tuple = {1.*rtrack, closest_prim_spt, min_dist_prim_spt};
           branches.push_back(branch_tuple);}
       }//<--End if not primary

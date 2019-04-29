@@ -210,6 +210,7 @@ void ProtonXsec::AnalyzeFromNtuples(){
   double numThetaCut = 0;
   double numPhiCut = 0;
   bool intHistFilled = false;
+  int numSummaryPrinted = 0;
 
 
 
@@ -1176,7 +1177,7 @@ void ProtonXsec::AnalyzeFromNtuples(){
     // ### end of port work -- ryan ###
 
     if (UI->psOutputFileSet){
-      if(candidate_info[0]  && (candidate_info[4] != 2) && numInteractions < UI->numEventSummaries){
+      if(candidate_info[0]  && (candidate_info[4] != 2) && numSummaryPrinted < UI->numEventSummaries){
         PM->EventSummary(ps, run, subrun, event, ntracks_reco,
                     matchCandidate, candidate_info, ES->ClusterIDvect,
                     initial_ke,  intKE,  ParticleMass, 
@@ -1195,6 +1196,7 @@ void ProtonXsec::AnalyzeFromNtuples(){
                     hit_time,
                     hit_amp,
                     hit_wire);
+      numSummaryPrinted++;
       }
     }
 
