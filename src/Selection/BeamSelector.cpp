@@ -13,6 +13,7 @@
 
 const double BeamSelector::pi = 3.14159;                // the beloved constant
 const double BeamSelector::massProton = 0.938;          // proton mass GeV
+const double BeamSelector::massProtonMeV = 938.;        // proton mass MeV
 const double BeamSelector::massPion = 0.140;            // piplus/minus mass GeV
 const double BeamSelector::massElectron = 0.000511;     // electron mass GeV
 const double BeamSelector::massKaon = 0.494;            // kplus/kminus mass GeV
@@ -551,11 +552,11 @@ double BeamSelector::getMCInitialKE(double initial_ke, unsigned int geant_list_s
 }
 
 
-double BeamSelector::getDataInitialKE(double initial_ke, double wctrk_momentum, double ParticleMass) {
+double BeamSelector::getDataInitialKE(double initial_ke, double wctrk_momentum) {
   
   //double mass = 938.57;
-  double wc_ke = sqrt(pow(ParticleMass, 2) + pow(wctrk_momentum, 2)) - ParticleMass;
-  double ke_loss = 60;
+  double wc_ke = sqrt(pow(massProtonMeV, 2) + pow(wctrk_momentum, 2)) - massProtonMeV;
+  double ke_loss = 60; //For now Applying 60 MeV energy loss
   initial_ke = wc_ke - ke_loss;
 
 

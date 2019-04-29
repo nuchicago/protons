@@ -1087,7 +1087,7 @@ void ProtonXsec::AnalyzeFromNtuples(){
                                       NTrTrajPts, MidPosX, MidPosY,  MidPosZ, MidPx, MidPy, MidPz); 
     }
     if(!isMC) {
-      initial_ke = BS->getDataInitialKE(initial_ke, wctrk_momentum[0],ParticleMass);
+      initial_ke = BS->getDataInitialKE(initial_ke, wctrk_momentum[0]);
     }
     hreco_initialKE->Fill(initial_ke);
     
