@@ -6,6 +6,7 @@
 #include <cmath>
 
 #include "../Utilities/ROOTinclude.h"
+#include "../Utilities/UtilityFunctions.h"
 
 
 class EventSelector {
@@ -15,7 +16,7 @@ class EventSelector {
   std::vector<double> BranchDistVect;
   std::vector<double> ClusterDistVect;
   std::vector<double> dedxNoBraggVect;
-
+  std::vector<int> ClusterIDvect;
 
 
 

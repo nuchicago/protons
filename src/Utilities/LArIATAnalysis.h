@@ -226,10 +226,10 @@ class LArIATAnalysis {
   Double_t wctrk_wc4_z[max_num_wctracks];
 
 
-  std::vector<int> nhits;
-  std::vector<float> hit_time;
-  std::vector<float> hit_amp;
-  std::vector<int> hit_wire;
+  Int_t nhits;
+  std::vector<double> *hit_time;
+  std::vector<double> *hit_amp;
+  std::vector<double> *hit_wire;
   //std::vector<float> hit_view;
 
   // List of branches
