@@ -78,6 +78,7 @@ double* EventSelector::findInt(double* candidate_array, int reco_primary, Int_t 
     std::vector<double> col_primary_pitch_hit;
     std::vector<double> col_primary_dedx;
     int primary_hits = (*ntrack_hits)[reco_primary];
+    std::cout << primary_hits << std::endl;
     int col_primary_hits =  (*col_track_hits)[reco_primary];
 
 
@@ -196,9 +197,9 @@ double* EventSelector::findInt(double* candidate_array, int reco_primary, Int_t 
         double start_other_y = (*track_ypos)[rtrack][0];
         double start_other_z = (*track_zpos)[rtrack][0];
         // ## end position ##
-        double end_other_x = (*track_xpos)[rtrack][-1];
-        double end_other_y = (*track_ypos)[rtrack][-1];
-        double end_other_z = (*track_zpos)[rtrack][-1];
+        double end_other_x = (*track_xpos)[rtrack][(*ntrack_hits)[rtrack] - 1];
+        double end_other_y = (*track_ypos)[rtrack][(*ntrack_hits)[rtrack] - 1];
+        double end_other_z = (*track_zpos)[rtrack][(*ntrack_hits)[rtrack] - 1];
         
         // ## pushing every branching track to a 2d vector ##
         // ## (track#, closest primary spt, distance to that spt) ##
@@ -210,9 +211,9 @@ double* EventSelector::findInt(double* candidate_array, int reco_primary, Int_t 
         //double closest_prim_spt_end = -1;
 
         
-          double prim_xpos = primary_xpos[-1];
-          double prim_ypos = primary_ypos[-1];
-          double prim_zpos = primary_zpos[-1];
+          double prim_xpos = primary_xpos[primary_hits - 1];
+          double prim_ypos = primary_ypos[primary_hits - 1];
+          double prim_zpos = primary_zpos[primary_hits - 1];
           double dist_prim_spt_start = sqrt(pow(start_other_x - prim_xpos, 2) + 
                                       pow(start_other_y - prim_ypos, 2) + 
                                       pow(start_other_z - prim_zpos, 2));
