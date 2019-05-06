@@ -211,6 +211,7 @@ void ProtonXsec::AnalyzeFromNtuples(){
   double numPhiCut = 0;
   bool intHistFilled = false;
   int numSummaryPrinted = 0;
+  int numMultiBranch = 0;
 
 
 
@@ -521,11 +522,11 @@ void ProtonXsec::AnalyzeFromNtuples(){
   TH1D * numBranchesHist =  new TH1D("numBranchesHist","Number of branches from vertex",20, 0, 10);
 
   // ## Multi-particle topology plots##
-  TH2D * numBranchEnergy  = new  TH2D("numBranchEnergy", " Interaction Energy vs N Branches", 20,0, 1000, 20, 0, 10);
-  TH1D * kinkResRange = new TH1D("kinkResRange", "residual range after kink in track",150, 0, 60);
-  TH1D * kinkResRangeMulti = new TH1D("kinkResRangeMulti", "residual range after kink - branching events",150, 0, 60);
+  TH2D * numBranchEnergy  = new  TH2D("numBranchEnergy", " Interaction Energy vs N Branches", 20,0, 1000, 10, 0, 10);
+  TH1D * kinkResRange = new TH1D("kinkResRange", "residual range after kink in track",250, 0, 100);
+  TH1D * kinkResRangeMulti = new TH1D("kinkResRangeMulti", "residual range after kink - branching events",250, 0, 100);
 
-  TH2D * numBranchMomentum = new  TH2D("numBranchMomentum", " Beam Momentum vs N Branches", 20,0, 1000, 20, 0, 10);
+  TH2D * numBranchMomentum = new  TH2D("numBranchMomentum", " Beam Momentum vs N Branches", 100,0, 2000, 10, 0, 10);
   TH1D * branchDEHist = new TH1D("branchDEHist","Deposited Energy per Branch",100,0,2000);
 
   // ## xs histos ##
@@ -1211,6 +1212,7 @@ void ProtonXsec::AnalyzeFromNtuples(){
         intMomentumLength->Fill(initialP,intLength);
         interactingLength->Fill(intLength);
         numIntCandidates++;
+        if(ES->num_branches_t4 > 1){numMultiBranch++;}
     } //end if candidate found
 
 
@@ -1399,6 +1401,7 @@ void ProtonXsec::AnalyzeFromNtuples(){
     std::cout << "\n------- Inelastic Event Results -------\n"<< std::endl;
     std::cout << "Number of interacting candidates: " << numIntCandidates << std::endl;
     std::cout << "Number of interactions in Slab Method: " << numInteractions << std::endl;
+    std::cout << "Number of Multi Branch interactions" << numMultiBranch << std::endl;
 
 
     if(UI->logFileSet){
@@ -1422,6 +1425,11 @@ void ProtonXsec::AnalyzeFromNtuples(){
     logFile << "Events with ToF value in range (" << UI->tofMin << " , " << UI->tofMax<< ") [ns]: " << numtofvalid << std::endl;
     logFile << "Events passing mass cut (" << UI->MassCutMin << " , " << UI->MassCutMax << ") [MeV/c^2]: "<< numMassCut << std::endl;
     BS->printSummary(BSoptions,logFile);
+
+    logFile << "\n------- Inelastic Event Results -------\n"<< std::endl;
+    logFile << "Number of interacting candidates: " << numIntCandidates << std::endl;
+    logFile << "Number of interactions in Slab Method: " << numInteractions << std::endl;
+    logFile << "Number of Multi Branch interactions" << numMultiBranch << std::endl;
     logFile.close();
     
 

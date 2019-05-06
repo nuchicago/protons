@@ -342,7 +342,7 @@ double* EventSelector::findInt(double* candidate_array, int reco_primary, Int_t 
     if(candidate_array[0] == 1.){
         
 
-        if(candidate_array[1] == 1.){ //if kink was found
+        if(candidate_array[4] == 1.){ //if kink was found
           double min_dist_to_interaction = 999.;
           //int col_interaction_spt; -> now part of class
           double col_interaction_rr;
@@ -375,7 +375,8 @@ double* EventSelector::findInt(double* candidate_array, int reco_primary, Int_t 
             }
           }
           post_kink_length = col_interaction_rr;
-          if(col_interaction_rr > 2.){
+          //std::cout << "post_kink_length = " << post_kink_length << std::endl;
+          if(col_interaction_rr > 0.){
             branch_in_primary = true;
             double deposited_energy = 0;
 
