@@ -107,11 +107,11 @@ void PlotModule::EventSummary(bool isMC ,TPostScript *psOutputFile,int run, int 
         //calculating residual range
         double res_range = 0;
         for(int ipos = primary_pts; ipos > 0  ; ipos--){
-          res_range += (*col_track_pitch_hit)[reco_primary][ipos];
-          res_graphpts[ipos] = res_range;
-          dedx_graphpts[ipos] = (*col_track_dedx)[reco_primary][ipos];
+          res_range += (*col_track_pitch_hit)[reco_primary][ipos -1];
+          res_graphpts[primary_pts -ipos] = res_range;
+          dedx_graphpts[primary_pts - ipos] = (*col_track_dedx)[reco_primary][ipos-1];
           
-          if (dedx_graphpts[ipos] > max_dedx){ max_dedx = dedx_graphpts[ipos];}
+          if (dedx_graphpts[primary_pts - ipos] > max_dedx){ max_dedx = dedx_graphpts[ipos];}
           }//end of loop for residual range
 
         //####### setting up graphs for raw wire hits
