@@ -126,7 +126,7 @@ ProtonXsec::ProtonXsec( char* jobOptionsFile ) : LArIATAnalysis( jobOptionsFile 
     //sprintf(LogTitle,"%s.txt", UI->rootOutputFile);
     //RunLog.open()
      ps = new TPostScript( UI->psOutputFile, 112 );
-     ps->Range(26,15); 
+     ps->Range(26,18); 
      psPage = 1; 
   }
   else{
@@ -515,10 +515,18 @@ void ProtonXsec::AnalyzeFromNtuples(){
 
   TH1D * BranchDistHist = new TH1D("BranchDistHist", "Inelastic Event Branch Distance",50, 0,25);
   TH1D * ClusterDistHist = new TH1D("ClusterDistHist", "Additional Branch Distance (Type 4)",50, 0,25);
-  TH1D * interactingLength = new TH1D("interactingLength","Interacting Primary Length", 250, 0, 100);
-  TH2D * intMomentumLength = new TH2D("intMomentumLength", "Momentum vsInteracting Length ",250,0, 2500, 250, 0,100);
-  TH2D * momentumLength = new TH2D("momentumLength", "Primary Length vs Momentum",250,0, 2500, 250, 0,100);
+  TH1D * interactingLength = new TH1D("interactingLength","Interacting Primary Length", 100, 0, 100);
+  TH2D * intMomentumLength = new TH2D("intMomentumLength", "Momentum vs Interacting Length ",100,0, 2500, 100, 0,100);
+  TH2D * momentumLength = new TH2D("momentumLength", "Primary Length vs Momentum",100,0, 2500, 100, 0,100);
   TH1D * numBranchesHist =  new TH1D("numBranchesHist","Number of branches from vertex",20, 0, 10);
+
+  // ## Multi-particle topology plots##
+  TH2D * numBranchEnergy  = new  TH2D("numBranchEnergy", " Interaction Energy vs N Branches", 20,0, 1000, 20, 0, 10);
+  TH1D * kinkResRange = new TH1D("kinkResRange", "residual range after kink in track",150, 0, 60);
+  TH1D * kinkResRangeMulti = new TH1D("kinkResRangeMulti", "residual range after kink - branching events",150, 0, 60);
+
+  TH2D * numBranchMomentum = new  TH2D("numBranchMomentum", " Beam Momentum vs N Branches", 20,0, 1000, 20, 0, 10);
+  TH1D * branchDEHist = new TH1D("branchDEHist","Deposited Energy per Branch",100,0,2000);
 
   // ## xs histos ##
   TH1D *hreco_initialKE = new TH1D("hreco_initialKE", "initial ke", 20, 0, 1000);
@@ -1057,9 +1065,16 @@ void ProtonXsec::AnalyzeFromNtuples(){
       double first_reco_z = 99.;
       reco_primary = BS->isTPCPrimary(track_zpos, ntracks_reco, isMC, UI->zBeamCutoff, 
         reco_primary, first_reco_z, verbose);
+
+
     }
     if(reco_primary == -1){continue;}//<- skipping events that didn't pass isTPCPrimary 
-    else{ found_primary = true;}
+    else{ found_primary = true;
+      if(isMC){
+        std::vector<double> beamMatchInfo = {1.,0,1,static_cast<double> ((*ntrack_hits)[reco_primary]),-1, -1 ,-1};
+      }
+
+    }
 
     if(UI->skipEventSelection){continue;}//skipping Event Selection - running in beam diagnostic mode
 
@@ -1073,6 +1088,10 @@ void ProtonXsec::AnalyzeFromNtuples(){
                                             track_end_x, track_end_y, track_end_z,
                                             col_track_hits, col_track_dedx, col_track_pitch_hit,
                                             col_track_x, col_track_y, col_track_z, ESoptions);
+
+
+    /// focusing on multi-branch topologies for now 
+    //if(ES->num_branches_t4 < 2){candidate_info[0] = 0;}
 
     // ## grabbing what will be histogram entries ##
     //double initial_ke = 99999; //<-- setting to a constant to do dev. needs to be WC info
@@ -1122,41 +1141,7 @@ void ProtonXsec::AnalyzeFromNtuples(){
         }//<--End if this slab is upstream of int
       }//<--End calo slab loop
     
-    // Histograms for branch selection
-      std::vector<double> BranchDistVect = ES->BranchDistVect;
-      std::vector<double> ClusterDistVect = ES->ClusterDistVect;
-
-      for(int i = 0; i < (ES->BranchDistVect.size()) ; i++){
-        BranchDistHist->Fill((ES->BranchDistVect)[i]);
-      }
-      for(int i = 0; i < ClusterDistVect.size(); i++){
-        ClusterDistHist->Fill((ES->ClusterDistVect)[i]);
-      }
-      double numBranch = ES->ClusterIDvect.size();
-      numBranchesHist->Fill(numBranch);
-
-      // naively calculating interaction length
-      int primStart;
-      double initialP;
-
-      if(!isMC){primStart = static_cast <int> (matchCandidate[2]);
-        initialP = wctrk_momentum[0];}
-      else{primStart = 0;
-        initialP = - 999.999;}
-      double intLength = UtilityFunctions::pointDistance((*track_xpos)[reco_primary][primStart],
-                                                         (*track_ypos)[reco_primary][primStart],
-                                                         (*track_zpos)[reco_primary][primStart],
-                                                         int_candidate_x,
-                                                         int_candidate_y,
-                                                         int_candidate_z);
-      
-
-      intMomentumLength->Fill(initialP,intLength);
-      interactingLength->Fill(intLength);
-      numIntCandidates++;
-
-
-
+    
     }//<---End if interaction candidate
 
     double intKE = -1;
@@ -1172,13 +1157,71 @@ void ProtonXsec::AnalyzeFromNtuples(){
       }//<-- End if this is the \ slab
     }//<--End calo slab loop
 
+      if(candidate_info[0]){ // plotting results of ES
+
+        // Histograms for branch selection
+        std::vector<double> BranchDistVect = ES->BranchDistVect;
+        std::vector<double> ClusterDistVect = ES->ClusterDistVect;
+        int primStart;
+        double initialP;
+
+        if(!isMC){primStart = static_cast <int> (matchCandidate[2]);
+          initialP = wctrk_momentum[0];}
+        else{primStart = 0;
+          initialP = - 999.999;}
+
+        for(int i = 0; i < (ES->BranchDistVect.size()) ; i++){
+          BranchDistHist->Fill((ES->BranchDistVect)[i]);
+        }
+        for(int i = 0; i < ClusterDistVect.size(); i++){
+          ClusterDistHist->Fill((ES->ClusterDistVect)[i]);
+        }
+        double numBranch = ES->num_branches_t4;
+        numBranchesHist->Fill(numBranch);
+        numBranchMomentum->Fill(initialP,numBranch);
+        numBranchEnergy->Fill(intKE,numBranch);
+
+        for (int ibranch = 0 ; ibranch < ES->BranchEnergyVect.size(); ibranch++){
+          branchDEHist->Fill(ES->BranchEnergyVect[ibranch]);
+        }
+
+        if(candidate_info[4] == 1){
+          kinkResRange->Fill(ES->post_kink_length);
+          if(ES->ClusterIDvect.size() > 1){
+            kinkResRangeMulti->Fill(ES->post_kink_length);
+          }
+
+        }
+
+        // naively calculating interaction length
+        
+
+        
+        double int_candidate_x = candidate_info[1];
+        double int_candidate_y = candidate_info[2];
+        double int_candidate_z = candidate_info[3];
+        double intLength = UtilityFunctions::pointDistance((*track_xpos)[reco_primary][primStart],
+                                                           (*track_ypos)[reco_primary][primStart],
+                                                           (*track_zpos)[reco_primary][primStart],
+                                                           int_candidate_x,
+                                                           int_candidate_y,
+                                                           int_candidate_z);
+        
+
+        intMomentumLength->Fill(initialP,intLength);
+        interactingLength->Fill(intLength);
+        numIntCandidates++;
+    } //end if candidate found
+
+
 
 
     // ### end of port work -- ryan ###
 
     if (UI->psOutputFileSet){
       if(candidate_info[0]  && (candidate_info[4] != 2) && numSummaryPrinted < UI->numEventSummaries){
-        PM->EventSummary(ps, run, subrun, event, ntracks_reco,
+        
+        PM->EventSummary(isMC,ps, run, subrun, event, ntracks_reco,
                     matchCandidate, candidate_info, ES->ClusterIDvect,
                     initial_ke,  intKE,  ParticleMass, 
                     track_xpos,
@@ -1191,7 +1234,7 @@ void ProtonXsec::AnalyzeFromNtuples(){
                     col_track_hits,
                     col_track_dedx,
                     col_track_pitch_hit,
-                    wctrk_XFace[0], wctrk_YFace[0],
+                    wctrk_XFace[0], wctrk_YFace[0], wctrk_momentum[0],
                     nhits,
                     hit_time,
                     hit_amp,
@@ -1526,6 +1569,14 @@ void ProtonXsec::AnalyzeFromNtuples(){
       beamXtpc0 ->Write();
       beamYtpc0 ->Write();
       beamZtpc0 ->Write();
+
+      // ## multi branch event histos
+      numBranchEnergy->Write();
+      numBranchMomentum->Write();
+      kinkResRange->Write();
+      kinkResRangeMulti->Write();
+      branchDEHist->Write();
+      
 
       wctrk4XY->Write();
       wctrkTpcXY->Write();

@@ -18,7 +18,7 @@ class PlotModule{
     void CloseSummary(TPostScript * psOutputFile);
 
 
-    void EventSummary( TPostScript *psOutputFile,int run, int subrun, int event, int ntracks_reco,
+    void EventSummary( bool isMC,TPostScript *psOutputFile,int run, int subrun, int event, int ntracks_reco,
                     std::vector<double> beamMatchInfo, double *interactionInfo, std::vector<int> ClusterIDvect,
                      double InitialKE, double IntKE , double beamMass, 
                     std::vector< std::vector<double> > *track_xpos,
@@ -31,7 +31,7 @@ class PlotModule{
                     std::vector<int> *col_track_hits,
                     std::vector<std::vector<double>> *col_track_dedx,
                     std::vector<std::vector<double>> *col_track_rr,
-                    double wctrk_XFace, double wctrk_YFace,
+                    double wctrk_XFace, double wctrk_YFace, double wctrk_momentum,
                     int nhits,
                     std::vector<double> *hit_time,
                     std::vector<double> *hit_amp,

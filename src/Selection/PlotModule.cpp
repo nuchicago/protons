@@ -20,7 +20,7 @@ void PlotModule::CloseSummary(TPostScript *psOutputFile){
   std::cout << "Closing PlotModule" << std::endl;
 }
 
-void PlotModule::EventSummary( TPostScript *psOutputFile,int run, int subrun, int event, int ntracks_reco,
+void PlotModule::EventSummary(bool isMC ,TPostScript *psOutputFile,int run, int subrun, int event, int ntracks_reco,
                     std::vector<double> beamMatchInfo, double *interactionInfo, std::vector<int> ClusterIDvect,
                      double InitialKE,double IntKE, double beamMass,
                     std::vector< std::vector<double> > *track_xpos,
@@ -32,8 +32,8 @@ void PlotModule::EventSummary( TPostScript *psOutputFile,int run, int subrun, in
                     std::vector< std::vector<double> > *col_track_z,
                     std::vector<int> *col_track_hits,
                     std::vector<std::vector<double>> *col_track_dedx,
-                    std::vector<std::vector<double>> *col_track_rr,
-                    double wctrk_XFace, double wctrk_YFace,
+                    std::vector<std::vector<double>> *col_track_pitch_hit,
+                    double wctrk_XFace, double wctrk_YFace, double wctrk_momentum,
                     int nhits,
                     std::vector<double> *hit_time,
                     std::vector<double> *hit_amp,
@@ -83,8 +83,7 @@ void PlotModule::EventSummary( TPostScript *psOutputFile,int run, int subrun, in
   pad6->Draw();
   pad7->Draw();
 
-   bool isMC = false;
-
+   
   // stuff for the summary residual plot
 
 
@@ -106,10 +105,10 @@ void PlotModule::EventSummary( TPostScript *psOutputFile,int run, int subrun, in
       if (primary_pts > 0){
         double max_dedx = -1;
         //calculating residual range
-        for(int ipos = 0; ipos < primary_pts  ; ipos++){
-          double res_range;
-          
-          res_graphpts[ipos] = (*col_track_rr)[reco_primary][ipos];
+        double res_range = 0;
+        for(int ipos = primary_pts; ipos > 0  ; ipos--){
+          res_range += (*col_track_pitch_hit)[reco_primary][ipos];
+          res_graphpts[ipos] = res_range;
           dedx_graphpts[ipos] = (*col_track_dedx)[reco_primary][ipos];
           
           if (dedx_graphpts[ipos] > max_dedx){ max_dedx = dedx_graphpts[ipos];}
@@ -205,9 +204,10 @@ void PlotModule::EventSummary( TPostScript *psOutputFile,int run, int subrun, in
         TGraph2D *Event3dBranch = new TGraph2D();
 
         Event3dOther->SetName("Event3dOther");
+        int graphPtBufferPileup = 0;
+        int graphPtBufferBranch = 0; 
         if (secondaries_size > 0){
-          int graphPtBuffer = 0;
-          int graphPtBufferBranch = 0; 
+          
           for (int itrack = 0; itrack < ntracks_reco; itrack++ ){
             if (itrack != reco_primary){
               bool isBranch = false;
@@ -231,11 +231,11 @@ void PlotModule::EventSummary( TPostScript *psOutputFile,int run, int subrun, in
               else{
                 for(int ipoint = 0; ipoint < (*ntrack_hits)[itrack]; ipoint++){
                   //std::cout << ipoint << "point filled" << std::endl;
-                  Event3dOther->SetPoint(graphPtBuffer,(*track_zpos)[itrack][ipoint],
+                  Event3dOther->SetPoint(graphPtBufferPileup,(*track_zpos)[itrack][ipoint],
                     (*track_xpos)[itrack][ipoint],(*track_ypos)[itrack][ipoint]);
-                  EventYZother->SetPoint(graphPtBuffer,(*track_zpos)[itrack][ipoint],(*track_ypos)[itrack][ipoint]);
-                  EventXZother->SetPoint(graphPtBuffer,(*track_zpos)[itrack][ipoint],(*track_xpos)[itrack][ipoint]);
-                  graphPtBuffer++;
+                  EventYZother->SetPoint(graphPtBufferPileup,(*track_zpos)[itrack][ipoint],(*track_ypos)[itrack][ipoint]);
+                  EventXZother->SetPoint(graphPtBufferPileup,(*track_zpos)[itrack][ipoint],(*track_xpos)[itrack][ipoint]);
+                  graphPtBufferPileup++;
                 }
               }
               //std::cout << "track num : " << itrack << std::endl;
@@ -413,7 +413,7 @@ void PlotModule::EventSummary( TPostScript *psOutputFile,int run, int subrun, in
         
         Legend3d->Draw();
         
-        if(secondaries_size > 0){
+        if(graphPtBufferPileup > 0){
           Event3dOther->SetMarkerStyle(6);
           Event3dOther->SetMarkerColor(4);
           Event3dOther->SetLineColor(4);
@@ -458,7 +458,7 @@ void PlotModule::EventSummary( TPostScript *psOutputFile,int run, int subrun, in
         EventXZprimary->Draw("AP");
         LegendXZ->Draw();
 
-        if (secondaries_size > 0){
+        if (graphPtBufferPileup > 0){
           EventXZother->SetMarkerStyle(6);
           EventXZother->SetMarkerColor(4);
           EventXZother->SetLineColor(4);
@@ -489,7 +489,7 @@ void PlotModule::EventSummary( TPostScript *psOutputFile,int run, int subrun, in
         EventYZprimary->Draw("AP");
         LegendYZ->Draw();
 
-        if (secondaries_size > 0){
+        if (graphPtBufferPileup > 0){
           EventYZother->SetMarkerStyle(6);
           EventYZother->SetMarkerColor(4);
           EventYZother->SetLineColor(4);
@@ -525,7 +525,7 @@ void PlotModule::EventSummary( TPostScript *psOutputFile,int run, int subrun, in
 
         
         char beamPtext[50];
-        //sprintf(beamPtext,"Beam Momentum : %.02f MeV/c", (*wctrk_momentum));}
+        sprintf(beamPtext,"Beam Momentum : %.02f MeV/c", wctrk_momentum);
         char beamMassText[50];
         sprintf(beamMassText,"Mass : %.02f MeV/c^2", beamMass);
 
@@ -533,21 +533,21 @@ void PlotModule::EventSummary( TPostScript *psOutputFile,int run, int subrun, in
         char efieldtext[50];
         //sprintf(efieldtext,"E field: %.03f kV/cm", (*efield));
         char initialKEtext[50];
-        sprintf(initialKEtext,"Initial KE: %.03f MeV", InitialKE);
+        sprintf(initialKEtext,"Initial KE: %.02f MeV", InitialKE);
         char intKEtext[50];
-        sprintf(intKEtext,"Interaction KE: %.03f MeV", IntKE);
+        sprintf(intKEtext,"Interaction KE: %.02f MeV", IntKE);
         char eventtext[50];
         sprintf(eventtext,"Data event: %d ", event);
         char topologytext[50];
-        sprintf(topologytext, "Inelastic topology type: %f", Int_type);
+        sprintf(topologytext, "Inelastic topology type: %0.f", Int_type);
 
         char selCritText[50];
 
         if(Int_type == 1 ){
-          sprintf(selCritText, "Kink Angle = %0.3f deg", selCrit);
+          sprintf(selCritText, "Kink Angle = %0.2f deg", selCrit);
         }
         else if(Int_type == 2 ){
-          sprintf(selCritText, "Average End dE/dx = %0.3f MeV", selCrit);
+          sprintf(selCritText, "Average End dE/dx = %0.2f MeV", selCrit);
         }
         else{sprintf(selCritText, "Number of branches = %0.f", selCrit);
 
@@ -558,7 +558,9 @@ void PlotModule::EventSummary( TPostScript *psOutputFile,int run, int subrun, in
         
         pt->AddText(eventtext);
         //pt->AddText(efieldtext);
+        if (!isMC){
         pt->AddText(beamMassText);
+        pt->AddText(beamPtext);}
         if (Int_type > 0) {
           pt->AddText(topologytext);
           pt-> AddText(selCritText);}

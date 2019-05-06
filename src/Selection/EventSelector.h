@@ -17,6 +17,12 @@ class EventSelector {
   std::vector<double> ClusterDistVect;
   std::vector<double> dedxNoBraggVect;
   std::vector<int> ClusterIDvect;
+  std::vector<double> BranchLengthVect;
+  std::vector<double> BranchEnergyVect;
+  double post_kink_length;
+  bool branch_in_primary;
+  int col_interaction_spt;
+  double num_branches_t4;
 
 
 

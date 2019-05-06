@@ -68,6 +68,11 @@ double* EventSelector::findInt(double* candidate_array, int reco_primary, Int_t 
     BranchDistVect.clear();
     ClusterDistVect.clear();
     ClusterIDvect.clear();
+    BranchEnergyVect.clear();
+    post_kink_length = -999.;
+    branch_in_primary = false;
+    col_interaction_spt = -99;
+    num_branches_t4 = 0.;
     // vectors for primary track (in case track is flipped)
     std::vector<double> primary_xpos;
     std::vector<double> primary_ypos;
@@ -81,6 +86,9 @@ double* EventSelector::findInt(double* candidate_array, int reco_primary, Int_t 
     std::cout << primary_hits << std::endl;
     int col_primary_hits =  (*col_track_hits)[reco_primary];
 
+    std::cout << "col_primary_pitch_hit[0] = " << (*col_track_pitch_hit)[reco_primary][0] << std::endl;
+        std::cout << "col_primary_pitch_hit[end] = " << (*col_track_pitch_hit)[reco_primary][col_primary_hits-1]<< std::endl; 
+
 
     std::vector<int> zIndices = UtilityFunctions::zOrderedTrack2(track_zpos,reco_primary, ntrack_hits);
     if (zIndices[0] != 0){
@@ -90,10 +98,12 @@ double* EventSelector::findInt(double* candidate_array, int reco_primary, Int_t 
         primary_zpos.push_back((*track_zpos)[reco_primary][i-1]);
       }
       for( int i =  col_primary_hits; i > 0 ; i--){
+        col_primary_pitch_hit.push_back((*col_track_pitch_hit)[reco_primary][i-1]);
         col_primary_x.push_back((*col_track_x)[reco_primary][i-1]);
         col_primary_y.push_back((*col_track_y)[reco_primary][i-1]);
         col_primary_z.push_back((*col_track_z)[reco_primary][i-1]);
-        col_primary_pitch_hit.push_back((*col_track_pitch_hit)[reco_primary][i-1]);
+        //if(i == col_primary_hits){col_primary_pitch_hit.push_back(0.); }
+        //else {col_primary_pitch_hit.push_back((*col_track_pitch_hit)[reco_primary][i]);}
         col_primary_dedx.push_back((*col_track_dedx)[reco_primary][i-1]);
       }
     }
@@ -123,6 +133,8 @@ double* EventSelector::findInt(double* candidate_array, int reco_primary, Int_t 
     for(int rtrack = 0; rtrack < ntracks_reco; rtrack++){
       if(rtrack == reco_primary){
         // ## primary spacepoint loop ##
+
+        
         for(int rspt = 1; rspt < (*ntrack_hits)[rtrack]-1; rspt++){
           double prim_x = primary_xpos[rspt];
           double prim_y = primary_ypos[rspt];
@@ -316,9 +328,73 @@ double* EventSelector::findInt(double* candidate_array, int reco_primary, Int_t 
       }
     }
 
+    std::vector <double> kink_track_x;
+    std::vector <double> kink_track_y;
+    std::vector <double> kink_track_z;
+
+    std::vector <double> kink_col_x;
+    std::vector <double> kink_col_y;
+    std::vector <double> kink_col_z;
+    std::vector <double> kink_col_pitch_hit;
+    std::vector <double> kink_col_dedx;
+
 
     if(candidate_array[0] == 1.){
-        double num_branches_t4 = 0.;
+        
+
+        if(candidate_array[1] == 1.){ //if kink was found
+          double min_dist_to_interaction = 999.;
+          //int col_interaction_spt; -> now part of class
+          double col_interaction_rr;
+          double col_primary_res_range = 0;
+          for(int ipos = col_primary_hits; ipos > 0 ; ipos--){
+            double col_spt_x =  col_primary_x[ipos-1];
+            double col_spt_y =  col_primary_y[ipos-1];
+            double col_spt_z =  col_primary_z[ipos-1];
+
+            if (ipos  !=  col_primary_hits){ 
+              double dist_prev = sqrt(pow(col_spt_x - col_primary_x[ipos], 2) + 
+                                      pow(col_spt_y - col_primary_y[ipos], 2) + 
+                                      pow(col_spt_z - col_primary_z[ipos], 2));
+              col_primary_res_range += dist_prev;
+              }
+
+
+          
+
+
+
+          double dist_to_interaction = sqrt(pow(col_spt_x - candidate_array[1], 2) + 
+                                      pow(col_spt_y - candidate_array[2], 2) + 
+                                      pow(col_spt_z - candidate_array[3], 2));
+
+          if (dist_to_interaction < min_dist_to_interaction){
+            min_dist_to_interaction = dist_to_interaction;
+            col_interaction_spt = ipos;
+            col_interaction_rr = col_primary_res_range;
+            }
+          }
+          post_kink_length = col_interaction_rr;
+          if(col_interaction_rr > 2.){
+            branch_in_primary = true;
+            double deposited_energy = 0;
+
+            for(int ipos = col_interaction_spt; ipos < col_primary_hits; ipos++){
+              double de = col_primary_dedx[ipos]*
+                       col_primary_pitch_hit[ipos];
+              deposited_energy += de;
+            }
+            BranchEnergyVect.push_back(deposited_energy);
+
+            num_branches_t4++;}
+
+
+
+
+
+
+
+        }// end if kink was found
 
         for (int ibranch = 0 ;  ibranch <  ntracks_reco; ibranch++){
 
@@ -343,12 +419,26 @@ double* EventSelector::findInt(double* candidate_array, int reco_primary, Int_t 
             if(dist < clusterMaxDist){num_branches_t4 += 1.;
               if(verbose){std::cout << "Branch ID: " << ibranch << std::endl;}
               ClusterIDvect.push_back(ibranch);
+
+              // calculating deposited energy
+              double deposited_energy = 0.;
+              for (int ipos = 0 ; ipos < (*col_track_hits)[ibranch] ; ipos ++){
+                double de  =  (*col_track_dedx)[ibranch][ipos]*
+                       (*col_track_pitch_hit)[ibranch][ipos];
+                deposited_energy += de;
+              }
+              BranchEnergyVect.push_back(deposited_energy);
+
+
+
+
+
             }
           }
         }
         if(verbose){std::cout << "num_branches_type4 = " << num_branches_t4 << std::endl;}
         if (candidate_array[4] == 3.){candidate_array[5] = num_branches_t4;
-          if (num_branches_t4 > 1){candidate_array[4] = 4.;}
+          //if (num_branches_t4 > 1){candidate_array[4] = 4.;}
          }
         //if (num_branches_t4 > 1){
         //  candidate_array[4] = 4.;
