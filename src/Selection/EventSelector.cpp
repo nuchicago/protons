@@ -183,8 +183,8 @@ double* EventSelector::findInt(double* candidate_array, int reco_primary, Int_t 
         double end_track_counter = 0;
         for(int calo_pt = col_primary_hits; calo_pt > 0; calo_pt--){
           if(end_track_dist > 2.5){continue;}
-          end_track_dist += col_primary_pitch_hit[calo_pt];
-          end_track_dedx_sum += col_primary_dedx[calo_pt];
+          end_track_dist += col_primary_pitch_hit[calo_pt - 1];
+          end_track_dedx_sum += col_primary_dedx[calo_pt - 1];
           end_track_counter++;
         }
         double end_track_dedx_mean = end_track_dedx_sum / end_track_counter;
@@ -376,7 +376,7 @@ double* EventSelector::findInt(double* candidate_array, int reco_primary, Int_t 
           }
           post_kink_length = col_interaction_rr;
           //std::cout << "post_kink_length = " << post_kink_length << std::endl;
-          if(col_interaction_rr > 0.){
+          if(col_interaction_rr > 0.){ // should consider finding an appropriate value for this
             branch_in_primary = true;
             double deposited_energy = 0;
 

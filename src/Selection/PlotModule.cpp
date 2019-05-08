@@ -100,6 +100,23 @@ void PlotModule::EventSummary(bool isMC ,TPostScript *psOutputFile,int run, int 
       double res_buffer = 0;
       int primary_pts = (*col_track_hits)[reco_primary];
       double dedx_graphpts[primary_pts], res_graphpts[primary_pts];
+      std::vector<double> col_primary_pitch_hit;
+      std::vector<double> col_primary_dedx;
+
+      if (beamMatchInfo[2] != 0){
+        for( int i =  primary_pts; i > 0 ; i--){
+          col_primary_pitch_hit.push_back((*col_track_pitch_hit)[reco_primary][i-1]);
+          //if(i == col_primary_hits){col_primary_pitch_hit.push_back(0.); }
+          //else {col_primary_pitch_hit.push_back((*col_track_pitch_hit)[reco_primary][i]);}
+          col_primary_dedx.push_back((*col_track_dedx)[reco_primary][i-1]);
+          }
+        }
+        else{
+        col_primary_pitch_hit = (*col_track_pitch_hit)[reco_primary];
+        col_primary_dedx = (*col_track_dedx)[reco_primary];
+        }
+
+
 
 
       if (primary_pts > 0){
@@ -107,9 +124,9 @@ void PlotModule::EventSummary(bool isMC ,TPostScript *psOutputFile,int run, int 
         //calculating residual range
         double res_range = 0;
         for(int ipos = primary_pts; ipos > 0  ; ipos--){
-          res_range += (*col_track_pitch_hit)[reco_primary][ipos -1];
+          res_range += col_primary_pitch_hit[ipos -1];
           res_graphpts[primary_pts -ipos] = res_range;
-          dedx_graphpts[primary_pts - ipos] = (*col_track_dedx)[reco_primary][ipos-1];
+          dedx_graphpts[primary_pts - ipos] = col_primary_dedx[ipos-1];
           
           if (dedx_graphpts[primary_pts - ipos] > max_dedx){ max_dedx = dedx_graphpts[ipos];}
           }//end of loop for residual range

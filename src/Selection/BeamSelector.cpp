@@ -372,7 +372,7 @@ void BeamSelector::printSummary(std::vector <double> BSoptions){
   std::cout << "Events passing alpha angle cut a < "  << BSoptions[2] << ": " << numAlphaCut << std::endl;
   if (BSoptions[9]){std::cout << "Events with unique matched track: " << numUniqueMatch << std::endl;}
   if(BSoptions[4]){
-  std::cout << "\n------- Additional Data Selection-------\n"<< std::endl;
+  std::cout << "\n------- Pileup & Shower Filters -------\n"<< std::endl;
   std::cout << "Events passing pileup cut ( > " << BSoptions[5] << " tracks in first "<< BSoptions[6]<<" cm): " << numPileupCut << std::endl;
   std::cout << "Events passing EM shower cut ( "  << BSoptions[7] <<" or more tracks < " << BSoptions[8] <<" cm long): " << numShowerCut << std::endl;
   

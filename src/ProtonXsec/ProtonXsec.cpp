@@ -193,25 +193,26 @@ void ProtonXsec::AnalyzeFromNtuples(){
 
   // counters for beam cuts
 
-  double numPos2tof = 0;
-  double numPos1tof = 0;
-  double numPos0tof = 0;
-  double numEventsStart = 0;
-  double numMassCut = 0;
+  int numPos2tof = 0;
+  int numPos1tof = 0;
+  int numPos0tof = 0;
+  int numEventsStart = 0;
+  int numMassCut = 0;
   int numtofsingle = 0;
   int  numMatchedMain = 0;
-  double numtofvalid = 0;
-  double numZcutoff = 0;
-  double numWCTrack = 0;
-  double num4PointTrack = 0;
-  double numPickyTrack = 0;
-  double numQualityTrack = 0;
-  double xyDeltaCut = 0;
-  double numThetaCut = 0;
-  double numPhiCut = 0;
+  int numtofvalid = 0;
+  int numZcutoff = 0;
+  int numWCTrack = 0;
+  int num4PointTrack = 0;
+  int numPickyTrack = 0;
+  int numQualityTrack = 0;
+  int xyDeltaCut = 0;
+  int numThetaCut = 0;
+  int numPhiCut = 0;
   bool intHistFilled = false;
   int numSummaryPrinted = 0;
   int numMultiBranch = 0;
+  int numPrimaryLengthCut = 0;
 
 
 
@@ -454,7 +455,7 @@ void ProtonXsec::AnalyzeFromNtuples(){
   TH1D *electronLifetimeHist = new TH1D("electronLifetimeHist","electron lifetime",300,0, 3000);
 
   
-  TH1D *wctrkNumHist = new TH1D("wctrkNumHist","Number of Entering Tracks TPC",40,0,10);
+  TH1D *wctrkNumHist = new TH1D("wctrkNumHist","Number of WC Tracks",10,0,10);
   TH1D *BeamToF = new TH1D("BeamToF","Incoming Particle ToF",100,0,100);
 
   TH2D * delXYHist =  new TH2D("delXYHist","tpc to wc delta x",200,-100,100,200,-100,100);
@@ -489,7 +490,7 @@ void ProtonXsec::AnalyzeFromNtuples(){
   TH1D * numPileupTracksHist = new TH1D("numPileupTracksHist","number of Tracks for Pileup Filter",30,0,30);
   TH1D * numShowerCutHist = new TH1D("numShowerCutHist", "number of short tracks - EM shower cut",30,0,30);
 
-  TH1D * numTracksSelHist =  new TH1D("numTracksSelHist","number of Entering Tracks - Selected Events", 10, 0, 5);
+  TH1D * numTracksSelHist =  new TH1D("numTracksSelHist","number of Entering Tracks - Selected Events", 10, 0, 10);
 
   TH2D *tofMomentHist = new TH2D("tofMomentHist","Momentum vs TOF",100,0,2000, 100 , 0,100);
   TH1D *BeamMassHist = new TH1D("BeamMassHist","Beamline particle Mass", 100, -3000,3000);
@@ -516,23 +517,26 @@ void ProtonXsec::AnalyzeFromNtuples(){
 
   TH1D * BranchDistHist = new TH1D("BranchDistHist", "Inelastic Event Branch Distance",50, 0,25);
   TH1D * ClusterDistHist = new TH1D("ClusterDistHist", "Additional Branch Distance (Type 4)",50, 0,25);
-  TH1D * interactingLength = new TH1D("interactingLength","Interacting Primary Length", 100, 0, 100);
+  TH1D * interactingLength = new TH1D("interactingLength","Interacting Primary Length", 200, 0, 100);
   TH2D * intMomentumLength = new TH2D("intMomentumLength", "Momentum vs Interacting Length ",100,0, 2500, 100, 0,100);
   TH2D * momentumLength = new TH2D("momentumLength", "Primary Length vs Momentum",100,0, 2500, 100, 0,100);
-  TH1D * numBranchesHist =  new TH1D("numBranchesHist","Number of branches from vertex",20, 0, 10);
+  TH1D * numBranchesHist =  new TH1D("numBranchesHist","Number of branches from vertex",10, 0, 10);
 
   // ## Multi-particle topology plots##
-  TH2D * numBranchEnergy  = new  TH2D("numBranchEnergy", " Interaction Energy vs N Branches", 20,0, 1000, 10, 0, 10);
-  TH1D * kinkResRange = new TH1D("kinkResRange", "residual range after kink in track",250, 0, 100);
-  TH1D * kinkResRangeMulti = new TH1D("kinkResRangeMulti", "residual range after kink - branching events",250, 0, 100);
+  TH2D * numBranchIntKE  = new  TH2D("numBranchIntKE", " Interaction Energy vs N Branches", 40,0, 1000, 10, 0, 10);
+  TH2D * numBranchInitialKE  = new  TH2D("numBranchInitialKE", " Interaction Energy vs N Branches", 40,0, 1000, 10, 0, 10);
+  TH1D * kinkResRange = new TH1D("kinkResRange", "residual range after kink in track",200, 0, 100);
+  TH1D * kinkResRangeMulti = new TH1D("kinkResRangeMulti", "residual range after kink - branching events",200, 0, 100);
 
-  TH2D * numBranchMomentum = new  TH2D("numBranchMomentum", " Beam Momentum vs N Branches", 100,0, 2000, 10, 0, 10);
-  TH1D * branchDEHist = new TH1D("branchDEHist","Deposited Energy per Branch",100,0,2000);
+  TH2D * numBranchMomentum = new  TH2D("numBranchMomentum", " Beam Momentum vs N Branches", 40,300, 1300, 10, 0, 10);
+  TH1D * branchDEHist = new TH1D("branchDEHist","Deposited Energy per Branch",40,0,1000);
+  TH1D * multiBranchDEHist = new TH1D("multiBranchDEHist","Deposited Energy per Branch - multi-branch events",40,0,1000);
 
-  // ## xs histos ##
-  TH1D *hreco_initialKE = new TH1D("hreco_initialKE", "initial ke", 20, 0, 1000);
-  TH1D *hreco_intke = new TH1D("hreco_intke", "int ke", 20, 0, 1000);
-  TH1D *hreco_incke = new TH1D("hreco_incke", "inc ke", 20, 0, 1000);
+
+  // ## xs histos ## // ## reminder to switch these back to 20 bins once I'm done - Jose
+  TH1D *hreco_initialKE = new TH1D("hreco_initialKE", "initial ke", 40, 0, 1000);
+  TH1D *hreco_intke = new TH1D("hreco_intke", "int ke", 40, 0, 1000);
+  TH1D *hreco_incke = new TH1D("hreco_incke", "inc ke", 40, 0, 1000);
   TH1D *hreco_xs = new TH1D("hreco_xs", "P-Ar Inelastic XS", 20, 0, 1000);
 
   // ## to read in from corrections file
@@ -1180,10 +1184,13 @@ void ProtonXsec::AnalyzeFromNtuples(){
         double numBranch = ES->num_branches_t4;
         numBranchesHist->Fill(numBranch);
         numBranchMomentum->Fill(initialP,numBranch);
-        numBranchEnergy->Fill(intKE,numBranch);
+        numBranchIntKE->Fill(intKE,numBranch);
+        numBranchInitialKE->Fill( initial_ke ,numBranch);
+
 
         for (int ibranch = 0 ; ibranch < ES->BranchEnergyVect.size(); ibranch++){
           branchDEHist->Fill(ES->BranchEnergyVect[ibranch]);
+          if(ES->num_branches_t4 > 1){multiBranchDEHist->Fill(ES->BranchEnergyVect[ibranch]);}
         }
 
         if(candidate_info[4] == 1){
@@ -1221,8 +1228,8 @@ void ProtonXsec::AnalyzeFromNtuples(){
     // ### end of port work -- ryan ###
 
     if (UI->psOutputFileSet){
-      if(candidate_info[0]  && (candidate_info[4] != 2) && numSummaryPrinted < UI->numEventSummaries){
-        
+      if(candidate_info[0]  && (ES->num_branches_t4 > 1) && numSummaryPrinted < UI->numEventSummaries){
+      //if(numSummaryPrinted < UI->numEventSummaries){
         PM->EventSummary(isMC,ps, run, subrun, event, ntracks_reco,
                     matchCandidate, candidate_info, ES->ClusterIDvect,
                     initial_ke,  intKE,  ParticleMass, 
@@ -1579,11 +1586,13 @@ void ProtonXsec::AnalyzeFromNtuples(){
       beamZtpc0 ->Write();
 
       // ## multi branch event histos
-      numBranchEnergy->Write();
+      numBranchIntKE->Write();
+      numBranchInitialKE->Write();
       numBranchMomentum->Write();
       kinkResRange->Write();
       kinkResRangeMulti->Write();
       branchDEHist->Write();
+      multiBranchDEHist->Write();
       
 
       wctrk4XY->Write();
