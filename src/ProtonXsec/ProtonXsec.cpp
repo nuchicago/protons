@@ -213,6 +213,10 @@ void ProtonXsec::AnalyzeFromNtuples(){
   int numMultiBranch = 0;
   int numPrimaryLengthCut = 0;
 
+  // getting a few events of all types
+  int numNoInelastic = 0;
+  int numNoBragg = 0;
+  int numSingleBranch = 0;
 
 
 
@@ -532,11 +536,11 @@ void ProtonXsec::AnalyzeFromNtuples(){
 
   TH2D * numBranchMomentum = new  TH2D("numBranchMomentum", " Beam Momentum vs N Branches", 40,300, 1300, 10, 0, 10);
   TH1D * branchDEHist = new TH1D("branchDEHist","Deposited Energy per Branch",40,0,1000);
-  TH1D * branchDEHistScaled = new TH1D("branchDEHistScaled","Deposited Energy per Branch / intKE", 40,0,1);
+  TH1D * branchDEHistScaled = new TH1D("branchDEHistScaled","Deposited Energy per Branch / intKE", 40,0,2);
   TH1D * branchSumDEHist = new TH1D("branchSumDEHist","Deposited Energy in All Branches", 40,0,1000);
-  TH1D * branchSumDEHistScaled = new TH1D("branchSumDEHistScaled","Deposited Energy in All Branches / intKE",40, 0, 1);
+  TH1D * branchSumDEHistScaled = new TH1D("branchSumDEHistScaled","Deposited Energy in All Branches / intKE",40, 0, 2);
   TH1D * multiBranchDEHist = new TH1D("multiBranchDEHist","Deposited Energy per Branch - multi-branch events",40,0,1000);
-  TH1D * multiBranchDEHistScaled = new TH1D("multiBranchDEHistScaled","Deposited Energy in all Branches - multi-branch events / intKE",40, 0, 1);
+  TH1D * multiBranchDEHistScaled = new TH1D("multiBranchDEHistScaled","Deposited Energy in all Branches - multi-branch events / intKE",40, 0, 2);
 
 
   // ## xs histos ## // ## reminder to switch these back to 20 bins once I'm done - Jose
@@ -1071,9 +1075,6 @@ void ProtonXsec::AnalyzeFromNtuples(){
         }
       }
 
-    if((*track_length)[reco_primary] > 80){continue;}
-    numPrimaryLengthCut++; //reminder to integrate this in a more coherent manner?
-
 
     }// end of Data event beam matching
 
@@ -1097,7 +1098,8 @@ void ProtonXsec::AnalyzeFromNtuples(){
 
     if(UI->skipEventSelection){continue;}//skipping Event Selection - running in beam diagnostic mode
 
-
+    if((*track_length)[reco_primary] > 80){continue;}
+    numPrimaryLengthCut++; //reminder to integrate this in a more coherent manner?
 
 
     // ## grabbing interaction point ##
@@ -1163,7 +1165,7 @@ void ProtonXsec::AnalyzeFromNtuples(){
     }//<---End if interaction candidate
 
     double intKE = -1;
-    
+    bool foundIntKE = false;
     // ## incident slabs ## 
     for(unsigned int calo_slab = 1; calo_slab < calo_slab_KE.size(); calo_slab++){
       if(calo_slab > calo_int_slab){continue;}//<--stop after interaction slab 
@@ -1172,10 +1174,11 @@ void ProtonXsec::AnalyzeFromNtuples(){
         hreco_intke->Fill(calo_slab_KE[calo_slab]);
         numInteractions++;
         intKE = calo_slab_KE[calo_int_slab];
+        foundIntKE = true;
       }//<-- End if this is the \ slab
     }//<--End calo slab loop
 
-      if(candidate_info[0]){ // plotting results of ES
+      if(candidate_info[0] && foundIntKE ){ // plotting results of ES
 
         // Histograms for branch selection
         std::vector<double> BranchDistVect = ES->BranchDistVect;
@@ -1271,6 +1274,84 @@ void ProtonXsec::AnalyzeFromNtuples(){
       numSummaryPrinted++;
       }
     }
+
+    if (UI->psOutputFileSet){
+      if(candidate_info[0] == 0   && numNoInelastic < 20){
+      //if(numSummaryPrinted < UI->numEventSummaries){
+        PM->EventSummary(isMC,ps, run, subrun, event, ntracks_reco,
+                    matchCandidate, candidate_info, ES->ClusterIDvect,
+                    initial_ke,  intKE,  ParticleMass, 
+                    track_xpos,
+                    track_ypos,
+                    track_zpos,
+                    ntrack_hits,
+                    col_track_x,
+                    col_track_y,
+                    col_track_z,
+                    col_track_hits,
+                    col_track_dedx,
+                    col_track_pitch_hit,
+                    wctrk_XFace[0], wctrk_YFace[0], wctrk_momentum[0],
+                    nhits,
+                    hit_time,
+                    hit_amp,
+                    hit_wire);
+      numNoInelastic++;
+      }
+    }
+
+    if (UI->psOutputFileSet){
+      if(candidate_info[0]  && candidate_info[4] == 2 && numNoBragg < 20){
+      //if(numSummaryPrinted < UI->numEventSummaries){
+        PM->EventSummary(isMC,ps, run, subrun, event, ntracks_reco,
+                    matchCandidate, candidate_info, ES->ClusterIDvect,
+                    initial_ke,  intKE,  ParticleMass, 
+                    track_xpos,
+                    track_ypos,
+                    track_zpos,
+                    ntrack_hits,
+                    col_track_x,
+                    col_track_y,
+                    col_track_z,
+                    col_track_hits,
+                    col_track_dedx,
+                    col_track_pitch_hit,
+                    wctrk_XFace[0], wctrk_YFace[0], wctrk_momentum[0],
+                    nhits,
+                    hit_time,
+                    hit_amp,
+                    hit_wire);
+      numNoBragg++;
+      }
+    }
+
+
+    if (UI->psOutputFileSet){
+      if(candidate_info[0]  && (ES->num_branches_t4 == 1) && numSingleBranch < 20){
+      //if(numSummaryPrinted < UI->numEventSummaries){
+        PM->EventSummary(isMC,ps, run, subrun, event, ntracks_reco,
+                    matchCandidate, candidate_info, ES->ClusterIDvect,
+                    initial_ke,  intKE,  ParticleMass, 
+                    track_xpos,
+                    track_ypos,
+                    track_zpos,
+                    ntrack_hits,
+                    col_track_x,
+                    col_track_y,
+                    col_track_z,
+                    col_track_hits,
+                    col_track_dedx,
+                    col_track_pitch_hit,
+                    wctrk_XFace[0], wctrk_YFace[0], wctrk_momentum[0],
+                    nhits,
+                    hit_time,
+                    hit_amp,
+                    hit_wire);
+      numSingleBranch++;
+      }
+    }
+
+
 
   double truthIntKE = -1;
 

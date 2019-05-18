@@ -42,13 +42,15 @@ void PlotModule::EventSummary(bool isMC ,TPostScript *psOutputFile,int run, int 
 
 
 
-   std::cout << "Beginning Summary" << std::endl;
+   //std::cout << "Beginning Summary" << std::endl;
 
    psOutputFile->NewPage();
    gROOT->SetBatch(true);
    gStyle->SetPalette(53);
 
     TCanvas *c1 = new TCanvas("c1","Canvas",1920,1080);
+    TCanvas *c2 =  new TCanvas("c2","c2",1920, 1080);
+    c1->cd();
 
     TPad * pad1 = new TPad("pad1", "Induction Plane",0.0,0.5,0.3,1.0,0);
     TPad * pad2 = new TPad("pad2", "XZ Tracks" ,0.3, 0.5, 0.6, 1.0, 0);
@@ -132,7 +134,7 @@ void PlotModule::EventSummary(bool isMC ,TPostScript *psOutputFile,int run, int 
           }//end of loop for residual range
 
         //####### setting up graphs for raw wire hits
-        std::cout << "TGraphs for raw hits" << std::endl;
+        //std::cout << "TGraphs for raw hits" << std::endl;
         TGraph2D *inductionHits = new TGraph2D(nhits);
         inductionHits->SetName("inductionHits");
 
@@ -187,7 +189,7 @@ void PlotModule::EventSummary(bool isMC ,TPostScript *psOutputFile,int run, int 
           EventYZprimary->SetPoint(ipoint, (*track_zpos)[reco_primary][ipoint],
             (*track_ypos)[reco_primary][ipoint]);
         }
-        std::cout << "filled primary 2d and 3d" << std::endl;
+        //std::cout << "filled primary 2d and 3d" << std::endl;
 
         //std::cout << "primary : " << reco_primary << std::endl;
         //std::cout << "track 0 start XYZ:" << (*track_start_x)[0] << "\t" <<(*track_start_y)[0]<< "\t"  << (*track_start_z)[0] << std::endl;
@@ -260,10 +262,10 @@ void PlotModule::EventSummary(bool isMC ,TPostScript *psOutputFile,int run, int 
             }
           }
         }
-        std::cout << "Filled other tracks reco" << std::endl;
+        //std::cout << "Filled other tracks reco" << std::endl;
 
         // ######## legends and wc markers
-        TLegend * Legend3d =  new TLegend();
+        TLegend * Legend3d =  new TLegend(0.7,0.8,1.,1.);
         TLegend * LegendXZ =  new TLegend();
         TLegend * LegendYZ = new TLegend();
         TPolyMarker3D *wcPos3d = new TPolyMarker3D(1);
@@ -291,18 +293,18 @@ void PlotModule::EventSummary(bool isMC ,TPostScript *psOutputFile,int run, int 
         inductionHits->SetMarkerStyle(7);
         collectionHits->SetMarkerStyle(7);
         if(isInelastic){
-          Legend3d->AddEntry(Event3dPrimary,"Primary (Inelastic)", "l");
-          LegendYZ->AddEntry(EventYZprimary,"Primary (Inelastic)", "l");
-          LegendXZ->AddEntry(EventXZprimary,"Primary (Inelastic)", "l");
+          Legend3d->AddEntry(Event3dPrimary,"Primary", "l");
+          LegendYZ->AddEntry(EventYZprimary,"Primary", "l");
+          LegendXZ->AddEntry(EventXZprimary,"Primary", "l");
 
         }
         else{
-          Legend3d->AddEntry(Event3dPrimary,"Primary (No Inelastic)", "l");
-          LegendYZ->AddEntry(EventYZprimary,"Primary (No Inelastic)", "l");
-          LegendXZ->AddEntry(EventXZprimary,"Primary (No Inelastic)", "l");
+          Legend3d->AddEntry(Event3dPrimary,"Primary", "l");
+          LegendYZ->AddEntry(EventYZprimary,"Primary", "l");
+          LegendXZ->AddEntry(EventXZprimary,"Primary", "l");
         }
 
-        std::cout << "legends" << std::endl;
+        //std::cout << "legends" << std::endl;
 
         // ######### using a 2 point Tgraph2D to set limits on wire displays
         pad1->cd();
@@ -311,12 +313,12 @@ void PlotModule::EventSummary(bool isMC ,TPostScript *psOutputFile,int run, int 
         inductionHits->GetYaxis()->SetTitle("Time Tick");
         wirePlotLims1->Draw("P");
         inductionHits->Draw("PCOLZ SAME");
-        std::cout << "finished drawing pad 1" << std::endl;
+        //std::cout << "finished drawing pad 1" << std::endl;
         inductionHits->GetHistogram()->SetMinimum(0);
         //inductionHits->GetHistogram()->SetMaximum(180);
 
         // ######## Setting limits on 2D reconstructed track plots
-        std::cout << "2D reco plot formatting" << std::endl;
+        //std::cout << "2D reco plot formatting" << std::endl;
 
         EventYZprimary->GetXaxis()->SetLimits(-5,90);                 // along X
         EventYZprimary->GetHistogram()->SetMaximum(25.);   // along          
@@ -349,9 +351,9 @@ void PlotModule::EventSummary(bool isMC ,TPostScript *psOutputFile,int run, int 
           LegendYZ->AddEntry(EventYZother,"Pileup", "l");
         }
         if (ClusterIDvect.size() > 0){
-          Legend3d->AddEntry(Event3dBranch,"Branches", "l");
-          LegendXZ->AddEntry(EventXZBranch,"Branches", "l");
-          LegendYZ->AddEntry(EventYZBranch,"Branches", "l");
+          Legend3d->AddEntry(Event3dBranch,"Secondaries", "l");
+          LegendXZ->AddEntry(EventXZBranch,"Secondaries", "l");
+          LegendYZ->AddEntry(EventYZBranch,"Secondaries", "l");
         }
 
         pad1->SetTheta(90.); pad1->SetPhi(0.001);
@@ -413,10 +415,12 @@ void PlotModule::EventSummary(bool isMC ,TPostScript *psOutputFile,int run, int 
         Event3dTPC->SetName("Event3dTPC");
         Event3dTPC->SetPoint(0,-1,0,-20);
         Event3dTPC->SetPoint(1,90,48,20);
-        Event3dTPC->SetTitle("Reconstructed Track");
+        Event3dTPC->SetTitle("");
         Event3dTPC->GetXaxis()->SetTitle("Z [cm]");
         Event3dTPC->GetYaxis()->SetTitle("X [cm]");
         Event3dTPC->GetZaxis()->SetTitle("Y [cm]");
+        Event3dTPC->GetYaxis()->SetTitleOffset(1.3);
+        Event3dTPC->GetXaxis()->SetTitleOffset(1.4);
         Event3dTPC->Draw("P");
         Event3dPrimary->Draw("P SAME");
         if (!isMC){wcPos3d->Draw("P0 SAME");}
@@ -446,7 +450,7 @@ void PlotModule::EventSummary(bool isMC ,TPostScript *psOutputFile,int run, int 
         if(isInelastic){
           Event3dPrimary->SetMarkerColor(8);
           Event3dPrimary->SetLineColor(8);
-          Legend3d->AddEntry(IntPoint,"interaction point", "p");
+          Legend3d->AddEntry(IntPoint,"Interaction Vertex", "p");
           IntPoint->Draw("P SAME");
           IntPoint->SetName("IntPoint");
           IntPoint->SetMarkerStyle(2);
@@ -590,7 +594,7 @@ void PlotModule::EventSummary(bool isMC ,TPostScript *psOutputFile,int run, int 
 
         // gPad->Modified(); 
         //gPad->Update();
-        std::cout << "Update Canvas" << std::endl;
+        
         c1->Update();
 
         char eventdisp_title[100];
@@ -598,8 +602,35 @@ void PlotModule::EventSummary(bool isMC ,TPostScript *psOutputFile,int run, int 
         
         //char gres_dedx_title[100];
         //sprintf(gres_dedx_title,"%s/dedx_Residuals/gres_dedx%d.png",UI->plotIndividual,event);
-
         
+        /// generating single Event 3d Reco plot
+        psOutputFile->NewPage();
+        
+        c2->cd();
+        
+        Event3dTPC->Draw("P");
+        Event3dPrimary->SetMarkerStyle(13);
+        Event3dPrimary->Draw("P SAME");
+        if (!isMC){
+          wcPos3d->SetMarkerSize(2);
+          wcPos3d->Draw("P0 SAME");}
+        //std::cout << "Legend on single display" << std::endl;
+        Legend3d->Draw("SAME");
+        
+        if(graphPtBufferPileup > 0){
+          Event3dOther->SetMarkerStyle(13);
+          Event3dOther->Draw("P SAME");}
+        if(ClusterIDvect.size() > 0){
+          Event3dBranch->SetMarkerStyle(13);
+          Event3dBranch->Draw("P SAME");}
+        
+        if(isInelastic){
+          IntPoint->SetMarkerStyle(34);
+          IntPoint->SetMarkerSize(2);
+          IntPoint->Draw("P SAME");
+        }
+
+        c2->Update();
 
         //~gres_dedx;
         //c1->Print(eventdisp_title, "png");
