@@ -535,12 +535,14 @@ void ProtonXsec::AnalyzeFromNtuples(){
   TH1D * kinkResRangeMulti = new TH1D("kinkResRangeMulti", "residual range after kink - branching events",200, 0, 100);
 
   TH2D * numBranchMomentum = new  TH2D("numBranchMomentum", " Beam Momentum vs N Branches", 40,300, 1300, 10, 0, 10);
-  TH1D * branchDEHist = new TH1D("branchDEHist","Deposited Energy per Branch",40,0,1000);
-  TH1D * branchDEHistScaled = new TH1D("branchDEHistScaled","Deposited Energy per Branch / intKE", 40,0,2);
-  TH1D * branchSumDEHist = new TH1D("branchSumDEHist","Deposited Energy in All Branches", 40,0,1000);
-  TH1D * branchSumDEHistScaled = new TH1D("branchSumDEHistScaled","Deposited Energy in All Branches / intKE",40, 0, 2);
-  TH1D * multiBranchDEHist = new TH1D("multiBranchDEHist","Deposited Energy per Branch - multi-branch events",40,0,1000);
-  TH1D * multiBranchDEHistScaled = new TH1D("multiBranchDEHistScaled","Deposited Energy in all Branches - multi-branch events / intKE",40, 0, 2);
+  TH1D * branchDEHist = new TH1D("branchDEHist","Deposited Energy per Branch",80,-1000,1000);
+  TH1D * branchDEHistScaled = new TH1D("branchDEHistScaled","Deposited Energy per Branch / intKE", 40, -2,2);
+  TH1D * branchSumDEHist = new TH1D("branchSumDEHist","Deposited Energy in All Branches", 80,-1000,1000);
+  TH1D * branchSumDEHistScaled = new TH1D("branchSumDEHistScaled","Deposited Energy in All Branches / intKE",40, -2, 2);
+  TH1D * multiBranchDEHist = new TH1D("multiBranchDEHist","Deposited Energy per Branch - multi-branch events",80,-1000,1000);
+  TH1D * multiBranchDEHistScaled = new TH1D("multiBranchDEHistScaled","Deposited Energy in all Branches - multi-branch events / intKE",40, -2, 2);
+  TH1D * multiBranchSumDEHist = new TH1D("multiBranchSumDEHist","Deposited Energy per Branch - multi-branch events /intKE",80,-1000,1000);
+  TH1D * multiBranchSumDEHistScaled = new TH1D("multiBranchSumDEHistScaled","Deposited Energy in all Branches - multi-branch events / intKE",40, -2, 2);
 
 
   // ## xs histos ## // ## reminder to switch these back to 20 bins once I'm done - Jose
@@ -1215,6 +1217,8 @@ void ProtonXsec::AnalyzeFromNtuples(){
         double scaleSumBranchDE = sumBranchDE / intKE;
         branchSumDEHistScaled->Fill(scaleSumBranchDE);
         branchSumDEHist->Fill(sumBranchDE);
+        if(ES->num_branches_t4 > 1){multiBranchSumDEHist->Fill(sumBranchDE);
+                                      multiBranchSumDEHistScaled->Fill(scaleSumBranchDE);}
 
 
 
@@ -1705,6 +1709,8 @@ void ProtonXsec::AnalyzeFromNtuples(){
       multiBranchDEHist->Write();
       branchSumDEHist->Write();
       branchSumDEHistScaled->Write();
+      multiBranchSumDEHist->Write();
+      multiBranchSumDEHistScaled->Write();
       
 
       wctrk4XY->Write();
